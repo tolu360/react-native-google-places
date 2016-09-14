@@ -57,7 +57,7 @@ end
 	android:name="com.google.android.geo.API_KEY"
 	android:value="YOUR_ANDROID_API_KEY_HERE"/>
 ```
-- The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise;
+- The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
 ```java
@@ -90,6 +90,8 @@ protected List<ReactPackage> getPackages() {
 
 
 ## Usage
+
+### Autocomplete Modal: Allows your users to enter place names and addresses - and autocompletes your users' queries as they type.
 
 #### Import library
 
@@ -143,6 +145,27 @@ class GPlacesDemo extends Component {
 
 #### Open PlacePicker Modal (WIP)
 - To be implemented subsequently.
+
+### Troubleshooting
+
+#### On iOS
+You have to link dependencies and re-run the build :
+
+1. Run `react-native link`
+2. Run `react-native run-ios`
+
+#### On Android
+1. Run "android" and make sure every packages is updated.
+2. If not installed yet, you have to install the following packages:
+
+
+- Extras / Google Play services
+- Extras / Google Repository
+- Android (API 23+) / Google APIs Intel x86 Atom System Image Rev. 13
+- Check manual installation steps
+
+## License
+The MIT License.
 
 
 
