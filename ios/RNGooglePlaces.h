@@ -7,3 +7,4 @@
 @interface RNGooglePlaces : NSObject <RCTBridgeModule>
 
 @end
+  

@@ -25,11 +25,20 @@ react-native link react-native-google-places
 
 #### Post-install Steps
 
-##### iOS (with Cocoapods)
+##### iOS (requires CocoaPods)
 
-- In XCode's "Project navigator", right click on project name folder ➜ Add Files to <...>. Ensure `Copy items if needed and Create groups` are checked. Go to node_modules ➜ react-native-google-places ➜ add `ios` folder (this step may not be required if running `react-native link` already worked for you).
-- Add `pod 'GooglePlaces'` and `pod 'GoogleMaps'` to your Podfile.
-- If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project. Otherwise just edit your Podfile to include:
+##### Auto Linking With Your Project (iOS & Android)
+- This was done automatically for you when you ran `react-native link react-native-google-places`. Or you can run the command now if you have not already.
+
+##### Manual Linking With Your Project (iOS)
+- In XCode, in the project navigator, right click `Libraries ➜ Add Files to [your project's name]`.
+- Go to `node_modules` ➜ `react-native-google-places` and add `RNGooglePlaces.xcodeproj`.
+- In XCode, in the project navigator, select your project. Add `libRNGooglePlaces.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`.
+
+##### Install CocoaPods Dependencies
+- If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a coffee!)
+- If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project. 
+- Add `pod 'GooglePlaces'` and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
 
 ```ruby
 source 'https://github.com/CocoaPods/Specs.git'
@@ -58,6 +67,7 @@ end
 	android:name="com.google.android.geo.API_KEY"
 	android:value="YOUR_ANDROID_API_KEY_HERE"/>
 ```
+##### Manual Linking With Your Project (Android)
 - The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
@@ -150,10 +160,10 @@ class GPlacesDemo extends Component {
 ### Troubleshooting
 
 #### On iOS
-You have to link dependencies and re-run the build :
+You have to link dependencies and re-run the build:
 
 1. Run `react-native link`
-2. In XCode's "Project navigator", right click on project name folder ➜ Add Files to <...>. Ensure `Copy items if needed and Create groups` are checked. Go to node_modules ➜ react-native-google-places ➜ add `ios` folder (this step may not be required if running `react-native link` already worked for you).
+2. Try `Manual Linking With Your Project` steps above.
 3. Run `react-native run-ios`
 
 #### On Android

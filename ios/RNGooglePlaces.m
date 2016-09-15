@@ -1,13 +1,20 @@
+
 #import "RNGooglePlaces.h"
 #import "RCTBridge.h"
 #import "RNGooglePlacesViewController.h"
 #import "RCTRootView.h"
 #import "RCTLog.h"
 
+#import <GooglePlaces/GooglePlaces.h>
+
 @implementation RNGooglePlaces
 
-RCT_EXPORT_MODULE();
+RCT_EXPORT_MODULE()
 
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
+}
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
@@ -36,4 +43,7 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (RCTPromiseResolveBlock)resolve
                                   userInfo: exceptionInfo];
 }
 
+
 @end
+  
+  
