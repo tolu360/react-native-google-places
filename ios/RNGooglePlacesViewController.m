@@ -69,6 +69,8 @@
 	[rootViewController dismissViewControllerAnimated:YES completion:nil];
 	// TODO: handle the error.
 	NSLog(@"Error: %@", [error description]);
+
+	_reject(@"E_AUTOCOMPLETE_ERROR", [error description], nil);
 }
 
 // User canceled the operation.
@@ -76,6 +78,8 @@
 {
 	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
 	[rootViewController dismissViewControllerAnimated:YES completion:nil];
+
+	_reject(@"E_USER_CANCELED", @"Search cancelled", nil);
 }
 
 // Turn the network activity indicator on and off again.

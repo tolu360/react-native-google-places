@@ -90,11 +90,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this.reactContext.getApplicationContext(), data);
                 Log.e(TAG, "Error: Status = " + status.toString());
-                rejectPromise("error", new Error(status.toString()));
+                rejectPromise("E_RESULT_ERROR", new Error(status.toString()));
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // Indicates that the activity closed before a selection was made. For example if
                 // the user pressed the back button.
-                rejectPromise("cancel", new Error("Search cancelled"));
+                rejectPromise("E_USER_CANCELED", new Error("Search cancelled"));
             }
         }
     }
@@ -119,7 +119,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             // Indicates that Google Play Services is either not installed or not up to date. Prompt
             // the user to correct the issue.
             GoogleApiAvailability.getInstance().getErrorDialog(currentActivity, e.getConnectionStatusCode(),
-                    0 /* requestCode */).show();
+                    AUTOCOMPLETE_REQUEST_CODE /* requestCode */).show();
         } catch (GooglePlayServicesNotAvailableException e) {
             // Indicates that Google Play Services is not available and the problem is not easily
             // resolvable.
@@ -127,6 +127,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     GoogleApiAvailability.getInstance().getErrorString(e.errorCode);
 
             Log.e(TAG, message);
+
+            rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
         }
     }
 

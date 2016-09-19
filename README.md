@@ -122,7 +122,7 @@ class GPlacesDemo extends Component {
 		// place represents user's selection from the
 		// suggestions and it is a simplified Google Place object.
     })
-    .catch((error) => console.log(error));
+    .catch(error => console.log(error.message));  // error is a Javascript Error object
   }
 
   render() {

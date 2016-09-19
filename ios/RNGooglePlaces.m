@@ -24,7 +24,7 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (RCTPromiseResolveBlock)resolve
 		[a openAutocompleteModal: resolve rejecter: reject];
 	}
 	@catch (NSException * e) {
-        reject(@"open_failed", @"Could not open modal", [self errorFromException:e]);
+        reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
     }
 }
 
