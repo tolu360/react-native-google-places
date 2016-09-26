@@ -206,6 +206,7 @@
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Subspecs/Base/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Subspecs/Maps/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GooglePlaces/Frameworks\"",
+					"\"${SRCROOT}/../../../ios/Pods/GooglePlacePicker/Frameworks\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -227,6 +228,7 @@
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Subspecs/Base/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Subspecs/Maps/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GooglePlaces/Frameworks\"",
+					"\"${SRCROOT}/../../../ios/Pods/GooglePlacePicker/Frameworks\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
