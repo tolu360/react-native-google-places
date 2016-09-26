@@ -1,6 +1,7 @@
 #import "RNGooglePlacesViewController.h"
 
 #import <GooglePlaces/GooglePlaces.h>
+#import <GooglePlacePicker/GooglePlacePicker.h>
 #import "RCTUtils.h"
 #import "RCTLog.h"
 
@@ -13,6 +14,7 @@
 
 	RCTPromiseResolveBlock _resolve;
 	RCTPromiseRejectBlock _reject;
+	GMSPlacePicker *_placePicker;
 }
 
 - (instancetype)init 
@@ -33,6 +35,38 @@
 	viewController.delegate = self;
 	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
 	[rootViewController presentViewController:viewController animated:YES completion:nil];
+}
+
+- (void)openPlacePickerModal: (RCTPromiseResolveBlock)resolve
+					 rejecter: (RCTPromiseRejectBlock)reject;
+{
+	_resolve = resolve;
+	_reject = reject;
+
+	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:nil];
+    _placePicker = [[GMSPlacePicker alloc] initWithConfig:config];
+    [_placePicker pickPlaceWithCallback:^(GMSPlace *place, NSError *error) {
+        if (place) {
+            if (_resolve) {
+		        NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
+		        placeData[@"name"] = place.name;
+		        placeData[@"address"] = place.formattedAddress;
+		        placeData[@"attributions"] = place.attributions.string;
+		        placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
+		        placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
+		        placeData[@"phoneNumber"] = place.phoneNumber;
+		        placeData[@"website"] = place.website.absoluteString;
+		        placeData[@"placeID"] = place.placeID;
+		        
+		        _resolve(placeData);
+		    }
+        } else if (error) {
+            _reject(@"E_PLACE_PICKER_ERROR", [error localizedDescription], nil);
+
+        } else {
+            _reject(@"E_USER_CANCELED", @"Search cancelled", nil);
+        }
+    }];
 }
 
 

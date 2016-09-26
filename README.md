@@ -7,6 +7,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) for React Native 
 <img width=200 title="Modal in Search - iOS" src="./shots/modal-in-search-ios.png">
 <img width=200 title="Modal Open - Android" src="./shots/modal-open-android.png">
 <img width=200 title="Modal in Search - Android" src="./shots/modal-in-search-android.png">
+<img width=200 title="Place Picker Open - Android" src="./shots/picker-android.png">
+<img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Install
 
@@ -38,7 +40,7 @@ react-native link react-native-google-places
 ##### Install CocoaPods Dependencies
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
 - If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project. 
-- Add `pod 'GooglePlaces'` and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
+- Add `pod 'GooglePlaces'`, (`pod 'GooglePlacePicker'` only if you are using the PlacePickerModal) and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
 
 ```ruby
 source 'https://github.com/CocoaPods/Specs.git'
@@ -47,25 +49,33 @@ target 'YOUR_APP_TARGET_NAME' do
 
   pod 'GooglePlaces'
   pod 'GoogleMaps'
+  pod 'GooglePlacePicker'
 
 end
 ```
-- In your AppDelegate.m file, import the Google Places library by adding `@import GooglePlaces;` on top of the file.
+- In your AppDelegate.m file, import the Google Places library by adding `@import GooglePlaces;` and `@import GoogleMaps;` on top of the file.
 - Within the `didFinishLaunchingWithOptions` method, instantiate the library as follows:
 
 ```Objective-C
 [GMSPlacesClient provideAPIKey:@"YOUR_IOS_API_KEY_HERE"];
+[GMSServices provideAPIKey:@"YOUR_IOS_API_KEY_HERE"];
 ```
 - By now, you should be all set to install the packages from your Podfile. Run `pod install` from your `ios` directory.
 - Close Xcode, and then open (double-click) your project's .xcworkspace file to launch Xcode. From this time onwards, you must use the `.xcworkspace` file to open the project. Or just use the `react-native run-ios` command as usual to run your app in the simulator.
 
 ##### Android
-- In your AndroidManifest.xml file add your API key in a meta-data tag (ensure you are within the <application> tag as follows:
+- In your AndroidManifest.xml file, request location permissions and add your API key in a meta-data tag (ensure you are within the <application> tag as follows:
 
 ```xml
-<meta-data
-	android:name="com.google.android.geo.API_KEY"
-	android:value="YOUR_ANDROID_API_KEY_HERE"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<application
+      android:name=".MainApplication"
+      ...>
+	<meta-data
+		android:name="com.google.android.geo.API_KEY"
+		android:value="YOUR_ANDROID_API_KEY_HERE"/>
+	...
+</application>
 ```
 ##### Manual Linking With Your Project (Android)
 - The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
@@ -102,7 +112,7 @@ protected List<ReactPackage> getPackages() {
 
 ## Usage
 
-### Autocomplete Modal: Allows your users to enter place names and addresses - and autocompletes your users' queries as they type.
+### Allows your users to enter place names and addresses - and autocompletes your users' queries as they type.
 
 #### Import library
 
@@ -139,8 +149,35 @@ class GPlacesDemo extends Component {
   }
 }
 ```
+#### Open PlacePicker Modal
+```javascript
+class GPlacesDemo extends Component {
+  openSearchModal() {
+    RNGooglePlaces.openPlacePickerModal()
+    .then((place) => { 
+		console.log(place); 		
+		// place represents user's selection from the
+		// suggestions and it is a simplified Google Place object.
+    })
+    .catch(error => console.log(error.message));  // error is a Javascript Error object
+  }
 
-#### Example Response from the Autocomplete Modal
+  render() {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => this.openSearchModal()}
+        >
+          <Text>Open Place Picker</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
+```
+
+#### Example Response from the Autocomplete & PlacePicker Modals
 ```javascript
 { 
 	placeID: "ChIJZa6ezJa8j4AR1p1nTSaRtuQ", 
@@ -154,8 +191,7 @@ class GPlacesDemo extends Component {
 ```
 - Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website` are not set on all `Google Place` objects.
 
-#### Open PlacePicker Modal (WIP)
-- To be implemented subsequently.
+
 
 ### Troubleshooting
 

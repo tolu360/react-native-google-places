@@ -4,8 +4,10 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.PlacePicker;
 
 import android.Manifest;
 import android.content.Intent;
@@ -37,6 +39,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public static final String TAG = "RNGooglePlaces";
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
+    public static int PLACE_PICKER_REQUEST_CODE = 361;
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
@@ -97,6 +100,36 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 rejectPromise("E_USER_CANCELED", new Error("Search cancelled"));
             }
         }
+
+        if (requestCode == PLACE_PICKER_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Place place = PlacePicker.getPlace(data, this.reactContext.getApplicationContext());
+
+                Log.i(TAG, "Place Selected: " + place.getName());
+
+                // Display attributions if required.
+                CharSequence attributions = place.getAttributions();
+
+                WritableMap map = Arguments.createMap();
+                map.putDouble("latitude", place.getLatLng().latitude);
+                map.putDouble("longitude", place.getLatLng().longitude);
+                map.putString("name", place.getName().toString());
+                map.putString("address", place.getAddress().toString());
+                
+                if (!TextUtils.isEmpty(place.getPhoneNumber())) {
+                    map.putString("phoneNumber", place.getPhoneNumber().toString());
+                }
+                if (null != place.getWebsiteUri()) {
+                    map.putString("website", place.getWebsiteUri().toString());
+                }
+                map.putString("placeID", place.getId());
+                if (!TextUtils.isEmpty(attributions)) {
+                    map.putString("attributions", attributions.toString());
+                }      
+
+                resolvePromise(map);
+            }
+        }
     }
 
     /**
@@ -128,6 +161,26 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
             Log.e(TAG, message);
 
+            rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
+        }
+    }
+
+    @ReactMethod
+    public void openPlacePickerModal(final Promise promise) {
+        this.pendingPromise = promise;
+        Activity currentActivity = getCurrentActivity();
+
+        try {
+            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+            Intent intent = intentBuilder.build(currentActivity);
+            // Start the Intent by requesting a result, identified by a request code.
+            currentActivity.startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
+
+        } catch (GooglePlayServicesRepairableException e) {
+            GooglePlayServicesUtil
+                    .getErrorDialog(e.getConnectionStatusCode(), currentActivity, 0);
+        } catch (GooglePlayServicesNotAvailableException e) {
+            
             rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
         }
     }

@@ -11,5 +11,7 @@
 
 - (IBAction)openAutocompleteModal: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject;
+- (IBAction)openPlacePickerModal: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject;
 
 @end

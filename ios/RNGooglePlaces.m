@@ -24,8 +24,20 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (RCTPromiseResolveBlock)resolve
 		[a openAutocompleteModal: resolve rejecter: reject];
 	}
 	@catch (NSException * e) {
-        reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
-    }
+    reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
+  }
+}
+
+RCT_EXPORT_METHOD(openPlacePickerModal: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+{
+  @try {
+    RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
+    [a openPlacePickerModal: resolve rejecter: reject];
+  }
+  @catch (NSException * e) {
+    reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
+  }
 }
 
 - (NSError *) errorFromException: (NSException *) exception
