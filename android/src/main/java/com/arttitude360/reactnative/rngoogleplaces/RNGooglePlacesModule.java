@@ -152,7 +152,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             // Indicates that Google Play Services is either not installed or not up to date. Prompt
             // the user to correct the issue.
             GoogleApiAvailability.getInstance().getErrorDialog(currentActivity, e.getConnectionStatusCode(),
-                    AUTOCOMPLETE_REQUEST_CODE /* requestCode */).show();
+                    AUTOCOMPLETE_REQUEST_CODE).show();
         } catch (GooglePlayServicesNotAvailableException e) {
             // Indicates that Google Play Services is not available and the problem is not easily
             // resolvable.
@@ -177,8 +177,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             currentActivity.startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
 
         } catch (GooglePlayServicesRepairableException e) {
-            GooglePlayServicesUtil
-                    .getErrorDialog(e.getConnectionStatusCode(), currentActivity, 0);
+            GoogleApiAvailability.getInstance().getErrorDialog(currentActivity, e.getConnectionStatusCode(),
+                    PLACE_PICKER_REQUEST_CODE).show();
         } catch (GooglePlayServicesNotAvailableException e) {
             
             rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
