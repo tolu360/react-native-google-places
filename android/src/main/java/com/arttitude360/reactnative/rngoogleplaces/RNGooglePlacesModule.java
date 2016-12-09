@@ -103,7 +103,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         if (requestCode == PLACE_PICKER_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                Place place = PlacePicker.getPlace(data, this.reactContext.getApplicationContext());
+                Place place = PlacePicker.getPlace(this.reactContext.getApplicationContext(), data);
 
                 Log.i(TAG, "Place Selected: " + place.getName());
 
