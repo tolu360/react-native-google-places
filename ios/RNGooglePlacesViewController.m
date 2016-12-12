@@ -30,11 +30,11 @@
 {
 	_resolve = resolve;
 	_reject = reject;
-
-	GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
-	viewController.delegate = self;
-	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-	[rootViewController presentViewController:viewController animated:YES completion:nil];
+	GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init]; 
+	viewController.delegate = self; 
+	UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController; 
+	while (topController.presentedViewController) { topController = topController.presentedViewController; } 
+	[topController presentViewController:viewController animated:YES completion:nil];
 }
 
 - (void)openPlacePickerModal: (RCTPromiseResolveBlock)resolve
