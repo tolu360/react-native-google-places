@@ -2,8 +2,8 @@
 
 #import <GooglePlaces/GooglePlaces.h>
 #import <GooglePlacePicker/GooglePlacePicker.h>
-#import "RCTUtils.h"
-#import "RCTLog.h"
+#import <React/RCTUtils.h>
+#import <React/RCTLog.h>
 
 @interface RNGooglePlacesViewController ()<GMSAutocompleteViewControllerDelegate>
 @end
