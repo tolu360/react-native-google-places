@@ -1,7 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <GooglePlaces/GooglePlaces.h>
 
-#import "RCTBridge.h"
+#import <React/RCTBridge.h>
 
 @interface RNGooglePlacesViewController : UIViewController
 
