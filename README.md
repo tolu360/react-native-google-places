@@ -208,14 +208,14 @@ If you have specific branding needs or you would rather build out your own custo
 
 ```javascript
   RNGooglePlaces.getAutocompletePredictions('facebook')
-    .then((results) => this.state.predictions = results)
+    .then((results) => this.setState({ predictions: results }))
     .catch((error) => console.log(error.message));
 ```
 Or you may filter the predictions to specific type of places as contained in Google's `Place API` documentations by passing in a second `argument` to `getAutocompletePredictions()` e.g. `geocode`, `address`, `establishment`, `regions`, and `cities`.
 
 ```javascript
   RNGooglePlaces.getAutocompletePredictions('Paris', 'cities')
-    .then((results) => this.state.predictions = results)
+    .then((results) => this.setState({ predictions: results }))
     .catch((error) => console.log(error.message));
 ```
 
