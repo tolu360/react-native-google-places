@@ -1,9 +1,9 @@
 {
   "name": "react-native-google-places",
-  "description": "iOS/Android Google Places Widgets (Autocomplete, Place Picker) for React Native Apps",
+  "description": "iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services for React Native Apps",
   "main": "index.js",
   "author": "Tolu Olowu (Arttitude 360) <tolu@arttitude360.com>",
-  "version": "0.8.8",
+  "version": "1.0.0",
   "scripts": {
   },
   "repository": {

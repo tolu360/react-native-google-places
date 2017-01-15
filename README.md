@@ -1,5 +1,5 @@
 # react-native-google-places
-iOS/Android Google Places Widgets (Autocomplete, Place Picker) for React Native Apps
+iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services for React Native Apps
 
 ## Shots
 
@@ -10,10 +10,20 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) for React Native 
 <img width=200 title="Place Picker Open - Android" src="./shots/picker-android.png">
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
+## NOTE:
+- for RN >=0.40.0, use v2+ (e.g. react-native-google-places@2.0.0)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.0)
+
 ## Install
 
 ```
 npm i react-native-google-places --save
+react-native link react-native-google-places
+```
+OR
+
+```
+yarn add react-native-google-places
 react-native link react-native-google-places
 ```
 
@@ -64,7 +74,7 @@ end
 - Close Xcode, and then open (double-click) your project's .xcworkspace file to launch Xcode. From this time onwards, you must use the `.xcworkspace` file to open the project. Or just use the `react-native run-ios` command as usual to run your app in the simulator.
 
 ##### Android
-- In your AndroidManifest.xml file, request location permissions and add your API key in a meta-data tag (ensure you are within the <application> tag as follows:
+- In your AndroidManifest.xml file, request location permissions and add your API key in a meta-data tag (ensure you are within the `<application>` tag as follows:
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -191,7 +201,65 @@ class GPlacesDemo extends Component {
 ```
 - Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website` are not set on all `Google Place` objects.
 
+### Using Your Own Custom UI/Views
+If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
 
+#### Get Autocomplete Predictions
+
+```javascript
+  RNGooglePlaces.getAutocompletePredictions('facebook')
+    .then((results) => this.state.predictions = results)
+    .catch((error) => console.log(error.message));
+```
+Or you may filter the predictions to specific type of places as contained in Google's `Place API` documentations by passing in a second `argument` to `getAutocompletePredictions()` e.g. `geocode`, `address`, `establishment`, `regions`, and `cities`.
+
+```javascript
+  RNGooglePlaces.getAutocompletePredictions('Paris', 'cities')
+    .then((results) => this.state.predictions = results)
+    .catch((error) => console.log(error.message));
+```
+
+#### Example Response from Calling getAutocompletePredictions()
+
+```javascript
+[ { primaryText: 'Facebook HQ',
+    placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+    secondaryText: 'Hacker Way, Menlo Park, CA, United States',
+    fullText: 'Facebook HQ, Hacker Way, Menlo Park, CA, United States' },
+  { primaryText: 'Facebook Way',
+    placeID: 'EitGYWNlYm9vayBXYXksIE1lbmxvIFBhcmssIENBLCBVbml0ZWQgU3RhdGVz',
+    secondaryText: 'Menlo Park, CA, United States',
+    fullText: 'Facebook Way, Menlo Park, CA, United States' },
+
+    ...
+]
+```
+
+#### Look-Up A Place By ID
+
+```javascript
+  RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ')
+    .then((results) => console.log(results))
+    .catch((error) => console.log(error.message));
+```
+#### Example Response from Calling lookUpPlaceByID()
+
+```javascript
+{ name: 'Facebook HQ',
+  website: 'https://www.facebook.com/',
+  longitude: -122.14835169999999,
+  address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+  latitude: 37.48485,
+  placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+  phoneNumber: '+1 650-543-4800' 
+}
+```
+#### Design Hint
+The typical use flow would be to call `getAutocompletePredictions()` when the value of your search input changes to populate your suggestion listview and call `lookUpPlaceByID()` to retrieve the place details when a place on your listview is selected.
+
+#### PS (from Google)
+- Use of the `getAutocompletePredictions()` method is subject to tiered query limits. See the documentation on [Android](https://developers.google.com/places/android-api/usage) & [iOS](https://developers.google.com/places/ios-api/usage) Usage Limits.
+- Also, your UI must either display a 'Powered by Google' attribution, or appear within a Google-branded map.
 
 ### Troubleshooting
 
@@ -211,6 +279,23 @@ You have to link dependencies and re-run the build:
 - Extras / Google Repository
 - Android (API 23+) / Google APIs Intel x86 Atom System Image Rev. 13
 - Check manual installation steps
+- Ensure your API key has permissions for `Google Place` and `Google Android Maps`
+-  If you have a different version of play serivces than the one included in this library (which is currently at 9.8.0), use the following instead (switch 10.0.1 for the desired version) in your `android/app/build.grade` file:
+   
+   ```groovy
+   ...
+   dependencies {
+       ...
+       compile(project(':react-native-google-places')){
+           exclude group: 'com.google.android.gms', module: 'play-services-base'
+           exclude group: 'com.google.android.gms', module: 'play-services-places'
+           exclude group: 'com.google.android.gms', module: 'play-services-location'
+       }
+       compile 'com.google.android.gms:play-services-base:10.0.1'
+       compile 'com.google.android.gms:play-services-places:10.0.1'
+       compile 'com.google.android.gms:play-services-location:10.0.1'
+   }
+   ```
 
 ## License
 The MIT License.
