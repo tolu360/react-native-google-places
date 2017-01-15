@@ -57,6 +57,12 @@
 		        placeData[@"phoneNumber"] = place.phoneNumber;
 		        placeData[@"website"] = place.website.absoluteString;
 		        placeData[@"placeID"] = place.placeID;
+
+				NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
+				for( int i=0;i<place.addressComponents.count;i++) {
+					addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+				}
+				placeData[@"addressComponents"] = addressComponents;
 		        
 		        _resolve(placeData);
 		    }
