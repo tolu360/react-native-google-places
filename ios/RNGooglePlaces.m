@@ -1,10 +1,10 @@
 
 #import "RNGooglePlaces.h"
-#import "RCTBridge.h"
+#import <React/RCTBridge.h>
 #import "RNGooglePlacesViewController.h"
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
-#import "RCTRootView.h"
-#import "RCTLog.h"
+#import <React/RCTRootView.h>
+#import <React/RCTLog.h>
 
 #import <GooglePlaces/GooglePlaces.h>
 
