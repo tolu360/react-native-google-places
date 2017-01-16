@@ -100,7 +100,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
 
             NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
             for( int i=0;i<place.addressComponents.count;i++) {
-              addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+                addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
             }
             placeData[@"addressComponents"] = addressComponents;
 
