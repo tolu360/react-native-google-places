@@ -166,7 +166,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
      */
 
     @ReactMethod
-    public void openAutocompleteModal(final Promise promise) {
+    public void openAutocompleteModal(String filter, final Promise promise) {
         
         this.pendingPromise = promise;
         Activity currentActivity = getCurrentActivity();
@@ -175,6 +175,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             // The autocomplete activity requires Google Play Services to be available. The intent
             // builder checks this and throws an exception if it is not the case.
             Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                    .setFilter(getFilterType(filter))
                     .build(currentActivity);
             currentActivity.startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
         } catch (GooglePlayServicesRepairableException e) {

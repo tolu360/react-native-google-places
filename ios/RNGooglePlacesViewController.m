@@ -25,13 +25,19 @@
 	return self;
 }
 
-- (void)openAutocompleteModal: (RCTPromiseResolveBlock)resolve
-					 rejecter: (RCTPromiseRejectBlock)reject;
+- (void)openAutocompleteModal: (GMSPlacesAutocompleteTypeFilter)filter
+                     resolver: (RCTPromiseResolveBlock)resolve
+                     rejecter: (RCTPromiseRejectBlock)reject;
 {
-	_resolve = resolve;
-	_reject = reject;
-	GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init]; 
-	viewController.delegate = self; 
+    _resolve = resolve;
+    _reject = reject;
+    
+    GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
+    autocompleteFilter.type = filter;
+    
+    GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
+    viewController.autocompleteFilter = autocompleteFilter;
+	viewController.delegate = self;
 	UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController; 
 	while (topController.presentedViewController) { topController = topController.presentedViewController; } 
 	[topController presentViewController:viewController animated:YES completion:nil];

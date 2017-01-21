@@ -6,8 +6,8 @@ import { NativeModules } from 'react-native'
 const RNGooglePlacesNative = NativeModules.RNGooglePlaces
 
 class RNGooglePlaces {
-	openAutocompleteModal() {
-		return RNGooglePlacesNative.openAutocompleteModal()
+	openAutocompleteModal(filterType='noFilter') {
+		return RNGooglePlacesNative.openAutocompleteModal(filterType)
 	}
 
 	openPlacePickerModal() {
