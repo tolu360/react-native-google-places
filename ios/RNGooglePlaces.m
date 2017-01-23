@@ -17,12 +17,13 @@ RCT_EXPORT_MODULE()
     return dispatch_get_main_queue();
 }
 
-RCT_EXPORT_METHOD(openAutocompleteModal: (RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(openAutocompleteModal: (GMSPlacesAutocompleteTypeFilter)filter
+                  resolver: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 {
 	@try {
 		RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
-		[a openAutocompleteModal: resolve rejecter: reject];
+        [a openAutocompleteModal: filter resolver: resolve rejecter: reject];
 	}
 	@catch (NSException * e) {
     reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
