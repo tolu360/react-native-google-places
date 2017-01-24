@@ -6,16 +6,21 @@ import { NativeModules } from 'react-native'
 const RNGooglePlacesNative = NativeModules.RNGooglePlaces
 
 class RNGooglePlaces {
-	openAutocompleteModal() {
-		return RNGooglePlacesNative.openAutocompleteModal()
+	static filterDefaults = {
+		type: 'noFilter',
+		country: ''
+	}
+
+	openAutocompleteModal(filterOptions = {}) {
+		return RNGooglePlacesNative.openAutocompleteModal({...RNGooglePlaces.filterDefaults, ...filterOptions})
 	}
 
 	openPlacePickerModal() {
 		return RNGooglePlacesNative.openPlacePickerModal()
 	}
 
-	getAutocompletePredictions(query, filterType = 'noFilter') {
-		return RNGooglePlacesNative.getAutocompletePredictions(query, filterType)
+	getAutocompletePredictions(query, filterOptions = {}) {
+		return RNGooglePlacesNative.getAutocompletePredictions(query, {...RNGooglePlaces.filterDefaults, ...filterOptions})
 	}
 
 	lookUpPlaceByID(placeID) {

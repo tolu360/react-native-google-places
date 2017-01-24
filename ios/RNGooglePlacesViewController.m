@@ -25,13 +25,16 @@
 	return self;
 }
 
-- (void)openAutocompleteModal: (RCTPromiseResolveBlock)resolve
-					 rejecter: (RCTPromiseRejectBlock)reject;
+- (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
+                     resolver: (RCTPromiseResolveBlock)resolve
+                     rejecter: (RCTPromiseRejectBlock)reject;
 {
-	_resolve = resolve;
-	_reject = reject;
-	GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init]; 
-	viewController.delegate = self; 
+    _resolve = resolve;
+    _reject = reject;
+    
+    GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
+    viewController.autocompleteFilter = autocompleteFilter;
+	viewController.delegate = self;
 	UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController; 
 	while (topController.presentedViewController) { topController = topController.presentedViewController; } 
 	[topController presentViewController:viewController animated:YES completion:nil];
@@ -58,12 +61,12 @@
 		        placeData[@"website"] = place.website.absoluteString;
 		        placeData[@"placeID"] = place.placeID;
 
-				NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-				for( int i=0;i<place.addressComponents.count;i++) {
-					addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
-				}
-				placeData[@"addressComponents"] = addressComponents;
-		        
+            NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
+            for( int i=0;i<place.addressComponents.count;i++) {
+              addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+            }
+            placeData[@"addressComponents"] = addressComponents;
+
 		        _resolve(placeData);
 		    }
         } else if (error) {
@@ -82,11 +85,7 @@
 {
 	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
 	[rootViewController dismissViewControllerAnimated:YES completion:nil];
-	// Do something with the selected place.
-	NSLog(@"Place name %@", place.name);
-	NSLog(@"Place address %@", place.formattedAddress);
-	NSLog(@"Place attributions %@", place.attributions.string);
-
+	
 	if (_resolve) {
         NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
         placeData[@"name"] = place.name;
@@ -99,11 +98,11 @@
         placeData[@"placeID"] = place.placeID;
 
         NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-		for( int i=0;i<place.addressComponents.count;i++) {
-			addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
-		}
-		placeData[@"addressComponents"] = addressComponents;
-        
+        for( int i=0;i<place.addressComponents.count;i++) {
+          addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+        }
+        placeData[@"addressComponents"] = addressComponents;
+
         _resolve(placeData);
     }
 }

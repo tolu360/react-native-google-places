@@ -9,8 +9,9 @@
 
 - (instancetype) init;
 
-- (IBAction)openAutocompleteModal: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject;
+- (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
+                     resolver: (RCTPromiseResolveBlock)resolve
+                     rejecter: (RCTPromiseRejectBlock)reject;
 - (IBAction)openPlacePickerModal: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject;
 
