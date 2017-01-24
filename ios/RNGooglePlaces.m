@@ -5,6 +5,7 @@
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
 #import <React/RCTRootView.h>
 #import <React/RCTLog.h>
+#import <React/RCTConvert.h>
 
 #import <GooglePlaces/GooglePlaces.h>
 
@@ -17,40 +18,46 @@ RCT_EXPORT_MODULE()
     return dispatch_get_main_queue();
 }
 
-RCT_EXPORT_METHOD(openAutocompleteModal: (GMSPlacesAutocompleteTypeFilter)filter
+RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
                   resolver: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 {
-	@try {
-		RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
-        [a openAutocompleteModal: filter resolver: resolve rejecter: reject];
-	}
-	@catch (NSException * e) {
-    reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
-  }
+    @try {
+        GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
+        autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
+        autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
+        RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
+        [a openAutocompleteModal: autocompleteFilter resolver: resolve rejecter: reject];
+    }
+    @catch (NSException * e) {
+        reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
+    }
 }
 
 RCT_EXPORT_METHOD(openPlacePickerModal: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 {
-  @try {
-    RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
-    [a openPlacePickerModal: resolve rejecter: reject];
-  }
-  @catch (NSException * e) {
-    reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
-  }
+    @try {
+        RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
+        [a openPlacePickerModal: resolve rejecter: reject];
+    }
+    @catch (NSException * e) {
+        reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
+    }
 }
 
-RCT_REMAP_METHOD(getAutocompletePredictions,
-                 queryString: (NSString *)query
-                 filterType: (GMSPlacesAutocompleteTypeFilter)filter
+RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
+                 filterOptions: (NSDictionary *)options
                  resolver: (RCTPromiseResolveBlock)resolve
                  rejecter: (RCTPromiseRejectBlock)reject)
 {
     NSMutableArray *autoCompleteSuggestionsList = [NSMutableArray array];
     GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
-    autocompleteFilter.type = filter;
+    autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
+    autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
+
+    NSLog(@"filter %d", options[@"type"]);
+    NSLog(@"query %@", query);
 
     [[GMSPlacesClient sharedClient] autocompleteQuery:query
                                                bounds:nil
@@ -126,6 +133,23 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
     return [[NSError alloc] initWithDomain: @"RNGooglePlaces"
                                       code: 0
                                   userInfo: exceptionInfo];
+}
+
+- (GMSPlacesAutocompleteTypeFilter) getFilterType:(NSString *)type
+{
+    if (type == @"regions") {
+        return kGMSPlacesAutocompleteTypeFilterRegion;
+    } else if (type == @"geocode") {
+        return kGMSPlacesAutocompleteTypeFilterGeocode;
+    } else if (type == @"address") {
+        return kGMSPlacesAutocompleteTypeFilterAddress;
+    } else if (type == @"establishment") {
+        return kGMSPlacesAutocompleteTypeFilterEstablishment;
+    } else if (type == @"cities") {
+        return kGMSPlacesAutocompleteTypeFilterCity;
+    } else {
+        return kGMSPlacesAutocompleteTypeFilterNoFilter;
+    }
 }
 
 

@@ -9,7 +9,7 @@
 
 - (instancetype) init;
 
-- (void)openAutocompleteModal: (GMSPlacesAutocompleteTypeFilter)filter
+- (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
                      resolver: (RCTPromiseResolveBlock)resolve
                      rejecter: (RCTPromiseRejectBlock)reject;
 - (IBAction)openPlacePickerModal: (RCTPromiseResolveBlock)resolve

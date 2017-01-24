@@ -166,16 +166,19 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
      */
 
     @ReactMethod
-    public void openAutocompleteModal(String filter, final Promise promise) {
+    public void openAutocompleteModal(ReadableMap filter, final Promise promise) {
         
         this.pendingPromise = promise;
+        String type = filter.getString("type");
+        String country = filter.getString("country");
+        country = country.isEmpty() ? null : country;
         Activity currentActivity = getCurrentActivity();
 
         try {
             // The autocomplete activity requires Google Play Services to be available. The intent
             // builder checks this and throws an exception if it is not the case.
             Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                    .setFilter(getFilterType(filter))
+                    .setFilter(getFilterType(type, country))
                     .build(currentActivity);
             currentActivity.startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
         } catch (GooglePlayServicesRepairableException e) {
@@ -216,13 +219,17 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void getAutocompletePredictions(String query, String filter, final Promise promise) {
+    public void getAutocompletePredictions(String query, ReadableMap filter, final Promise promise) {
         this.pendingPromise = promise;
+
+        String type = filter.getString("type");
+        String country = filter.getString("country");
+        country = country.isEmpty() ? null : country;
 
         PendingResult<AutocompletePredictionBuffer> results =
                 Places.GeoDataApi
                         .getAutocompletePredictions(mGoogleApiClient, query,
-                                null, getFilterType(filter));
+                                null, getFilterType(type, country));
 
         AutocompletePredictionBuffer autocompletePredictions = results
             .await(60, TimeUnit.SECONDS);
@@ -311,39 +318,45 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         });
     }
 
-    private AutocompleteFilter getFilterType(String filter) {
+    private AutocompleteFilter getFilterType(String type, String country) {
         AutocompleteFilter mappedFilter;
 
-        switch (filter)
+        switch (type)
         {
             case "geocode":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
+                    .setCountry(country)
                     .build();
             break;
             case "address":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                    .setCountry(country)
                     .build();
             break;
             case "establishment":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                    .setCountry(country)
                     .build();
             break;
             case "regions":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
+                    .setCountry(country)
                     .build();
             break;
             case "cities":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
+                    .setCountry(country)
                     .build();
             break;
             default:
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
+                    .setCountry(country)
                     .build();
             break;
         }

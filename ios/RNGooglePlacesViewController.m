@@ -25,15 +25,12 @@
 	return self;
 }
 
-- (void)openAutocompleteModal: (GMSPlacesAutocompleteTypeFilter)filter
+- (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
                      resolver: (RCTPromiseResolveBlock)resolve
                      rejecter: (RCTPromiseRejectBlock)reject;
 {
     _resolve = resolve;
     _reject = reject;
-    
-    GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
-    autocompleteFilter.type = filter;
     
     GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
     viewController.autocompleteFilter = autocompleteFilter;
@@ -88,11 +85,7 @@
 {
 	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
 	[rootViewController dismissViewControllerAnimated:YES completion:nil];
-	// Do something with the selected place.
-	NSLog(@"Place name %@", place.name);
-	NSLog(@"Place address %@", place.formattedAddress);
-	NSLog(@"Place attributions %@", place.attributions.string);
-
+	
 	if (_resolve) {
         NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
         placeData[@"name"] = place.name;

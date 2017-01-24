@@ -10,9 +10,9 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - Android" src="./shots/picker-android.png">
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
-## NOTE:
-- for RN >=0.40.0, use v2+ (e.g. react-native-google-places@2.0.2)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.2)
+## Versioning:
+- for RN >=0.40.0, use v2+ (e.g. react-native-google-places@2.0.3)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.3)
 
 ## Install
 
@@ -159,6 +159,16 @@ class GPlacesDemo extends Component {
   }
 }
 ```
+To filter autocomplete results to a specific place type as listed for [Android](https://developers.google.com/places/android-api/autocomplete) and [iOS](https://developers.google.com/places/ios-api/autocomplete) in the official docs, you can pass a `filterOptions` object as a `parameter` to the `openAutocompleteModal()` method as follows. The `filterOptions` object only takes 2 `optional` keys (`type` and `country`). The value of the `type` key can only be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`), while the `country` key allows you to filter autocomplete results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. Leave off either or both keys to return unfiltered results.
+
+```javascript
+  RNGooglePlaces.openAutocompleteModal({type: 'cities', country: 'NG'})
+    .then((place) => { 
+    console.log(place);
+    })
+    .catch(error => console.log(error.message));
+```
+
 #### Open PlacePicker Modal
 ```javascript
 class GPlacesDemo extends Component {
@@ -211,10 +221,17 @@ If you have specific branding needs or you would rather build out your own custo
     .then((results) => this.setState({ predictions: results }))
     .catch((error) => console.log(error.message));
 ```
-Or you may filter the predictions to specific type of places as contained in Google's `Place API` documentations by passing in a second `argument` to `getAutocompletePredictions()` e.g. `geocode`, `address`, `establishment`, `regions`, and `cities`.
+To filter autocomplete results to a specific place type as listed for [Android](https://developers.google.com/places/android-api/autocomplete) and [iOS](https://developers.google.com/places/ios-api/autocomplete), you can pass a `filterOptions` object as a second `parameter` to the `getAutocompletePredictions()` method as follows. The `filterOptions` object only takes 2 `optional` keys (`type` and `country`). The value of the `type` key can only be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`), while the `country` key allows you to filter autocomplete results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. Leave off either or both keys to return unfiltered results.
 
 ```javascript
-  RNGooglePlaces.getAutocompletePredictions('Paris', 'cities')
+  RNGooglePlaces.getAutocompletePredictions('Lagos', { type: 'cities', country: 'NG' })
+    .then((results) => this.setState({ predictions: results }))
+    .catch((error) => console.log(error.message));
+```
+OR
+
+```javascript
+  RNGooglePlaces.getAutocompletePredictions('Lagos', { country: 'NG' })
     .then((results) => this.setState({ predictions: results }))
     .catch((error) => console.log(error.message));
 ```
