@@ -56,9 +56,6 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
     autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
 
-    NSLog(@"filter %d", options[@"type"]);
-    NSLog(@"query %@", query);
-
     [[GMSPlacesClient sharedClient] autocompleteQuery:query
                                                bounds:nil
                                                filter:autocompleteFilter
@@ -137,15 +134,15 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
 
 - (GMSPlacesAutocompleteTypeFilter) getFilterType:(NSString *)type
 {
-    if (type == @"regions") {
+    if ([type isEqualToString: @"regions"]) {
         return kGMSPlacesAutocompleteTypeFilterRegion;
-    } else if (type == @"geocode") {
+    } else if ([type isEqualToString: @"geocode"]) {
         return kGMSPlacesAutocompleteTypeFilterGeocode;
-    } else if (type == @"address") {
+    } else if ([type isEqualToString: @"address"]) {
         return kGMSPlacesAutocompleteTypeFilterAddress;
-    } else if (type == @"establishment") {
+    } else if ([type isEqualToString: @"establishment"]) {
         return kGMSPlacesAutocompleteTypeFilterEstablishment;
-    } else if (type == @"cities") {
+    } else if ([type isEqualToString: @"cities"]) {
         return kGMSPlacesAutocompleteTypeFilterCity;
     } else {
         return kGMSPlacesAutocompleteTypeFilterNoFilter;
