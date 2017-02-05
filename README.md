@@ -205,7 +205,7 @@ class GPlacesDemo extends Component {
 	phoneNumber: "+1 650-543-4800", 
 	address: "1 Hacker Way, Menlo Park, CA 94025, USA", 
 	name: "Facebook HQ",
-  types: [ 'street_address', 'geocode' ],
+	types: [ 'street_address', 'geocode' ],
 	latitude: 37.4843428,
 	longitude: -122.14839939999999
 }
