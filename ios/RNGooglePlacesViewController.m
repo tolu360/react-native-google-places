@@ -60,6 +60,7 @@
 		        placeData[@"phoneNumber"] = place.phoneNumber;
 		        placeData[@"website"] = place.website.absoluteString;
 		        placeData[@"placeID"] = place.placeID;
+                placeData[@"types"] = place.types;
 
             NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
             for( int i=0;i<place.addressComponents.count;i++) {
@@ -96,6 +97,7 @@
         placeData[@"phoneNumber"] = place.phoneNumber;
         placeData[@"website"] = place.website.absoluteString;
         placeData[@"placeID"] = place.placeID;
+        placeData[@"types"] = place.types;
 
         NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
         for( int i=0;i<place.addressComponents.count;i++) {
