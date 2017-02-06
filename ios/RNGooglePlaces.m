@@ -104,7 +104,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
             placeData[@"phoneNumber"] = place.phoneNumber;
             placeData[@"website"] = place.website.absoluteString;
             placeData[@"placeID"] = place.placeID;
-            placeData[@"types"] = result.types;
+            placeData[@"types"] = place.types;
 
             NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
             for( int i=0;i<place.addressComponents.count;i++) {
