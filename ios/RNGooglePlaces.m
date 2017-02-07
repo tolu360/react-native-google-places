@@ -73,6 +73,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
             placeData[@"primaryText"] = result.attributedPrimaryText.string;
             placeData[@"secondaryText"] = result.attributedSecondaryText.string;
             placeData[@"placeID"] = result.placeID;
+            placeData[@"types"] = result.types;
 
             [autoCompleteSuggestionsList addObject:placeData];
         }
@@ -103,6 +104,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
             placeData[@"phoneNumber"] = place.phoneNumber;
             placeData[@"website"] = place.website.absoluteString;
             placeData[@"placeID"] = place.placeID;
+            placeData[@"types"] = place.types;
 
             NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
             for( int i=0;i<place.addressComponents.count;i++) {

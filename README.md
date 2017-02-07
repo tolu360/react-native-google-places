@@ -205,6 +205,7 @@ class GPlacesDemo extends Component {
 	phoneNumber: "+1 650-543-4800", 
 	address: "1 Hacker Way, Menlo Park, CA 94025, USA", 
 	name: "Facebook HQ",
+	types: [ 'street_address', 'geocode' ],
 	latitude: 37.4843428,
 	longitude: -122.14839939999999
 }
@@ -243,10 +244,12 @@ OR
     placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
     secondaryText: 'Hacker Way, Menlo Park, CA, United States',
     fullText: 'Facebook HQ, Hacker Way, Menlo Park, CA, United States' },
+    types: [ 'street_address', 'geocode' ],
   { primaryText: 'Facebook Way',
     placeID: 'EitGYWNlYm9vayBXYXksIE1lbmxvIFBhcmssIENBLCBVbml0ZWQgU3RhdGVz',
     secondaryText: 'Menlo Park, CA, United States',
     fullText: 'Facebook Way, Menlo Park, CA, United States' },
+    types: [ 'street_address', 'geocode' ],
 
     ...
 ]
@@ -268,6 +271,7 @@ OR
   address: '1 Hacker Way, Menlo Park, CA 94025, USA',
   latitude: 37.48485,
   placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+  types: [ 'street_address', 'geocode' ],
   phoneNumber: '+1 650-543-4800' 
 }
 ```
