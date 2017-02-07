@@ -19,8 +19,8 @@ RCT_EXPORT_MODULE()
 }
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
-                  resolver: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+                resolver: (RCTPromiseResolveBlock)resolve
+                rejecter: (RCTPromiseRejectBlock)reject)
 {
     @try {
         GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
@@ -34,12 +34,25 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
     }
 }
 
-RCT_EXPORT_METHOD(openPlacePickerModal: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(openPlacePickerModal: (NSDictionary *)bounds 
+                resolver: (RCTPromiseResolveBlock)resolve
+                rejecter: (RCTPromiseRejectBlock)reject)
 {
     @try {
+        CLLocationCoordinate2D coordinate;
+        coordinate.latitude = (CLLocationDegrees) [[RCTConvert NSNumber:bounds[@"latitude"]] doubleValue];
+        coordinate.longitude = (CLLocationDegrees) [[RCTConvert NSNumber:bounds[@"longitude"]] doubleValue];
+        GMSCoordinateBounds *viewport = nil;
+        
+        if (coordinate.latitude != 0 && coordinate.longitude != 0) {
+            CLLocationCoordinate2D center = CLLocationCoordinate2DMake(coordinate.latitude, coordinate.longitude);
+            CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(center.latitude + 0.001, center.longitude + 0.001);
+            CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(center.latitude - 0.001, center.longitude - 0.001);
+            viewport = [[GMSCoordinateBounds alloc] initWithCoordinate:northEast coordinate:southWest];
+        } 
+        
         RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
-        [a openPlacePickerModal: resolve rejecter: reject];
+        [a openPlacePickerModal: viewport resolver: resolve rejecter: reject];
     }
     @catch (NSException * e) {
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
@@ -55,6 +68,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
     autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
     autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
+
 
     [[GMSPlacesClient sharedClient] autocompleteQuery:query
                                                bounds:nil
@@ -72,6 +86,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
             placeData[@"primaryText"] = result.attributedPrimaryText.string;
             placeData[@"secondaryText"] = result.attributedSecondaryText.string;
             placeData[@"placeID"] = result.placeID;
+            placeData[@"types"] = result.types;
 
             [autoCompleteSuggestionsList addObject:placeData];
         }
@@ -102,6 +117,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
             placeData[@"phoneNumber"] = place.phoneNumber;
             placeData[@"website"] = place.website.absoluteString;
             placeData[@"placeID"] = place.placeID;
+            placeData[@"types"] = place.types;
 
             NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
             for( int i=0;i<place.addressComponents.count;i++) {
@@ -151,6 +167,5 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
 
 
 @end
-  
   
   

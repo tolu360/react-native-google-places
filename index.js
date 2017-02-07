@@ -11,12 +11,17 @@ class RNGooglePlaces {
 		country: ''
 	}
 
+	static boundsDefaults = {
+		latitude: 0,
+		longitude: 0
+	}
+
 	openAutocompleteModal(filterOptions = {}) {
 		return RNGooglePlacesNative.openAutocompleteModal({...RNGooglePlaces.filterDefaults, ...filterOptions})
 	}
 
-	openPlacePickerModal() {
-		return RNGooglePlacesNative.openPlacePickerModal()
+	openPlacePickerModal(latLngBounds = {}) {
+		return RNGooglePlacesNative.openPlacePickerModal({...RNGooglePlaces.boundsDefaults, ...latLngBounds})
 	}
 
 	getAutocompletePredictions(query, filterOptions = {}) {

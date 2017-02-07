@@ -26,8 +26,8 @@
 }
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
-                     resolver: (RCTPromiseResolveBlock)resolve
-                     rejecter: (RCTPromiseRejectBlock)reject;
+                    resolver: (RCTPromiseResolveBlock)resolve
+                    rejecter: (RCTPromiseRejectBlock)reject;
 {
     _resolve = resolve;
     _reject = reject;
@@ -40,13 +40,14 @@
 	[topController presentViewController:viewController animated:YES completion:nil];
 }
 
-- (void)openPlacePickerModal: (RCTPromiseResolveBlock)resolve
-					 rejecter: (RCTPromiseRejectBlock)reject;
+- (void)openPlacePickerModal: (GMSCoordinateBounds *)viewport
+                    resolver: (RCTPromiseResolveBlock)resolve
+					rejecter: (RCTPromiseRejectBlock)reject;
 {
 	_resolve = resolve;
 	_reject = reject;
 
-	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:nil];
+	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:viewport];
     _placePicker = [[GMSPlacePicker alloc] initWithConfig:config];
     [_placePicker pickPlaceWithCallback:^(GMSPlace *place, NSError *error) {
         if (place) {
@@ -60,6 +61,7 @@
 		        placeData[@"phoneNumber"] = place.phoneNumber;
 		        placeData[@"website"] = place.website.absoluteString;
 		        placeData[@"placeID"] = place.placeID;
+                placeData[@"types"] = place.types;
 
             NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
             for( int i=0;i<place.addressComponents.count;i++) {
@@ -96,6 +98,7 @@
         placeData[@"phoneNumber"] = place.phoneNumber;
         placeData[@"website"] = place.website.absoluteString;
         placeData[@"placeID"] = place.placeID;
+        placeData[@"types"] = place.types;
 
         NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
         for( int i=0;i<place.addressComponents.count;i++) {

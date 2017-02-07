@@ -10,9 +10,9 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - Android" src="./shots/picker-android.png">
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
-## NOTE:
-- for RN >=0.40.0, use v2+ (e.g. react-native-google-places@2.0.4)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.4)
+## Versioning:
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.6)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.6)
 
 ## Install
 
@@ -81,10 +81,10 @@ end
 <application
       android:name=".MainApplication"
       ...>
-	<meta-data
-		android:name="com.google.android.geo.API_KEY"
-		android:value="YOUR_ANDROID_API_KEY_HERE"/>
-	...
+  <meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="YOUR_ANDROID_API_KEY_HERE"/>
+  ...
 </application>
 ```
 ##### Manual Linking With Your Project (Android)
@@ -196,6 +196,16 @@ class GPlacesDemo extends Component {
   }
 }
 ```
+To set the initial viewport that the place picker map should show when the picker is launched, you can pass a `latLngBounds` object as a `parameter` to the `openPlacePickerModal()` method as follows. The `latLngBounds` object only takes 2 `optional` keys (`latitude` and `longitude`) which must both be present or both left out. The value of the `latitude` key should be a floating number which is the latitude of the coordinate to which you want the map centered while the value of the `longitude` key is the longitude of the coordinate (also a floating number).
+If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), a sensible default will be chosen based on the user's location.
+
+```javascript
+  RNGooglePlaces.openPlacePickerModal({latitude:6.44301, longitude:3.44661})
+    .then((place) => { 
+    console.log(place);
+    })
+    .catch(error => console.log(error.message));
+```
 
 #### Example Response from the Autocomplete & PlacePicker Modals
 ```javascript
@@ -205,6 +215,7 @@ class GPlacesDemo extends Component {
   phoneNumber: "+1 650-543-4800", 
   address: "1 Hacker Way, Menlo Park, CA 94025, USA", 
   name: "Facebook HQ",
+  types: [ 'street_address', 'geocode' ],
   latitude: 37.4843428,
   longitude: -122.14839939999999
 }
@@ -243,10 +254,12 @@ OR
     placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
     secondaryText: 'Hacker Way, Menlo Park, CA, United States',
     fullText: 'Facebook HQ, Hacker Way, Menlo Park, CA, United States' },
+    types: [ 'street_address', 'geocode' ],
   { primaryText: 'Facebook Way',
     placeID: 'EitGYWNlYm9vayBXYXksIE1lbmxvIFBhcmssIENBLCBVbml0ZWQgU3RhdGVz',
     secondaryText: 'Menlo Park, CA, United States',
     fullText: 'Facebook Way, Menlo Park, CA, United States' },
+    types: [ 'street_address', 'geocode' ],
 
     ...
 ]
@@ -268,6 +281,7 @@ OR
   address: '1 Hacker Way, Menlo Park, CA 94025, USA',
   latitude: 37.48485,
   placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+  types: [ 'street_address', 'geocode' ],
   phoneNumber: '+1 650-543-4800' 
 }
 ```
@@ -316,4 +330,3 @@ You have to link dependencies and re-run the build:
 
 ## License
 The MIT License.
-

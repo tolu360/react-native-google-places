@@ -1,37 +1,10 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.google.android.gms.location.places.ui.PlacePicker;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.data.DataBufferUtils;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.AutocompletePrediction;
-import com.google.android.gms.location.places.AutocompletePredictionBuffer;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.location.places.PlaceBuffer;
-import com.google.android.gms.maps.model.LatLngBounds;
-
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.app.Activity;
-import android.net.Uri;
+import android.content.Intent;
+import android.os.Bundle;
 import android.text.TextUtils;
-import java.util.concurrent.TimeUnit;
+import android.util.Log;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -39,13 +12,31 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.AutocompletePredictionBuffer;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -115,7 +106,12 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putString("placeID", place.getId());
                 if (!TextUtils.isEmpty(attributions)) {
                     map.putString("attributions", attributions.toString());
-                }      
+                }
+                List<String> types = new ArrayList<>();
+                for (Integer placeType : place.getPlaceTypes()) {
+                    types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                }
+                map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
 
                 resolvePromise(map);
 
@@ -154,7 +150,14 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putString("placeID", place.getId());
                 if (!TextUtils.isEmpty(attributions)) {
                     map.putString("attributions", attributions.toString());
-                }      
+                }
+
+                List<String> types = new ArrayList<>();
+                for (Integer placeType : place.getPlaceTypes()) {
+                    types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                }
+                map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+
 
                 resolvePromise(map);
             }
@@ -199,13 +202,19 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void openPlacePickerModal(final Promise promise) {
+    public void openPlacePickerModal(ReadableMap bounds, final Promise promise) {
         this.pendingPromise = promise;
         Activity currentActivity = getCurrentActivity();
+        double latitude = bounds.getDouble("latitude");
+        double longitude = bounds.getDouble("longitude");
 
         try {
             PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+            if (latitude != 0 && longitude != 0) {
+                intentBuilder.setLatLngBounds(this.getLatLngBounds(new LatLng(latitude, longitude)));
+            }
             Intent intent = intentBuilder.build(currentActivity);
+
             // Start the Intent by requesting a result, identified by a request code.
             currentActivity.startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
 
@@ -252,6 +261,14 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putString("primaryText", prediction.getPrimaryText(null).toString());
                 map.putString("secondaryText", prediction.getSecondaryText(null).toString());
                 map.putString("placeID", prediction.getPlaceId().toString());
+
+                if (prediction.getPlaceTypes() != null) {
+                    List<String> types = new ArrayList<>();
+                    for (Integer placeType : prediction.getPlaceTypes()) {
+                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                    }
+                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                }
 
                 predictionsList.pushMap(map);
             }
@@ -305,6 +322,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                         map.putString("attributions", attributions.toString());
                     }
 
+                    if (place.getPlaceTypes() != null) {
+                        List<String> types = new ArrayList<>();
+                        for (Integer placeType : place.getPlaceTypes()) {
+                            types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                        }
+                        map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                    }
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();     
 
@@ -376,6 +400,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             this.pendingPromise.resolve(data);
             this.pendingPromise = null;
         }
+    }
+
+    private LatLngBounds getLatLngBounds(LatLng center) {
+        LatLngBounds.Builder builder = LatLngBounds.builder();
+        builder.include(center);
+        return builder.build();
+    }
+
+    private String findPlaceTypeLabelByPlaceTypeId(Integer id) {
+        return RNGooglePlacesPlaceTypeEnum.findByTypeId(id).getLabel();
     }
 
     @Override
