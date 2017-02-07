@@ -19,8 +19,8 @@ RCT_EXPORT_MODULE()
 }
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
-                  resolver: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+                resolver: (RCTPromiseResolveBlock)resolve
+                rejecter: (RCTPromiseRejectBlock)reject)
 {
     @try {
         GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
@@ -34,12 +34,25 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
     }
 }
 
-RCT_EXPORT_METHOD(openPlacePickerModal: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(openPlacePickerModal: (NSDictionary *)bounds 
+                resolver: (RCTPromiseResolveBlock)resolve
+                rejecter: (RCTPromiseRejectBlock)reject)
 {
     @try {
+        CLLocationCoordinate2D coordinate;
+        coordinate.latitude = (CLLocationDegrees) [[RCTConvert NSNumber:bounds[@"latitude"]] doubleValue];
+        coordinate.longitude = (CLLocationDegrees) [[RCTConvert NSNumber:bounds[@"longitude"]] doubleValue];
+        GMSCoordinateBounds *viewport = nil;
+        
+        if (coordinate.latitude != 0 && coordinate.longitude != 0) {
+            CLLocationCoordinate2D center = CLLocationCoordinate2DMake(coordinate.latitude, coordinate.longitude);
+            CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(center.latitude + 0.001, center.longitude + 0.001);
+            CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(center.latitude - 0.001, center.longitude - 0.001);
+            viewport = [[GMSCoordinateBounds alloc] initWithCoordinate:northEast coordinate:southWest];
+        } 
+        
         RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
-        [a openPlacePickerModal: resolve rejecter: reject];
+        [a openPlacePickerModal: viewport resolver: resolve rejecter: reject];
     }
     @catch (NSException * e) {
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);

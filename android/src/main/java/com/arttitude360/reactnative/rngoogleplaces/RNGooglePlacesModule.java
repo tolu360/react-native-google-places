@@ -31,6 +31,8 @@ import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,13 +202,19 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void openPlacePickerModal(final Promise promise) {
+    public void openPlacePickerModal(ReadableMap bounds, final Promise promise) {
         this.pendingPromise = promise;
         Activity currentActivity = getCurrentActivity();
+        double latitude = bounds.getDouble("latitude");
+        double longitude = bounds.getDouble("longitude");
 
         try {
             PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+            if (latitude != 0 && longitude != 0) {
+                intentBuilder.setLatLngBounds(this.getLatLngBounds(new LatLng(latitude, longitude)));
+            }
             Intent intent = intentBuilder.build(currentActivity);
+
             // Start the Intent by requesting a result, identified by a request code.
             currentActivity.startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
 
@@ -392,6 +400,12 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             this.pendingPromise.resolve(data);
             this.pendingPromise = null;
         }
+    }
+
+    private LatLngBounds getLatLngBounds(LatLng center) {
+        LatLngBounds.Builder builder = LatLngBounds.builder();
+        builder.include(center);
+        return builder.build();
     }
 
     private String findPlaceTypeLabelByPlaceTypeId(Integer id) {

@@ -11,8 +11,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >=0.40.0, use v2+ (e.g. react-native-google-places@2.0.4)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.4)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.6)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.6)
 
 ## Install
 
@@ -195,6 +195,16 @@ class GPlacesDemo extends Component {
     );
   }
 }
+```
+To set the initial viewport that the place picker map should show when the picker is launched, you can pass a `latLngBounds` object as a `parameter` to the `openPlacePickerModal()` method as follows. The `latLngBounds` object only takes 2 `optional` keys (`latitude` and `longitude`) which must both be present or both left out. The value of the `latitude` key should be a floating number which is the latitude of the coordinate to which you want the map centered while the value of the `longitude` key is the longitude of the coordinate (also a floating number).
+If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), a sensible default will be chosen based on the user's location.
+
+```javascript
+  RNGooglePlaces.openPlacePickerModal({latitude:6.44301, longitude:3.44661})
+    .then((place) => { 
+    console.log(place);
+    })
+    .catch(error => console.log(error.message));
 ```
 
 #### Example Response from the Autocomplete & PlacePicker Modals
