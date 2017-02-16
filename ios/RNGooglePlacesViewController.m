@@ -26,14 +26,16 @@
 }
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
-                    resolver: (RCTPromiseResolveBlock)resolve
-                    rejecter: (RCTPromiseRejectBlock)reject;
+                       bounds: (GMSCoordinateBounds *)bounds
+                     resolver: (RCTPromiseResolveBlock)resolve
+                     rejecter: (RCTPromiseRejectBlock)reject;
 {
     _resolve = resolve;
     _reject = reject;
     
     GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
     viewController.autocompleteFilter = autocompleteFilter;
+    viewController.autocompleteBounds = viewport;
 	viewController.delegate = self;
 	UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController; 
 	while (topController.presentedViewController) { topController = topController.presentedViewController; } 

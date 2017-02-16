@@ -10,8 +10,9 @@
 - (instancetype) init;
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
-                    resolver: (RCTPromiseResolveBlock)resolve
-                    rejecter: (RCTPromiseRejectBlock)reject;
+                       bounds: (GMSCoordinateBounds *)bounds
+                     resolver: (RCTPromiseResolveBlock)resolve
+                     rejecter: (RCTPromiseRejectBlock)reject;
 - (void)openPlacePickerModal: (GMSCoordinateBounds *)viewport
 					resolver: (RCTPromiseResolveBlock)resolve
                   	rejecter: (RCTPromiseRejectBlock)reject;
