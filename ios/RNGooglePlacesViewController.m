@@ -87,8 +87,9 @@
 - (void)viewController:(GMSAutocompleteViewController *)viewController
 	didAutocompleteWithPlace:(GMSPlace *)place 
 {
-	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-	[rootViewController dismissViewControllerAnimated:YES completion:nil];
+    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    [topController dismissViewControllerAnimated:YES completion:nil];
 	
 	if (_resolve) {
         NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
@@ -115,8 +116,10 @@
 - (void)viewController:(GMSAutocompleteViewController *)viewController
 	didFailAutocompleteWithError:(NSError *)error 
 {
-	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-	[rootViewController dismissViewControllerAnimated:YES completion:nil];
+    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    [topController dismissViewControllerAnimated:YES completion:nil];
+
 	// TODO: handle the error.
 	NSLog(@"Error: %@", [error description]);
 
@@ -126,8 +129,9 @@
 // User canceled the operation.
 - (void)wasCancelled:(GMSAutocompleteViewController *)viewController 
 {
-	UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-	[rootViewController dismissViewControllerAnimated:YES completion:nil];
+    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    [topController dismissViewControllerAnimated:YES completion:nil];
 
 	_reject(@"E_USER_CANCELED", @"Search cancelled", nil);
 }
