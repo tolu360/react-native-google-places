@@ -23,11 +23,25 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
                 rejecter: (RCTPromiseRejectBlock)reject)
 {
     @try {
+//        Start location
+        CLLocationCoordinate2D coordinate;
+        coordinate.latitude = (CLLocationDegrees) [[RCTConvert NSNumber:options[@"latitude"]] doubleValue];
+        coordinate.longitude = (CLLocationDegrees) [[RCTConvert NSNumber:options[@"longitude"]] doubleValue];
+        GMSCoordinateBounds *bounds = nil;
+        
+        if (coordinate.latitude != 0 && coordinate.longitude != 0) {
+            CLLocationCoordinate2D center = CLLocationCoordinate2DMake(coordinate.latitude, coordinate.longitude);
+            CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(center.latitude + 0.001, center.longitude + 0.001);
+            CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(center.latitude - 0.001, center.longitude - 0.001);
+            bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:northEast coordinate:southWest];
+        }
+        // End Location
+        
         GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
         autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
         autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
         RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
-        [a openAutocompleteModal: autocompleteFilter resolver: resolve rejecter: reject];
+        [a openAutocompleteModal: autocompleteFilter bounds: bounds resolver: resolve rejecter: reject];
     }
     @catch (NSException * e) {
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);

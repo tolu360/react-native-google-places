@@ -17,7 +17,11 @@ class RNGooglePlaces {
 	}
 
 	openAutocompleteModal(filterOptions = {}) {
-		return RNGooglePlacesNative.openAutocompleteModal({...RNGooglePlaces.filterDefaults, ...filterOptions})
+		return RNGooglePlacesNative.openAutocompleteModal({
+			...RNGooglePlaces.filterDefaults,
+      ...RNGooglePlaces.boundsDefaults,
+			...filterOptions
+		})
 	}
 
 	openPlacePickerModal(latLngBounds = {}) {
