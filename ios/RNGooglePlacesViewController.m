@@ -10,7 +10,7 @@
 
 @implementation RNGooglePlacesViewController
 {
-	RNGooglePlacesViewController *instance;
+	RNGooglePlacesViewController *_instance;
 
 	RCTPromiseResolveBlock _resolve;
 	RCTPromiseRejectBlock _reject;
@@ -20,7 +20,7 @@
 - (instancetype)init 
 {
 	self = [super init];
-	instance = self;
+	_instance = self;
 
 	return self;
 }
@@ -35,7 +35,7 @@
     
     GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
     viewController.autocompleteFilter = autocompleteFilter;
-    viewController.autocompleteBounds = viewport;
+    viewController.autocompleteBounds = bounds;
 	viewController.delegate = self;
 	UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController; 
 	while (topController.presentedViewController) { topController = topController.presentedViewController; } 
