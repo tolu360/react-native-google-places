@@ -15,7 +15,7 @@ class RNGooglePlaces {
 	static boundsDefaults = {
 		latitude: 0,
 		longitude: 0,
-		radius: 100
+		radius: 0.1
 	}
 
 	openAutocompleteModal(filterOptions = {}) {
