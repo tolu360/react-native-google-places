@@ -8,7 +8,8 @@ const RNGooglePlacesNative = NativeModules.RNGooglePlaces
 class RNGooglePlaces {
 	static filterDefaults = {
 		type: 'noFilter',
-		country: ''
+		country: '',
+		useOverlay: false
 	}
 
 	static boundsDefaults = {
@@ -20,17 +21,23 @@ class RNGooglePlaces {
 	openAutocompleteModal(filterOptions = {}) {
 		return RNGooglePlacesNative.openAutocompleteModal({
 			...RNGooglePlaces.filterDefaults,
-      ...RNGooglePlaces.boundsDefaults,
+            ...RNGooglePlaces.boundsDefaults,
 			...filterOptions
 		})
 	}
 
 	openPlacePickerModal(latLngBounds = {}) {
-		return RNGooglePlacesNative.openPlacePickerModal({...RNGooglePlaces.boundsDefaults, ...latLngBounds})
+		return RNGooglePlacesNative.openPlacePickerModal({
+		    ...RNGooglePlaces.boundsDefaults,
+		    ...latLngBounds
+        })
 	}
 
 	getAutocompletePredictions(query, filterOptions = {}) {
-		return RNGooglePlacesNative.getAutocompletePredictions(query, {...RNGooglePlaces.filterDefaults, ...filterOptions})
+		return RNGooglePlacesNative.getAutocompletePredictions(query, {
+            ...RNGooglePlaces.filterDefaults,
+            ...filterOptions
+		})
 	}
 
 	lookUpPlaceByID(placeID) {
