@@ -60,10 +60,10 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
     autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
     autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
-    
+    GMSCoordinateBounds *bounds = [self getBounds:options];
     
     [[GMSPlacesClient sharedClient] autocompleteQuery:query
-                                               bounds:nil
+                                               bounds:bounds
                                                filter:autocompleteFilter
                                              callback:^(NSArray *results, NSError *error) {
                                                  if (error != nil) {

@@ -261,10 +261,21 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         String country = filter.getString("country");
         country = country.isEmpty() ? null : country;
 
+        double latitude = options.getDouble("latitude");
+        double longitude = options.getDouble("longitude");
+        double radius = options.getDouble("radius");
+        LatLng center = new LatLng(latitude, longitude);
+
+        LatLngBounds bounds = null;
+
+        if (latitude != 0 && longitude != 0 && radius != 0) {
+            bounds = this.getLatLngBounds(center, radius);
+        }
+
         PendingResult<AutocompletePredictionBuffer> results =
                 Places.GeoDataApi
                         .getAutocompletePredictions(mGoogleApiClient, query,
-                                null, getFilterType(type, country));
+                                bounds, getFilterType(type, country));
 
         AutocompletePredictionBuffer autocompletePredictions = results
             .await(60, TimeUnit.SECONDS);
