@@ -167,12 +167,11 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
     return radians * (180.0/M_PI);
 }
 
-- (CLLocationCoordinate2D)coordinateFromCoord:(CLLocationCoordinate2D)fromCoord
-                                 atDistanceKm:(double)distanceKm
-                             atBearingDegrees:(double)bearingDegrees
+- (CLLocationCoordinate2D)coordinateFromCoord: (CLLocationCoordinate2D)fromCoord
+                                 atDistanceKm: (double)distanceKm
+                             atBearingDegrees: (double)bearingDegrees
 {
-    double distanceRadians = distanceKm / 6371.0;
-    //6,371 = Earth's radius in km
+    double distanceRadians = distanceKm / 6371.0; //6,371 = Earth's radius in km
     double bearingRadians = [self radiansFromDegrees:bearingDegrees];
     double fromLatRadians = [self radiansFromDegrees:fromCoord.latitude];
     double fromLonRadians = [self radiansFromDegrees:fromCoord.longitude];

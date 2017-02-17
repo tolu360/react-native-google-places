@@ -13,7 +13,7 @@
                        bounds: (GMSCoordinateBounds *)bounds
                      resolver: (RCTPromiseResolveBlock)resolve
                      rejecter: (RCTPromiseRejectBlock)reject;
-- (void)openPlacePickerModal: (GMSCoordinateBounds *)viewport
+- (void)openPlacePickerModal: (GMSCoordinateBounds *)bounds
 					resolver: (RCTPromiseResolveBlock)resolve
                   	rejecter: (RCTPromiseRejectBlock)reject;
 

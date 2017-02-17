@@ -37,19 +37,18 @@
     viewController.autocompleteFilter = autocompleteFilter;
     viewController.autocompleteBounds = bounds;
 	viewController.delegate = self;
-	UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController; 
-	while (topController.presentedViewController) { topController = topController.presentedViewController; } 
+    UIViewController *topController = [self getTopController];
 	[topController presentViewController:viewController animated:YES completion:nil];
 }
 
-- (void)openPlacePickerModal: (GMSCoordinateBounds *)viewport
+- (void)openPlacePickerModal: (GMSCoordinateBounds *)bounds
                     resolver: (RCTPromiseResolveBlock)resolve
 					rejecter: (RCTPromiseRejectBlock)reject;
 {
 	_resolve = resolve;
 	_reject = reject;
 
-	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:viewport];
+	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:bounds];
     _placePicker = [[GMSPlacePicker alloc] initWithConfig:config];
     [_placePicker pickPlaceWithCallback:^(GMSPlace *place, NSError *error) {
         if (place) {
@@ -87,8 +86,7 @@
 - (void)viewController:(GMSAutocompleteViewController *)viewController
 	didAutocompleteWithPlace:(GMSPlace *)place 
 {
-    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    UIViewController *topController = [self getTopController];
     [topController dismissViewControllerAnimated:YES completion:nil];
 	
 	if (_resolve) {
@@ -116,8 +114,7 @@
 - (void)viewController:(GMSAutocompleteViewController *)viewController
 	didFailAutocompleteWithError:(NSError *)error 
 {
-    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    UIViewController *topController = [self getTopController];
     [topController dismissViewControllerAnimated:YES completion:nil];
 
 	// TODO: handle the error.
@@ -129,8 +126,7 @@
 // User canceled the operation.
 - (void)wasCancelled:(GMSAutocompleteViewController *)viewController 
 {
-    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    UIViewController *topController = [self getTopController];
     [topController dismissViewControllerAnimated:YES completion:nil];
 
 	_reject(@"E_USER_CANCELED", @"Search cancelled", nil);
@@ -145,6 +141,14 @@
 - (void)didUpdateAutocompletePredictions:(GMSAutocompleteViewController *)viewController 
 {
   	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+}
+
+// User canceled the operation.
+- (UIViewController *)getTopController
+{
+    UIViewController *topController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    while (topController.presentedViewController) { topController = topController.presentedViewController; }
+    return topController;
 }
 
 @end
