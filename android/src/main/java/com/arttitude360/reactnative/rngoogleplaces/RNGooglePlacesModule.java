@@ -176,17 +176,23 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
+        boolean useOverlay = options.getBoolean("useOverlay");
+
         double latitude = options.getDouble("latitude");
         double longitude = options.getDouble("longitude");
         double radius = options.getDouble("radius");
         LatLng center = new LatLng(latitude, longitude);
+
         Activity currentActivity = getCurrentActivity();
 
         try {
             // The autocomplete activity requires Google Play Services to be available. The intent
             // builder checks this and throws an exception if it is not the case.
             PlaceAutocomplete.IntentBuilder intentBuilder =
-                    new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN);
+                    new PlaceAutocomplete.IntentBuilder(useOverlay ?
+                            PlaceAutocomplete.MODE_OVERLAY :
+                            PlaceAutocomplete.MODE_FULLSCREEN
+                    );
 
             if (latitude != 0 && longitude != 0 && radius != 0) {
                 intentBuilder.setBoundsBias(this.getLatLngBounds(center, radius));
