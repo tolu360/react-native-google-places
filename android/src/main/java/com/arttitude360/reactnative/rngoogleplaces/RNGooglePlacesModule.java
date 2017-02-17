@@ -220,10 +220,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         double latitude = options.getDouble("latitude");
         double longitude = options.getDouble("longitude");
         double radius = options.getDouble("radius");
+        boolean useOverlay = options.getBoolean("useOverlay");
         LatLng center = new LatLng(latitude, longitude);
 
         try {
-            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+            PlaceAutocomplete.IntentBuilder intentBuilder =
+                    new PlaceAutocomplete.IntentBuilder(useOverlay ?
+                            PlaceAutocomplete.MODE_OVERLAY :
+                            PlaceAutocomplete.MODE_FULLSCREEN
+                    );
+
             if (latitude != 0 && longitude != 0 && radius != 0) {
                 intentBuilder.setLatLngBounds(this.getLatLngBounds(center, radius));
             }
