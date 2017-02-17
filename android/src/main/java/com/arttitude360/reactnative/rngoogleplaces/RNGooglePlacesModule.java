@@ -33,6 +33,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +97,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putDouble("longitude", place.getLatLng().longitude);
                 map.putString("name", place.getName().toString());
                 map.putString("address", place.getAddress().toString());
-                
+
                 if (!TextUtils.isEmpty(place.getPhoneNumber())) {
                     map.putString("phoneNumber", place.getPhoneNumber().toString());
                 }
@@ -140,7 +141,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putDouble("longitude", place.getLatLng().longitude);
                 map.putString("name", place.getName().toString());
                 map.putString("address", place.getAddress().toString());
-                
+
                 if (!TextUtils.isEmpty(place.getPhoneNumber())) {
                     map.putString("phoneNumber", place.getPhoneNumber().toString());
                 }
@@ -169,20 +170,31 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
      */
 
     @ReactMethod
-    public void openAutocompleteModal(ReadableMap filter, final Promise promise) {
-        
+    public void openAutocompleteModal(ReadableMap options, final Promise promise) {
+
         this.pendingPromise = promise;
-        String type = filter.getString("type");
-        String country = filter.getString("country");
+        String type = options.getString("type");
+        String country = options.getString("country");
         country = country.isEmpty() ? null : country;
+        double latitude = options.getDouble("latitude");
+        double longitude = options.getDouble("longitude");
+        double radius = options.getDouble("radius");
+        LatLng center = new LatLng(latitude, longitude);
         Activity currentActivity = getCurrentActivity();
 
         try {
             // The autocomplete activity requires Google Play Services to be available. The intent
             // builder checks this and throws an exception if it is not the case.
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+            PlaceAutocomplete.IntentBuilder intentBuilder =
+                    new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN);
+
+            if (latitude != 0 && longitude != 0 && radius != 0) {
+                intentBuilder.setBoundsBias(this.getLatLngBounds(center, radius));
+            }
+            Intent intent = intentBuilder
                     .setFilter(getFilterType(type, country))
                     .build(currentActivity);
+
             currentActivity.startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
         } catch (GooglePlayServicesRepairableException e) {
             // Indicates that Google Play Services is either not installed or not up to date. Prompt
@@ -202,16 +214,18 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void openPlacePickerModal(ReadableMap bounds, final Promise promise) {
+    public void openPlacePickerModal(ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
         Activity currentActivity = getCurrentActivity();
-        double latitude = bounds.getDouble("latitude");
-        double longitude = bounds.getDouble("longitude");
+        double latitude = options.getDouble("latitude");
+        double longitude = options.getDouble("longitude");
+        double radius = options.getDouble("radius");
+        LatLng center = new LatLng(latitude, longitude);
 
         try {
             PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-            if (latitude != 0 && longitude != 0) {
-                intentBuilder.setLatLngBounds(this.getLatLngBounds(new LatLng(latitude, longitude)));
+            if (latitude != 0 && longitude != 0 && radius != 0) {
+                intentBuilder.setLatLngBounds(this.getLatLngBounds(center, radius));
             }
             Intent intent = intentBuilder.build(currentActivity);
 
@@ -222,7 +236,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             GoogleApiAvailability.getInstance().getErrorDialog(currentActivity, e.getConnectionStatusCode(),
                     PLACE_PICKER_REQUEST_CODE).show();
         } catch (GooglePlayServicesNotAvailableException e) {
-            
+
             rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
         }
     }
@@ -310,7 +324,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     map.putDouble("longitude", place.getLatLng().longitude);
                     map.putString("name", place.getName().toString());
                     map.putString("address", place.getAddress().toString());
-                    
+
                     if (!TextUtils.isEmpty(place.getPhoneNumber())) {
                         map.putString("phoneNumber", place.getPhoneNumber().toString());
                     }
@@ -330,7 +344,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                         map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
                     }
                     // Release the PlaceBuffer to prevent a memory leak
-                    places.release();     
+                    places.release();
 
                     resolvePromise(map);
                 } else {
@@ -352,37 +366,37 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
                     .setCountry(country)
                     .build();
-            break;
+                break;
             case "address":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
                     .setCountry(country)
                     .build();
-            break;
+                break;
             case "establishment":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
                     .setCountry(country)
                     .build();
-            break;
+                break;
             case "regions":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
                     .setCountry(country)
                     .build();
-            break;
+                break;
             case "cities":
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
                     .setCountry(country)
                     .build();
-            break;
+                break;
             default:
                 mappedFilter = new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
                     .setCountry(country)
                     .build();
-            break;
+                break;
         }
 
         return mappedFilter;
@@ -402,10 +416,10 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
     }
 
-    private LatLngBounds getLatLngBounds(LatLng center) {
-        LatLngBounds.Builder builder = LatLngBounds.builder();
-        builder.include(center);
-        return builder.build();
+    private LatLngBounds getLatLngBounds(LatLng center, double radius) {
+        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
+        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
+        return new LatLngBounds(southwest, northeast);
     }
 
     private String findPlaceTypeLabelByPlaceTypeId(Integer id) {
@@ -414,7 +428,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     @Override
     public void onNewIntent(Intent intent) {
-    } 
+    }
 
     @Override
     public void onConnected(Bundle connectionHint) {
@@ -433,5 +447,5 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         // Attempts to reconnect if a disconnect occurs
         Log.i(TAG, "GoogleApiClient Connection Suspended");
         mGoogleApiClient.connect();
-    } 
+    }
 }
