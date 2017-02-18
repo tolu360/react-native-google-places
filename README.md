@@ -11,8 +11,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.6)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.6)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.8)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.8)
 
 ## Install
 
@@ -218,6 +218,7 @@ To set the initial viewport that the place picker map should show when the picke
 - **`radius`** _(Number)_ - Radius (in kilo-meters) from the center of the map view to the edge. Use this to set the default "zoom" of the map view when it is first opened. Only works if `latitude` and `longitude` are also given. Defaults to `0.1`.
 
 If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), the viewport will be centered on the device's location, with the zoom at city-block level.
+
 ```javascript
   RNGooglePlaces.openPlacePickerModal({
 	  latitude: 53.544389,
@@ -270,6 +271,7 @@ To filter autocomplete results as listed for [Android](https://developers.google
     .catch(error => console.log(error.message));
 ```
 OR
+
 ```javascript
 RNGooglePlaces.getAutocompletePredictions('pizza', {
 	  type: 'establishments',
