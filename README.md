@@ -122,7 +122,7 @@ protected List<ReactPackage> getPackages() {
 
 ## Usage
 
-### Allows your users to enter place names and addresses - and autocompletes your users' queries as they type.
+###  Allows your users to enter place names and addresses - and autocompletes your users' queries as they type.
 
 #### Import library
 
@@ -137,8 +137,8 @@ import RNGooglePlaces from 'react-native-google-places';
 class GPlacesDemo extends Component {
   openSearchModal() {
     RNGooglePlaces.openAutocompleteModal()
-    .then((place) => { 
-		console.log(place); 		
+    .then((place) => {
+		console.log(place);
 		// place represents user's selection from the
 		// suggestions and it is a simplified Google Place object.
     })
@@ -159,23 +159,38 @@ class GPlacesDemo extends Component {
   }
 }
 ```
-To filter autocomplete results to a specific place type as listed for [Android](https://developers.google.com/places/android-api/autocomplete) and [iOS](https://developers.google.com/places/ios-api/autocomplete) in the official docs, you can pass a `filterOptions` object as a `parameter` to the `openAutocompleteModal()` method as follows. The `filterOptions` object only takes 2 `optional` keys (`type` and `country`). The value of the `type` key can only be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`), while the `country` key allows you to filter autocomplete results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. Leave off either or both keys to return unfiltered results.
+
+##### **Optional Parameters**
+To filter autocomplete results as listed for [Android](https://developers.google.com/places/android-api/autocomplete#restrict_autocomplete_results) and [iOS](https://developers.google.com/places/ios-api/autocomplete#call_gmsplacesclient) in the official docs, you can pass an `options` object as a parameter to the `openAutocompleteModal()` method as follows:
 
 ```javascript
-  RNGooglePlaces.openAutocompleteModal({type: 'cities', country: 'NG'})
-    .then((place) => { 
+  RNGooglePlaces.openAutocompleteModal({
+	  type: 'establishment',
+	  country: 'CA',
+	  latitude: 53.544389,
+	  longitude: -113.490927,
+	  radius: 10
+  })
+    .then((place) => {
     console.log(place);
     })
     .catch(error => console.log(error.message));
 ```
 
-#### Open PlacePicker Modal
+- **`type`** _(String)_ - The type of results to return. Can be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`). *(optional)*
+- **`country`** _(String)_ - Limit results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. *(optional)*
+- **`latitude`** _(Number)_ - Latitude of the point around which you wish to retrieve place information *(required if `longitude` is given)*
+- **`longitude`** _(Number)_ - Longitude of the point around which you wish to retrieve place information *(required if `latitude` is given)*
+- **`radius`** _(Number)_ - Radius (in kilo-meters) within which to retrieve place information. Only works if `latitude` and `longitude` are also given. Note that setting a radius biases results to the indicated area, but may not fully restrict results to the specified area. Defaults to `0.1`.
+- **`useOverlay`** _(Boolean)_ [Android Only] - If true, the autocomplete modal will open as an [overlay](https://developers.google.com/places/images/acw_overlay.png). Defaults to `false`.
+
+### Open PlacePicker Modal
 ```javascript
 class GPlacesDemo extends Component {
   openSearchModal() {
     RNGooglePlaces.openPlacePickerModal()
-    .then((place) => { 
-		console.log(place); 		
+    .then((place) => {
+		console.log(place);
 		// place represents user's selection from the
 		// suggestions and it is a simplified Google Place object.
     })
@@ -196,12 +211,20 @@ class GPlacesDemo extends Component {
   }
 }
 ```
-To set the initial viewport that the place picker map should show when the picker is launched, you can pass a `latLngBounds` object as a `parameter` to the `openPlacePickerModal()` method as follows. The `latLngBounds` object only takes 2 `optional` keys (`latitude` and `longitude`) which must both be present or both left out. The value of the `latitude` key should be a floating number which is the latitude of the coordinate to which you want the map centered while the value of the `longitude` key is the longitude of the coordinate (also a floating number).
-If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), a sensible default will be chosen based on the user's location.
+To set the initial viewport that the place picker map should show when the picker is launched, you can pass a `latLngBounds` object as a `parameter` to the `openPlacePickerModal()` method as follows. The `latLngBounds` object takes the following optional keys:
 
+- **`latitude`** _(Number)_ - Latitude of the point which you want the map centered on *(required if `longitude` is given)*
+- **`longitude`** _(Number)_ - Longitude of the point which you want the map centered on *(required if `latitude` is given)*
+- **`radius`** _(Number)_ - Radius (in kilo-meters) from the center of the map view to the edge. Use this to set the default "zoom" of the map view when it is first opened. Only works if `latitude` and `longitude` are also given. Defaults to `0.1`.
+
+If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), the viewport will be centered on the device's location, with the zoom at city-block level.
 ```javascript
-  RNGooglePlaces.openPlacePickerModal({latitude:6.44301, longitude:3.44661})
-    .then((place) => { 
+  RNGooglePlaces.openPlacePickerModal({
+	  latitude: 53.544389,
+	  longitude: -113.490927,
+	  radius: 0.01 // 10 meters
+  })
+    .then((place) => {
     console.log(place);
     })
     .catch(error => console.log(error.message));
@@ -209,11 +232,11 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 
 #### Example Response from the Autocomplete & PlacePicker Modals
 ```javascript
-{ 
-	placeID: "ChIJZa6ezJa8j4AR1p1nTSaRtuQ", 
-	website: "https://www.facebook.com/", 
-	phoneNumber: "+1 650-543-4800", 
-	address: "1 Hacker Way, Menlo Park, CA 94025, USA", 
+{
+	placeID: "ChIJZa6ezJa8j4AR1p1nTSaRtuQ",
+	website: "https://www.facebook.com/",
+	phoneNumber: "+1 650-543-4800",
+	address: "1 Hacker Way, Menlo Park, CA 94025, USA",
 	name: "Facebook HQ",
 	types: [ 'street_address', 'geocode' ],
 	latitude: 37.4843428,
@@ -232,20 +255,41 @@ If you have specific branding needs or you would rather build out your own custo
     .then((results) => this.setState({ predictions: results }))
     .catch((error) => console.log(error.message));
 ```
-To filter autocomplete results to a specific place type as listed for [Android](https://developers.google.com/places/android-api/autocomplete) and [iOS](https://developers.google.com/places/ios-api/autocomplete), you can pass a `filterOptions` object as a second `parameter` to the `getAutocompletePredictions()` method as follows. The `filterOptions` object only takes 2 `optional` keys (`type` and `country`). The value of the `type` key can only be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`), while the `country` key allows you to filter autocomplete results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. Leave off either or both keys to return unfiltered results.
+
+##### **Optional Parameters**
+To filter autocomplete results as listed for [Android](https://developers.google.com/places/android-api/autocomplete#restrict_autocomplete_results) and [iOS](https://developers.google.com/places/ios-api/autocomplete#call_gmsplacesclient) in the official docs, you can pass an `options` object as a second parameter to the `getAutocompletePredictions()` method as follows:
 
 ```javascript
-  RNGooglePlaces.getAutocompletePredictions('Lagos', { type: 'cities', country: 'NG' })
-    .then((results) => this.setState({ predictions: results }))
-    .catch((error) => console.log(error.message));
+  RNGooglePlaces.getAutocompletePredictions('Lagos', {
+	  type: 'cities',
+	  country: 'NG'
+  })
+    .then((place) => {
+    console.log(place);
+    })
+    .catch(error => console.log(error.message));
 ```
 OR
-
 ```javascript
-  RNGooglePlaces.getAutocompletePredictions('Lagos', { country: 'NG' })
-    .then((results) => this.setState({ predictions: results }))
-    .catch((error) => console.log(error.message));
+RNGooglePlaces.getAutocompletePredictions('pizza', {
+	  type: 'establishments',
+	  latitude: 53.544389,
+	  longitude: -113.490927,
+	  radius: 10
+  })
+    .then((place) => {
+    console.log(place);
+    })
+    .catch(error => console.log(error.message));
 ```
+
+
+- **`type`** _(String)_ - The type of results to return. Can be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`). *(optional)*
+- **`country`** _(String)_ - Limit results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. *(optional)*
+- **`latitude`** _(Number)_ - Latitude of the point around which you wish to retrieve place information *(required if `longitude` is given)*
+- **`longitude`** _(Number)_ - Longitude of the point around which you wish to retrieve place information *(required if `latitude` is given)*
+- **`radius`** _(Number)_ - Radius (in kilo-meters) within which to retrieve place information. Only works if `latitude` and `longitude` are also given. Note that setting a radius biases results to the indicated area, but may not fully restrict results to the specified area. Defaults to `0.1`.
+
 
 #### Example Response from Calling getAutocompletePredictions()
 
