@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-	private ReactApplicationContext reactContext;
+    private ReactApplicationContext reactContext;
     private Promise pendingPromise;
     public static final String TAG = "RNGooglePlaces";
 
@@ -52,12 +52,12 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
-    	super(reactContext);
+        super(reactContext);
 
         buildGoogleApiClient();
 
-    	this.reactContext = reactContext;
-    	this.reactContext.addActivityEventListener(this);
+        this.reactContext = reactContext;
+        this.reactContext.addActivityEventListener(this);
     }
 
     @Override
@@ -99,14 +99,14 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putString("address", place.getAddress().toString());
 
                 if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-                	map.putString("phoneNumber", place.getPhoneNumber().toString());
+                    map.putString("phoneNumber", place.getPhoneNumber().toString());
                 }
                 if (null != place.getWebsiteUri()) {
-                	map.putString("website", place.getWebsiteUri().toString());
+                    map.putString("website", place.getWebsiteUri().toString());
                 }
                 map.putString("placeID", place.getId());
                 if (!TextUtils.isEmpty(attributions)) {
-                	map.putString("attributions", attributions.toString());
+                    map.putString("attributions", attributions.toString());
                 }
                 List<String> types = new ArrayList<>();
                 for (Integer placeType : place.getPlaceTypes()) {
@@ -114,7 +114,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 }
                 map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
 
-				resolvePromise(map);
+                resolvePromise(map);
 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this.reactContext.getApplicationContext(), data);
@@ -226,15 +226,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         double latitude = options.getDouble("latitude");
         double longitude = options.getDouble("longitude");
         double radius = options.getDouble("radius");
-        boolean useOverlay = options.getBoolean("useOverlay");
         LatLng center = new LatLng(latitude, longitude);
 
         try {
-            PlaceAutocomplete.IntentBuilder intentBuilder =
-                    new PlaceAutocomplete.IntentBuilder(useOverlay ?
-                            PlaceAutocomplete.MODE_OVERLAY :
-                            PlaceAutocomplete.MODE_FULLSCREEN
-                    );
+            PlacePicker.IntentBuilder intentBuilder =
+                    new PlacePicker.IntentBuilder();
 
             if (latitude != 0 && longitude != 0 && radius != 0) {
                 intentBuilder.setLatLngBounds(this.getLatLngBounds(center, radius));
@@ -254,11 +250,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void getAutocompletePredictions(String query, ReadableMap filter, final Promise promise) {
+    public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
 
-        String type = filter.getString("type");
-        String country = filter.getString("country");
+        String type = options.getString("type");
+        String country = options.getString("country");
         country = country.isEmpty() ? null : country;
 
         double latitude = options.getDouble("latitude");

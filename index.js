@@ -28,7 +28,7 @@ class RNGooglePlaces {
 
 	openPlacePickerModal(latLngBounds = {}) {
 		return RNGooglePlacesNative.openPlacePickerModal({
-		    ...RNGooglePlaces.boundsDefaults,
+            ...RNGooglePlaces.boundsDefaults,
 		    ...latLngBounds
         })
 	}
@@ -36,7 +36,8 @@ class RNGooglePlaces {
 	getAutocompletePredictions(query, filterOptions = {}) {
 		return RNGooglePlacesNative.getAutocompletePredictions(query, {
             ...RNGooglePlaces.filterDefaults,
-            ...filterOptions
+            ...RNGooglePlaces.boundsDefaults,
+			...filterOptions
 		})
 	}
 
