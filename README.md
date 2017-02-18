@@ -11,8 +11,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.6)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.6)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.8)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.8)
 
 ## Install
 
@@ -138,7 +138,7 @@ class GPlacesDemo extends Component {
   openSearchModal() {
     RNGooglePlaces.openAutocompleteModal()
     .then((place) => {
-    console.log(place);     
+    console.log(place);
     // place represents user's selection from the
     // suggestions and it is a simplified Google Place object.
     })
@@ -165,11 +165,11 @@ To filter autocomplete results as listed for [Android](https://developers.google
 
 ```javascript
   RNGooglePlaces.openAutocompleteModal({
-	  type: 'establishment',
-	  country: 'CA',
-	  latitude: 53.544389,
-	  longitude: -113.490927,
-	  radius: 10
+    type: 'establishment',
+    country: 'CA',
+    latitude: 53.544389,
+    longitude: -113.490927,
+    radius: 10
   })
     .then((place) => {
     console.log(place);
@@ -190,7 +190,7 @@ class GPlacesDemo extends Component {
   openSearchModal() {
     RNGooglePlaces.openPlacePickerModal()
     .then((place) => {
-    console.log(place);     
+    console.log(place);
     // place represents user's selection from the
     // suggestions and it is a simplified Google Place object.
     })
@@ -218,11 +218,12 @@ To set the initial viewport that the place picker map should show when the picke
 - **`radius`** _(Number)_ - Radius (in kilo-meters) from the center of the map view to the edge. Use this to set the default "zoom" of the map view when it is first opened. Only works if `latitude` and `longitude` are also given. Defaults to `0.1`.
 
 If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), the viewport will be centered on the device's location, with the zoom at city-block level.
+
 ```javascript
   RNGooglePlaces.openPlacePickerModal({
-	  latitude: 53.544389,
-	  longitude: -113.490927,
-	  radius: 0.01 // 10 meters
+    latitude: 53.544389,
+    longitude: -113.490927,
+    radius: 0.01 // 10 meters
   })
     .then((place) => {
     console.log(place);
@@ -233,14 +234,14 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 #### Example Response from the Autocomplete & PlacePicker Modals
 ```javascript
 {
-	placeID: "ChIJZa6ezJa8j4AR1p1nTSaRtuQ",
-	website: "https://www.facebook.com/",
-	phoneNumber: "+1 650-543-4800",
-	address: "1 Hacker Way, Menlo Park, CA 94025, USA",
-	name: "Facebook HQ",
-	types: [ 'street_address', 'geocode' ],
-	latitude: 37.4843428,
-	longitude: -122.14839939999999
+  placeID: "ChIJZa6ezJa8j4AR1p1nTSaRtuQ",
+  website: "https://www.facebook.com/",
+  phoneNumber: "+1 650-543-4800",
+  address: "1 Hacker Way, Menlo Park, CA 94025, USA",
+  name: "Facebook HQ",
+  types: [ 'street_address', 'geocode' ],
+  latitude: 37.4843428,
+  longitude: -122.14839939999999
 }
 ```
 - Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website` are not set on all `Google Place` objects.
@@ -261,8 +262,8 @@ To filter autocomplete results as listed for [Android](https://developers.google
 
 ```javascript
   RNGooglePlaces.getAutocompletePredictions('Lagos', {
-	  type: 'cities',
-	  country: 'NG'
+    type: 'cities',
+    country: 'NG'
   })
     .then((place) => {
     console.log(place);
@@ -270,12 +271,13 @@ To filter autocomplete results as listed for [Android](https://developers.google
     .catch(error => console.log(error.message));
 ```
 OR
+
 ```javascript
 RNGooglePlaces.getAutocompletePredictions('pizza', {
-	  type: 'establishments',
-	  latitude: 53.544389,
-	  longitude: -113.490927,
-	  radius: 10
+    type: 'establishments',
+    latitude: 53.544389,
+    longitude: -113.490927,
+    radius: 10
   })
     .then((place) => {
     console.log(place);
