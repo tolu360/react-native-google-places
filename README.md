@@ -11,8 +11,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.0.9)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.0.9)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.1.0)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0)
 
 ## Install
 
@@ -357,7 +357,7 @@ You have to link dependencies and re-run the build:
 - Android (API 23+) / Google APIs Intel x86 Atom System Image Rev. 13
 - Check manual installation steps
 - Ensure your API key has permissions for `Google Place` and `Google Android Maps`
--  If you have a different version of play serivces than the one included in this library (which is currently at 9.8.0), use the following instead (switch 10.0.1 for the desired version) in your `android/app/build.grade` file:
+-  If you have a different version of play serivces than the one included in this library (which is currently at 10.2.0), use the following instead (switch 10.0.1 for the desired version) in your `android/app/build.grade` file:
    
    ```groovy
    ...
