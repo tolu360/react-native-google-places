@@ -49,7 +49,7 @@ react-native link react-native-google-places
 
 ##### Install CocoaPods Dependencies
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
-- If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project. 
+- If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project.
 - Add `pod 'GooglePlaces'`, (`pod 'GooglePlacePicker'` only if you are using the PlacePickerModal) and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
 
 ```ruby
@@ -249,6 +249,16 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 ### Using Your Own Custom UI/Views
 If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
 
+#### Get Current Places
+
+```javascript
+RNGooglePlaces.getCurrentPlaces()
+      .then((place) => {
+           console.log(place);
+         })
+      .catch(error => console.log(error.message));
+```
+
 #### Get Autocomplete Predictions
 
 ```javascript
@@ -328,7 +338,7 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
   latitude: 37.48485,
   placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
   types: [ 'street_address', 'geocode' ],
-  phoneNumber: '+1 650-543-4800' 
+  phoneNumber: '+1 650-543-4800'
 }
 ```
 #### Design Hint
@@ -358,7 +368,7 @@ You have to link dependencies and re-run the build:
 - Check manual installation steps
 - Ensure your API key has permissions for `Google Place` and `Google Android Maps`
 -  If you have a different version of play serivces than the one included in this library (which is currently at 10.2.0), use the following instead (switch 10.0.1 for the desired version) in your `android/app/build.grade` file:
-   
+
    ```groovy
    ...
    dependencies {
@@ -376,6 +386,3 @@ You have to link dependencies and re-run the build:
 
 ## License
 The MIT License.
-
-
-

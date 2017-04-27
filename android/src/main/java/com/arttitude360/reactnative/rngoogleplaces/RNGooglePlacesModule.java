@@ -319,6 +319,58 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
+    public void getCurrentPlaces(final Promise promise) {
+        this.pendingPromise = promise;
+
+
+        PendingResult<AutocompletePredictionBuffer> results = Places.GeoDataApi.getCurrentPlace();
+
+        AutocompletePredictionBuffer autocompletePredictions = results
+            .await(60, TimeUnit.SECONDS);
+
+        final Status status = autocompletePredictions.getStatus();
+
+        if (status.isSuccess()) {
+            if (autocompletePredictions.getCount() == 0) {
+                WritableArray emptyResult = Arguments.createArray();
+                autocompletePredictions.release();
+                resolvePromise(emptyResult);
+                return;
+            }
+
+            WritableArray predictionsList = Arguments.createArray();
+
+            for (AutocompletePrediction prediction : autocompletePredictions) {
+                WritableMap map = Arguments.createMap();
+                map.putString("name", prediction.getName().toString());
+                map.putString("address", prediction.getAddress().toString());
+                map.putString("attributions", prediction.getAttributions(null).toString());
+                map.putString("placeID", prediction.getPlaceId().toString());
+
+                if (prediction.getPlaceTypes() != null) {
+                    List<String> types = new ArrayList<>();
+                    for (Integer placeType : prediction.getPlaceTypes()) {
+                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                    }
+                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                }
+
+                predictionsList.pushMap(map);
+            }
+
+            // Release the buffer now that all data has been copied.
+            autocompletePredictions.release();
+            resolvePromise(predictionsList);
+
+        } else {
+            Log.i(TAG, "Error making current places API call: " + status.toString());
+            autocompletePredictions.release();
+            rejectPromise("E_AUTOCOMPLETE_ERROR", new Error("Error making current places API call: " + status.toString()));
+            return;
+        }
+    }
+
+    @ReactMethod
     public void lookUpPlaceByID(String placeID, final Promise promise) {
         this.pendingPromise = promise;
 
