@@ -63,6 +63,7 @@ target 'YOUR_APP_TARGET_NAME' do
 
 end
 ```
+- **IMPORTANT:** Make sure you do **NOT** use `use_frameworks!` in your Podfile
 - In your AppDelegate.m file, import the Google Places library by adding `@import GooglePlaces;` and `@import GoogleMaps;` on top of the file.
 - Within the `didFinishLaunchingWithOptions` method, instantiate the library as follows:
 
