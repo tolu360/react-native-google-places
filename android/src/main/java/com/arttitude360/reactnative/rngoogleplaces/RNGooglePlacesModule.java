@@ -96,8 +96,10 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putDouble("latitude", place.getLatLng().latitude);
                 map.putDouble("longitude", place.getLatLng().longitude);
                 map.putString("name", place.getName().toString());
-                map.putString("address", place.getAddress().toString());
 
+                if (!TextUtils.isEmpty(place.getAddress())) {
+                    map.putString("address", place.getAddress().toString());
+                }
                 if (!TextUtils.isEmpty(place.getPhoneNumber())) {
                     map.putString("phoneNumber", place.getPhoneNumber().toString());
                 }
