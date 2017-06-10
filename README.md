@@ -50,7 +50,7 @@ react-native link react-native-google-places
 ##### Install CocoaPods Dependencies
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
 - If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project. 
-- Add `pod 'GooglePlaces'`, (`pod 'GooglePlacePicker'` only if you are using the PlacePickerModal) and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
+- Add `pod 'GooglePlaces'`, `pod 'GooglePlacePicker'` and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
 
 ```ruby
 source 'https://github.com/CocoaPods/Specs.git'
