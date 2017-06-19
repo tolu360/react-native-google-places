@@ -319,7 +319,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void getPlacesDectectionApi(final Promise promise) {
+    public void getPlacesDetectionApi(final Promise promise) {
         this.pendingPromise = promise;
 
 

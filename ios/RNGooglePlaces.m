@@ -87,7 +87,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                                              }];
 }
 
-RCT_EXPORT_METHOD(getPlacesDectectionApi: (RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(getPlacesDetectionApi: (RCTPromiseResolveBlock)resolve
                                     rejecter: (RCTPromiseRejectBlock)reject)
 {
     NSMutableArray *autoCompleteSuggestionsList = [NSMutableArray array];

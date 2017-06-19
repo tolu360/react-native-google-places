@@ -45,8 +45,8 @@ class RNGooglePlaces {
 		return RNGooglePlacesNative.lookUpPlaceByID(placeID)
 	}
 
-	getPlacesDectectionApi() {
-		return RNGooglePlacesNative.getPlacesDectectionApi()
+	getPlacesDetectionApi() {
+		return RNGooglePlacesNative.getPlacesDetectionApi()
 	}
 }
 
