@@ -347,7 +347,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putDouble("longitude", placeLikelihood.getLatLng().longitude);
                 map.putString("name", placeLikelihood.getName().toString());
                 map.putString("address", placeLikelihood.getAddress().toString());
-                map.putString("likelihood", placeLikelihood.getLikelihood());
+                map.putDouble("likelihood", placeLikelihood.getLikelihood());
 
                 if (!TextUtils.isEmpty(placeLikelihood.getPhoneNumber())) {
                     map.putString("phoneNumber", placeLikelihood.getPhoneNumber().toString());
