@@ -249,14 +249,28 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 ### Using Your Own Custom UI/Views
 If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
 
-#### Get Current Places
+#### Get Places Detection Api
 
 ```javascript
-RNGooglePlaces.getCurrentPlaces()
+RNGooglePlaces.getPlacesDectectionApi()
       .then((place) => {
            console.log(place);
          })
       .catch(error => console.log(error.message));
+```
+
+#### Example Response from the Autocomplete & PlacePicker Modals
+```javascript
+{ name: 'Facebook HQ',
+website: 'https://www.facebook.com/',
+longitude: -122.14835169999999,
+address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+latitude: 37.48485,
+placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+types: [ 'street_address', 'geocode' ],
+phoneNumber: '+1 650-543-4800',
+likelihood: 0.5
+}
 ```
 
 #### Get Autocomplete Predictions
