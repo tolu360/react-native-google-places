@@ -87,7 +87,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                                              }];
 }
 
-RCT_EXPORT_METHOD(getCurrentPlaces: (RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(getPlacesDectectionApi: (RCTPromiseResolveBlock)resolve
                                     rejecter: (RCTPromiseRejectBlock)reject)
 {
     NSMutableArray *autoCompleteSuggestionsList = [NSMutableArray array];
@@ -102,10 +102,15 @@ RCT_EXPORT_METHOD(getCurrentPlaces: (RCTPromiseResolveBlock)resolve
             GMSPlace* place = likelihood.place;
             NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
             placeData[@"name"] = place.name;
+            placeData[@"website"] = place.website.absoluteString;
             placeData[@"address"] = place.formattedAddress;
-            placeData[@"attributions"] = place.attributions.string;
+            placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
+            placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
             placeData[@"placeID"] = place.placeID;
-
+            placeData[@"types"] = place.types;
+            placeData[@"phoneNumber"] = place.phoneNumber;
+            placeData[@"attributions"] = place.attributions.string;
+            placeData[@"likelihood"] = [NSNumber numberWithDouble:likelihood.likelihood];
             [autoCompleteSuggestionsList addObject:placeData];
         }
 

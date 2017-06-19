@@ -319,37 +319,50 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void getCurrentPlaces(final Promise promise) {
+    public void getPlacesDectectionApi(final Promise promise) {
         this.pendingPromise = promise;
 
 
-        PendingResult<AutocompletePredictionBuffer> results = Places.GeoDataApi.getCurrentPlace();
+        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
 
-        AutocompletePredictionBuffer autocompletePredictions = results
-            .await(60, TimeUnit.SECONDS);
+        PlaceLikelihoodBuffer likelihoodPredictions = results.await(60, TimeUnit.SECONDS);
 
-        final Status status = autocompletePredictions.getStatus();
+        final Status status = likelihoodPredictions.getStatus();
 
         if (status.isSuccess()) {
-            if (autocompletePredictions.getCount() == 0) {
+            if (likelihoodPredictions.getCount() == 0) {
                 WritableArray emptyResult = Arguments.createArray();
-                autocompletePredictions.release();
+                likelihoodPredictions.release();
                 resolvePromise(emptyResult);
                 return;
             }
 
             WritableArray predictionsList = Arguments.createArray();
 
-            for (AutocompletePrediction prediction : autocompletePredictions) {
+            for (PlaceLikelihood placeLikelihood : likelihoodPredictions) {
                 WritableMap map = Arguments.createMap();
-                map.putString("name", prediction.getName().toString());
-                map.putString("address", prediction.getAddress().toString());
-                map.putString("attributions", prediction.getAttributions(null).toString());
-                map.putString("placeID", prediction.getPlaceId().toString());
 
-                if (prediction.getPlaceTypes() != null) {
+                WritableMap map = Arguments.createMap();
+                map.putDouble("latitude", placeLikelihood.getLatLng().latitude);
+                map.putDouble("longitude", placeLikelihood.getLatLng().longitude);
+                map.putString("name", placeLikelihood.getName().toString());
+                map.putString("address", placeLikelihood.getAddress().toString());
+                map.putString("likelihood", placeLikelihood.getLikelihood());
+
+                if (!TextUtils.isEmpty(placeLikelihood.getPhoneNumber())) {
+                    map.putString("phoneNumber", placeLikelihood.getPhoneNumber().toString());
+                }
+                if (null != placeLikelihood.getWebsiteUri()) {
+                    map.putString("website", placeLikelihood.getWebsiteUri().toString());
+                }
+                map.putString("placeID", placeLikelihood.getId());
+                if (!TextUtils.isEmpty(attributions)) {
+                    map.putString("attributions", attributions.toString());
+                }
+
+                if (placeLikelihood.getPlaceTypes() != null) {
                     List<String> types = new ArrayList<>();
-                    for (Integer placeType : prediction.getPlaceTypes()) {
+                    for (Integer placeType : placeLikelihood.getPlaceTypes()) {
                         types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
                     }
                     map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
@@ -359,13 +372,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             }
 
             // Release the buffer now that all data has been copied.
-            autocompletePredictions.release();
+            likelihoodPredictions.release();
             resolvePromise(predictionsList);
 
         } else {
-            Log.i(TAG, "Error making current places API call: " + status.toString());
-            autocompletePredictions.release();
-            rejectPromise("E_AUTOCOMPLETE_ERROR", new Error("Error making current places API call: " + status.toString()));
+            Log.i(TAG, "Error making places detection api call: " + status.toString());
+            likelihoodPredictions.release();
+            rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api: " + status.toString()));
             return;
         }
     }
