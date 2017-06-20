@@ -110,9 +110,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
                 Log.i(TAG, "Place Selected: " + place.getName());
 
-                // Display attributions if required.
-                CharSequence attributions = place.getAttributions();
-
                 WritableMap map = propertiesMapForPlace(place);
 
                 resolvePromise(map);
