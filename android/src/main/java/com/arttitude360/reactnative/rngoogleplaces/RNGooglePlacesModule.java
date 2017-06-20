@@ -89,30 +89,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 Place place = PlaceAutocomplete.getPlace(this.reactContext.getApplicationContext(), data);
                 Log.i(TAG, "Place Selected: " + place.getName());
 
-                // Display attributions if required.
-                CharSequence attributions = place.getAttributions();
-
-                WritableMap map = Arguments.createMap();
-                map.putDouble("latitude", place.getLatLng().latitude);
-                map.putDouble("longitude", place.getLatLng().longitude);
-                map.putString("name", place.getName().toString());
-                map.putString("address", place.getAddress().toString());
-
-                if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-                    map.putString("phoneNumber", place.getPhoneNumber().toString());
-                }
-                if (null != place.getWebsiteUri()) {
-                    map.putString("website", place.getWebsiteUri().toString());
-                }
-                map.putString("placeID", place.getId());
-                if (!TextUtils.isEmpty(attributions)) {
-                    map.putString("attributions", attributions.toString());
-                }
-                List<String> types = new ArrayList<>();
-                for (Integer placeType : place.getPlaceTypes()) {
-                    types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
-                }
-                map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                WritableMap map = propertiesMapForPlace(place);
 
                 resolvePromise(map);
 
@@ -136,29 +113,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 // Display attributions if required.
                 CharSequence attributions = place.getAttributions();
 
-                WritableMap map = Arguments.createMap();
-                map.putDouble("latitude", place.getLatLng().latitude);
-                map.putDouble("longitude", place.getLatLng().longitude);
-                map.putString("name", place.getName().toString());
-                map.putString("address", place.getAddress().toString());
-
-                if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-                    map.putString("phoneNumber", place.getPhoneNumber().toString());
-                }
-                if (null != place.getWebsiteUri()) {
-                    map.putString("website", place.getWebsiteUri().toString());
-                }
-                map.putString("placeID", place.getId());
-                if (!TextUtils.isEmpty(attributions)) {
-                    map.putString("attributions", attributions.toString());
-                }
-
-                List<String> types = new ArrayList<>();
-                for (Integer placeType : place.getPlaceTypes()) {
-                    types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
-                }
-                map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
-
+                WritableMap map = propertiesMapForPlace(place);
 
                 resolvePromise(map);
             }
@@ -335,33 +290,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
                     final Place place = places.get(0);
 
-                    // Display attributions if required.
-                    CharSequence attributions = place.getAttributions();
+                    WritableMap map = propertiesMapForPlace(place);
 
-                    WritableMap map = Arguments.createMap();
-                    map.putDouble("latitude", place.getLatLng().latitude);
-                    map.putDouble("longitude", place.getLatLng().longitude);
-                    map.putString("name", place.getName().toString());
-                    map.putString("address", place.getAddress().toString());
-
-                    if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-                        map.putString("phoneNumber", place.getPhoneNumber().toString());
-                    }
-                    if (null != place.getWebsiteUri()) {
-                        map.putString("website", place.getWebsiteUri().toString());
-                    }
-                    map.putString("placeID", place.getId());
-                    if (!TextUtils.isEmpty(attributions)) {
-                        map.putString("attributions", attributions.toString());
-                    }
-
-                    if (place.getPlaceTypes() != null) {
-                        List<String> types = new ArrayList<>();
-                        for (Integer placeType : place.getPlaceTypes()) {
-                            types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
-                        }
-                        map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
-                    }
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();
 
@@ -373,6 +303,53 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 }
             }
         });
+    }
+
+    private WritableMap propertiesMapForPlace(Place place) {
+        // Display attributions if required.
+        CharSequence attributions = place.getAttributions();
+
+        WritableMap map = Arguments.createMap();
+        map.putDouble("latitude", place.getLatLng().latitude);
+        map.putDouble("longitude", place.getLatLng().longitude);
+        map.putString("name", place.getName().toString());
+        map.putString("address", place.getAddress().toString());
+
+        if (!TextUtils.isEmpty(place.getPhoneNumber())) {
+            map.putString("phoneNumber", place.getPhoneNumber().toString());
+        }
+        if (null != place.getWebsiteUri()) {
+            map.putString("website", place.getWebsiteUri().toString());
+        }
+        map.putString("placeID", place.getId());
+        if (!TextUtils.isEmpty(attributions)) {
+            map.putString("attributions", attributions.toString());
+        }
+
+        if (place.getPlaceTypes() != null) {
+            List<String> types = new ArrayList<>();
+            for (Integer placeType : place.getPlaceTypes()) {
+                types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+            }
+            map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+        }
+
+        if (place.getViewport() != null) {
+            map.putDouble("north", place.getViewport().northeast.latitude);
+            map.putDouble("east", place.getViewport().northeast.longitude);
+            map.putDouble("south", place.getViewport().southwest.latitude);
+            map.putDouble("west", place.getViewport().southwest.longitude);
+        }
+
+        if (place.getPriceLevel() >= 0) {
+            map.putInt("priceLevel", place.getPriceLevel());
+        }
+
+        if (place.getRating() >= 0) {
+            map.putDouble("rating", place.getRating());
+        }
+
+        return map;
     }
 
     private AutocompleteFilter getFilterType(String type, String country) {
