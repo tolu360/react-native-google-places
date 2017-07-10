@@ -2,6 +2,7 @@ package com.arttitude360.reactnative.rngoogleplaces;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.annotations.ReactProp;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -49,6 +51,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static int PLACE_PICKER_REQUEST_CODE = 361;
+    public static int PLACES_RESOLUTION_CODE = 362;
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
@@ -113,6 +116,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 WritableMap map = propertiesMapForPlace(place);
 
                 resolvePromise(map);
+            }
+        }
+
+        if (requestCode == PLACES_RESOLUTION_CODE) {
+            Log.i(TAG, "Google API Client resolution result: " + resultCode);
+            if (resultCode == Activity.RESULT_OK) {
+                if (!mGoogleApiClient.isConnecting() &&
+                        !mGoogleApiClient.isConnected()) {
+                    mGoogleApiClient.connect();
+                }
             }
         }
     }
@@ -205,6 +218,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
 
+        if (this.isClientDisconnected()) return;
+
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
@@ -273,6 +288,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     @ReactMethod
     public void lookUpPlaceByID(String placeID, final Promise promise) {
         this.pendingPromise = promise;
+
+        if (this.isClientDisconnected()) return;
 
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlaceBuffer>() {
             @Override
@@ -425,6 +442,20 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return RNGooglePlacesPlaceTypeEnum.findByTypeId(id).getLabel();
     }
 
+    // check before any use of Google API Client
+    private boolean isClientDisconnected() {
+        if (!mGoogleApiClient.isConnecting() &&
+                !mGoogleApiClient.isConnected()) {
+            rejectPromise("E_GOOGLE_CLIENT_DISCONNECTED", new Error("GoogleApiClient is not connected. Will try connect again"));
+            // this will trigger again resolution on connection failure when
+            // autoClientResolution is true and if has resolution
+            mGoogleApiClient.connect();
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onNewIntent(Intent intent) {
     }
@@ -438,13 +469,32 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
         // Refer to Google Play documentation for what errors can be logged
-        Log.i(TAG, "GoogleApiClient Connection Failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        boolean hasResolution = result.hasResolution();
+
+        Log.i(TAG, "GoogleApiClient: connection failed with error: " + result.getErrorMessage() +
+                " (" + result.getErrorCode() + ")" +
+                ", has resolution: " +
+                (hasResolution ? "YES" : "NO"));
+
+        if (hasResolution) {
+            Activity activity = getCurrentActivity();
+            if (activity != null) {
+                try {
+                    result.startResolutionForResult(activity, PLACES_RESOLUTION_CODE);
+                } catch (IntentSender.SendIntentException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // activity sometimes not attached to react context on app start,
+                // client connection will be checked before making request
+                Log.i(TAG, "GoogleApiClient: can't resolve, activity == null");
+            }
+        }
     }
 
     @Override
     public void onConnectionSuspended(int cause) {
         // Attempts to reconnect if a disconnect occurs
         Log.i(TAG, "GoogleApiClient Connection Suspended");
-        mGoogleApiClient.connect();
     }
 }
