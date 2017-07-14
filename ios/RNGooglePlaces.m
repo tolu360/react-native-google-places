@@ -1,5 +1,6 @@
 
 #import "RNGooglePlaces.h"
+#import "NSDictionary+GMSPlace.h"
 #import <React/RCTBridge.h>
 #import "RNGooglePlacesViewController.h"
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
@@ -99,25 +100,8 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                                  return;
                                              }
                                              
-                                             if (place != nil) {
-                                                 NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
-                                                 placeData[@"name"] = place.name;
-                                                 placeData[@"address"] = place.formattedAddress;
-                                                 placeData[@"attributions"] = place.attributions.string;
-                                                 placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
-                                                 placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
-                                                 placeData[@"phoneNumber"] = place.phoneNumber;
-                                                 placeData[@"website"] = place.website.absoluteString;
-                                                 placeData[@"placeID"] = place.placeID;
-                                                 placeData[@"types"] = place.types;
-                                                 
-                                                 NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-                                                 for( int i=0;i<place.addressComponents.count;i++) {
-                                                     addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
-                                                 }
-                                                 placeData[@"addressComponents"] = addressComponents;
-                                                 
-                                                 resolve(placeData);
+                                             if (place) {
+                                                 resolve([NSDictionary dictionaryWithGMSPlace:place]);
                                              } else {
                                                  resolve(@{});
                                              }
