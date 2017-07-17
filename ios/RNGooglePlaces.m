@@ -1,6 +1,6 @@
 
 #import "RNGooglePlaces.h"
-#import "NSDictionary+GMSPlace.h"
+#import "NSMutableDictionary+GMSPlace.h"
 #import <React/RCTBridge.h>
 #import "RNGooglePlacesViewController.h"
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
@@ -101,12 +101,37 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                              }
                                              
                                              if (place) {
-                                                 resolve([NSDictionary dictionaryWithGMSPlace:place]);
+                                                 resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
                                              } else {
                                                  resolve(@{});
                                              }
                                          }];
 }
+
+
+RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
+                                    rejecter: (RCTPromiseRejectBlock)reject)
+{
+    NSMutableArray *likelyPlacesList = [NSMutableArray array];
+
+    [[GMSPlacesClient sharedClient] currentPlaceWithCallback:^(GMSPlaceLikelihoodList * _Nullable likelihoodList, NSError * _Nullable error) {
+        if (error != nil) {
+            reject(@"E_CURRENT_PLACE_ERROR", [error localizedDescription], nil);
+            return;
+        }
+
+        for (GMSPlaceLikelihood *likelihood in likelihoodList.likelihoods) {
+            // GMSPlace* place = likelihood.place;
+            NSMutableDictionary *placeData = [NSMutableDictionary dictionaryWithGMSPlace:likelihood.place];
+            placeData[@"likelihood"] = [NSNumber numberWithDouble:likelihood.likelihood];
+
+            [likelyPlacesList addObject:placeData];
+        }
+
+        resolve(likelyPlacesList);
+    }];
+}
+
 
 
 - (NSError *) errorFromException: (NSException *) exception
