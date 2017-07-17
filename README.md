@@ -50,7 +50,7 @@ react-native link react-native-google-places
 ##### Install CocoaPods Dependencies
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
 - If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project.
-- Add `pod 'GooglePlaces'`, `pod 'GooglePlacePicker'` and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
+- Add `pod 'GooglePlaces'`, (`pod 'GooglePlacePicker'` only if you are using the PlacePickerModal) and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
 
 ```ruby
 source 'https://github.com/CocoaPods/Specs.git'
@@ -249,6 +249,30 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 ### Using Your Own Custom UI/Views
 If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
 
+#### Get Places Detection Api
+
+```javascript
+RNGooglePlaces.getPlacesDectectionApi()
+      .then((place) => {
+           console.log(place);
+         })
+      .catch(error => console.log(error.message));
+```
+
+#### Example Response from the Autocomplete & PlacePicker Modals
+```javascript
+{ name: 'Facebook HQ',
+website: 'https://www.facebook.com/',
+longitude: -122.14835169999999,
+address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+latitude: 37.48485,
+placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+types: [ 'street_address', 'geocode' ],
+phoneNumber: '+1 650-543-4800',
+likelihood: 0.5
+}
+```
+
 #### Get Autocomplete Predictions
 
 ```javascript
@@ -378,6 +402,3 @@ You have to link dependencies and re-run the build:
 
 ## License
 The MIT License.
-
-
-

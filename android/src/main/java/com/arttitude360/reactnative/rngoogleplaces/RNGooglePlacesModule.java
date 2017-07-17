@@ -1,8 +1,11 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -28,6 +31,8 @@ import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -67,10 +72,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext())
-            .addApi(Places.GEO_DATA_API)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .build();
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         mGoogleApiClient.connect();
     }
@@ -226,7 +232,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                                 bounds, getFilterType(type, country));
 
         AutocompletePredictionBuffer autocompletePredictions = results
-            .await(60, TimeUnit.SECONDS);
+                .await(60, TimeUnit.SECONDS);
 
         final Status status = autocompletePredictions.getStatus();
 
@@ -266,6 +272,72 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             Log.i(TAG, "Error making autocomplete prediction API call: " + status.toString());
             autocompletePredictions.release();
             rejectPromise("E_AUTOCOMPLETE_ERROR", new Error("Error making autocomplete prediction API call: " + status.toString()));
+            return;
+        }
+    }
+
+    @ReactMethod
+    public void getPlacesDetectionApi(final Promise promise) {
+        this.pendingPromise = promise;
+
+        checkIfHasPermission();
+
+        PendingResult<PlaceLikelihoodBuffer> results = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
+
+        PlaceLikelihoodBuffer likelihoodPredictions = results.await(60, TimeUnit.SECONDS);
+
+        final Status status = likelihoodPredictions.getStatus();
+
+        if (status.isSuccess()) {
+            if (likelihoodPredictions.getCount() == 0) {
+                WritableArray emptyResult = Arguments.createArray();
+                likelihoodPredictions.release();
+                resolvePromise(emptyResult);
+                return;
+            }
+
+            WritableArray predictionsList = Arguments.createArray();
+
+            for (PlaceLikelihood placeLikelihood : likelihoodPredictions) {
+                // Display attributions if required.
+                CharSequence attributions = placeLikelihood.getPlace().getAttributions();
+                WritableMap map = Arguments.createMap();
+                map.putDouble("latitude", placeLikelihood.getPlace().getLatLng().latitude);
+                map.putDouble("longitude", placeLikelihood.getPlace().getLatLng().longitude);
+                map.putString("name", placeLikelihood.getPlace().getName().toString());
+                map.putString("address", placeLikelihood.getPlace().getAddress().toString());
+                map.putDouble("likelihood", placeLikelihood.getLikelihood());
+
+                if (!TextUtils.isEmpty(placeLikelihood.getPlace().getPhoneNumber())) {
+                    map.putString("phoneNumber", placeLikelihood.getPlace().getPhoneNumber().toString());
+                }
+                if (null != placeLikelihood.getPlace().getWebsiteUri()) {
+                    map.putString("website", placeLikelihood.getPlace().getWebsiteUri().toString());
+                }
+                map.putString("placeID", placeLikelihood.getPlace().getId());
+                if (!TextUtils.isEmpty(attributions)) {
+                    map.putString("attributions", attributions.toString());
+                }
+
+                if (placeLikelihood.getPlace().getPlaceTypes() != null) {
+                    List<String> types = new ArrayList<>();
+                    for (Integer placeType : placeLikelihood.getPlace().getPlaceTypes()) {
+                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                    }
+                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                }
+
+                predictionsList.pushMap(map);
+            }
+
+            // Release the buffer now that all data has been copied.
+            likelihoodPredictions.release();
+            resolvePromise(predictionsList);
+
+        } else {
+            Log.i(TAG, "Error making places detection api call: " + status.toString());
+            likelihoodPredictions.release();
+            rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api: " + status.toString()));
             return;
         }
     }
@@ -446,5 +518,21 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         // Attempts to reconnect if a disconnect occurs
         Log.i(TAG, "GoogleApiClient Connection Suspended");
         mGoogleApiClient.connect();
+    }
+
+
+    private void checkIfHasPermission() {
+        if (ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+           ActivityCompat.requestPermissions(getCurrentActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return;
+        }
     }
 }

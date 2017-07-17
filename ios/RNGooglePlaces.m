@@ -25,7 +25,7 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
 {
     @try {
         GMSCoordinateBounds *bounds = [self getBounds:options];
-        
+
         GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
         autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
         autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
@@ -43,7 +43,7 @@ RCT_EXPORT_METHOD(openPlacePickerModal: (NSDictionary *)options
 {
     @try {
         GMSCoordinateBounds *bounds = [self getBounds:options];
-        
+
         RNGooglePlacesViewController* a = [[RNGooglePlacesViewController alloc] init];
         [a openPlacePickerModal: bounds resolver: resolve rejecter: reject];
     }
@@ -62,7 +62,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
     autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
     GMSCoordinateBounds *bounds = [self getBounds:options];
-    
+
     [[GMSPlacesClient sharedClient] autocompleteQuery:query
                                                bounds:bounds
                                                filter:autocompleteFilter
@@ -71,21 +71,52 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                                                      reject(@"E_AUTOCOMPLETE_ERROR", [error description], nil);
                                                      return;
                                                  }
-                                                 
+
                                                  for (GMSAutocompletePrediction* result in results) {
                                                      NSMutableDictionary *placeData = [[NSMutableDictionary alloc] init];
-                                                     
+
                                                      placeData[@"fullText"] = result.attributedFullText.string;
                                                      placeData[@"primaryText"] = result.attributedPrimaryText.string;
                                                      placeData[@"secondaryText"] = result.attributedSecondaryText.string;
                                                      placeData[@"placeID"] = result.placeID;
                                                      placeData[@"types"] = result.types;
-                                                     
+
                                                      [autoCompleteSuggestionsList addObject:placeData];
                                                  }
-                                                 
+
                                                  resolve(autoCompleteSuggestionsList);
                                              }];
+}
+
+RCT_EXPORT_METHOD(getPlacesDetectionApi: (RCTPromiseResolveBlock)resolve
+                                    rejecter: (RCTPromiseRejectBlock)reject)
+{
+    NSMutableArray *autoCompleteSuggestionsList = [NSMutableArray array];
+
+    [[GMSPlacesClient sharedClient] currentPlaceWithCallback:^(GMSPlaceLikelihoodList * _Nullable likelihoodList, NSError * _Nullable error) {
+        if (error != nil) {
+            reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
+            return;
+        }
+
+        for (GMSPlaceLikelihood *likelihood in likelihoodList.likelihoods) {
+            GMSPlace* place = likelihood.place;
+            NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
+            placeData[@"name"] = place.name;
+            placeData[@"website"] = place.website.absoluteString;
+            placeData[@"address"] = place.formattedAddress;
+            placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
+            placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
+            placeData[@"placeID"] = place.placeID;
+            placeData[@"types"] = place.types;
+            placeData[@"phoneNumber"] = place.phoneNumber;
+            placeData[@"attributions"] = place.attributions.string;
+            placeData[@"likelihood"] = [NSNumber numberWithDouble:likelihood.likelihood];
+            [autoCompleteSuggestionsList addObject:placeData];
+        }
+
+        resolve(autoCompleteSuggestionsList);
+    }];
 }
 
 RCT_REMAP_METHOD(lookUpPlaceByID,
@@ -99,9 +130,26 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                                  reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
                                                  return;
                                              }
-                                             
-                                             if (place) {
-                                                 resolve([NSDictionary dictionaryWithGMSPlace:place]);
+
+                                             if (place != nil) {
+                                                 NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
+                                                 placeData[@"name"] = place.name;
+                                                 placeData[@"address"] = place.formattedAddress;
+                                                 placeData[@"attributions"] = place.attributions.string;
+                                                 placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
+                                                 placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
+                                                 placeData[@"phoneNumber"] = place.phoneNumber;
+                                                 placeData[@"website"] = place.website.absoluteString;
+                                                 placeData[@"placeID"] = place.placeID;
+                                                 placeData[@"types"] = place.types;
+
+                                                 NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
+                                                 for( int i=0;i<place.addressComponents.count;i++) {
+                                                     addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+                                                 }
+                                                 placeData[@"addressComponents"] = addressComponents;
+
+                                                 resolve(placeData);
                                              } else {
                                                  resolve(@{});
                                              }
@@ -118,7 +166,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                     @"callStackSymbols": exception.callStackSymbols,
                                     @"userInfo": exception.userInfo
                                     };
-    
+
     return [[NSError alloc] initWithDomain: @"RNGooglePlaces"
                                       code: 0
                                   userInfo: exceptionInfo];
@@ -159,17 +207,17 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
     double bearingRadians = [self radiansFromDegrees:bearingDegrees];
     double fromLatRadians = [self radiansFromDegrees:fromCoord.latitude];
     double fromLonRadians = [self radiansFromDegrees:fromCoord.longitude];
-    
+
     double toLatRadians = asin( sin(fromLatRadians) * cos(distanceRadians)
                                + cos(fromLatRadians) * sin(distanceRadians) * cos(bearingRadians) );
-    
+
     double toLonRadians = fromLonRadians + atan2(sin(bearingRadians)
                                                  * sin(distanceRadians) * cos(fromLatRadians), cos(distanceRadians)
                                                  - sin(fromLatRadians) * sin(toLatRadians));
-    
+
     // adjust toLonRadians to be in the range -180 to +180...
     toLonRadians = fmod((toLonRadians + 3*M_PI), (2*M_PI)) - M_PI;
-    
+
     CLLocationCoordinate2D result;
     result.latitude = [self degreesFromRadians:toLatRadians];
     result.longitude = [self degreesFromRadians:toLonRadians];
@@ -183,7 +231,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
     coordinate.longitude = (CLLocationDegrees) [[RCTConvert NSNumber:fromOptions[@"longitude"]] doubleValue];
     double radius = [[RCTConvert NSNumber:fromOptions[@"radius"]] doubleValue];
     GMSCoordinateBounds *bounds = nil;
-    
+
     if (coordinate.latitude != 0 && coordinate.longitude != 0 && radius != 0) {
         CLLocationCoordinate2D center = CLLocationCoordinate2DMake(coordinate.latitude, coordinate.longitude);
         CLLocationCoordinate2D northEast = [self coordinateFromCoord:center atDistanceKm:radius atBearingDegrees:45];
@@ -195,4 +243,3 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
 
 
 @end
-
