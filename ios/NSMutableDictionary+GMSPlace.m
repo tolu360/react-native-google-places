@@ -1,6 +1,6 @@
-#import "NSDictionary+GMSPlace.h"
+#import "NSMutableDictionary+GMSPlace.h"
 
-@implementation NSDictionary (GMSPlace)
+@implementation NSMutableDictionary (GMSPlace)
 
 + (instancetype)dictionaryWithGMSPlace:(GMSPlace*)place
 {
@@ -30,7 +30,7 @@
     }
     placeData[@"addressComponents"] = addressComponents;
     
-    return [NSDictionary dictionaryWithDictionary:placeData];
+    return placeData;
 }
 
 @end
