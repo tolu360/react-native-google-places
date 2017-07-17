@@ -337,9 +337,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             resolvePromise(likelyPlacesList);
 
         } else {
-            Log.i(TAG, "Error making places detection api call: " + status.toString());
+            Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
             likelyPlaces.release();
-            rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.toString()));
+            rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.getStatusMessage()));
             return;
         }
     }
