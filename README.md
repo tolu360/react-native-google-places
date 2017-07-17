@@ -244,7 +244,7 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 	longitude: -122.14839939999999
 }
 ```
-- Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website` are not set on all `Google Place` objects.
+- Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website, north, south, east, west, priceLevel, rating` are not set on all `Google Place` objects.
 
 ### Using Your Own Custom UI/Views
 If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
@@ -352,9 +352,11 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
   latitude: 37.48485,
   placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
   types: [ 'street_address', 'geocode' ],
-  phoneNumber: '+1 650-543-4800'
+  phoneNumber: '+1 650-543-4800',
 }
 ```
+- Note: Check Autocomplete & PlacePicker response for notes and other available keys.
+
 #### Design Hint
 The typical use flow would be to call `getAutocompletePredictions()` when the value of your search input changes to populate your suggestion listview and call `lookUpPlaceByID()` to retrieve the place details when a place on your listview is selected.
 

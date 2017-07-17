@@ -1,5 +1,6 @@
 
 #import "RNGooglePlaces.h"
+#import "NSDictionary+GMSPlace.h"
 #import <React/RCTBridge.h>
 #import "RNGooglePlacesViewController.h"
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
