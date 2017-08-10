@@ -15,7 +15,6 @@ Pod::Spec.new do |s|
   s.preserve_paths      = 'README.md', 'package.json', '*.js'
   s.source_files        = 'ios/**/*.{h,m}'
 
-  s.dependency 'React'
   s.dependency 'GooglePlaces', '2.1.1'
   s.dependency 'GoogleMaps', '2.1.1'
   s.dependency 'GooglePlacePicker', '2.1.1'
