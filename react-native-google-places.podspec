@@ -7,9 +7,16 @@ Pod::Spec.new do |s|
   s.summary             = package["description"]
   s.license             = package['license']
   s.author              = "Tolu Olowu"
+
   s.homepage            = "https://github.com/tolu360/react-native-google-places"
   s.source              = { :git => "https://github.com/tolu360/react-native-google-places.git", :tag => "v#{s.version}" }
+
   s.platform            = :ios, "8.0"
   s.preserve_paths      = 'README.md', 'package.json', '*.js'
   s.source_files        = 'ios/**/*.{h,m}'
+
+  s.dependency 'React'
+  s.dependency 'GooglePlaces', '2.1.1'
+  s.dependency 'GoogleMaps', '2.1.1'
+  s.dependency 'GooglePlacePicker', '2.1.1'
 end
