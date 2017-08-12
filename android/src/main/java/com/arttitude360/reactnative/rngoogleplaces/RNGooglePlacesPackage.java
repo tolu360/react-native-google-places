@@ -13,7 +13,7 @@ import java.util.List;
 
 public class RNGooglePlacesPackage implements ReactPackage {
 
-  // Deprecated RN 0.47
+    // Deprecated RN 0.47
     public List<Class<? extends JavaScriptModule>> createJSModules() {
         return Collections.emptyList();
     }
