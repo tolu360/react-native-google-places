@@ -1,5 +1,5 @@
 #import "RNGooglePlacesViewController.h"
-#import "NSDictionary+GMSPlace.h"
+#import "NSMutableDictionary+GMSPlace.h"
 
 #import <GooglePlaces/GooglePlaces.h>
 #import <GooglePlacePicker/GooglePlacePicker.h>
@@ -54,7 +54,7 @@
     [_placePicker pickPlaceWithCallback:^(GMSPlace *place, NSError *error) {
         if (place) {
             if (_resolve) {
-		        _resolve([NSDictionary dictionaryWithGMSPlace:place]);
+		        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
 		    }
         } else if (error) {
             _reject(@"E_PLACE_PICKER_ERROR", [error localizedDescription], nil);
@@ -74,7 +74,7 @@
     [topController dismissViewControllerAnimated:YES completion:nil];
 	
 	if (_resolve) {
-        _resolve([NSDictionary dictionaryWithGMSPlace:place]);
+        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
     }
 }
 

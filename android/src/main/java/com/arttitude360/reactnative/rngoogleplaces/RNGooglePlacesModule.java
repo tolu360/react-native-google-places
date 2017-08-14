@@ -30,6 +30,8 @@ import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -71,6 +73,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext())
             .addApi(Places.GEO_DATA_API)
+            .addApi(Places.PLACE_DETECTION_API)
             .addConnectionCallbacks(this)
             .addOnConnectionFailedListener(this)
             .build();
@@ -317,6 +320,45 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 }
             }
         });
+    }
+
+     @ReactMethod
+    public void getCurrentPlace(final Promise promise) {
+        this.pendingPromise = promise;
+        
+        PendingResult<PlaceLikelihoodBuffer> results = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
+
+        PlaceLikelihoodBuffer likelyPlaces = results.await(60, TimeUnit.SECONDS);
+
+        final Status status = likelyPlaces.getStatus();
+
+        if (status.isSuccess()) {
+            if (likelyPlaces.getCount() == 0) {
+                WritableArray emptyResult = Arguments.createArray();
+                likelyPlaces.release();
+                resolvePromise(emptyResult);
+                return;
+            }
+
+            WritableArray likelyPlacesList = Arguments.createArray();
+
+            for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
+                map.putDouble("likelihood", placeLikelihood.getLikelihood());
+
+                likelyPlacesList.pushMap(map);
+            }
+
+            // Release the buffer now that all data has been copied.
+            likelyPlaces.release();
+            resolvePromise(likelyPlacesList);
+
+        } else {
+            Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
+            likelyPlaces.release();
+            rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.getStatusMessage()));
+            return;
+        }
     }
 
     private WritableMap propertiesMapForPlace(Place place) {

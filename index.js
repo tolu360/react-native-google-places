@@ -44,6 +44,10 @@ class RNGooglePlaces {
 	lookUpPlaceByID(placeID) {
 		return RNGooglePlacesNative.lookUpPlaceByID(placeID)
 	}
+
+	getCurrentPlace() {
+		return RNGooglePlacesNative.getCurrentPlace()
+	}
 }
 
 export default new RNGooglePlaces()

@@ -11,7 +11,7 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.1.0)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.4.0)
 - for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0)
 
 ## Install
@@ -246,6 +246,34 @@ If no initial viewport is set (no argument is passed to the `openPlacePickerModa
 ```
 - Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website, north, south, east, west, priceLevel, rating` are not set on all `Google Place` objects.
 
+### Get Current Place
+This method returns to you the place where the device is currently located. That is, the place at the device's currently-reported location. For each place, the result includes an indication of the likelihood that the place is the right one. A higher value for `likelihood` means a greater probability that the place is the best match.
+
+```javascript
+  RNGooglePlaces.getCurrentPlace()
+    .then((results) => console.log(results))
+    .catch((error) => console.log(error.message));
+```
+#### Example Response from Calling getCurrentPlace()
+
+```javascript
+[{ name: 'Facebook HQ',
+  website: 'https://www.facebook.com/',
+  longitude: -122.14835169999999,
+  address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+  latitude: 37.48485,
+  placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+  types: [ 'street_address', 'geocode' ],
+  phoneNumber: '+1 650-543-4800',
+  likelihood: 0.9663974,
+  ...
+},{
+  ...
+}]
+```
+
+The sum of the likelihoods in a given result set is always less than or equal to 1.0. Note that the sum isn't necessarily 1.0.
+
 ### Using Your Own Custom UI/Views
 If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
 
@@ -359,7 +387,7 @@ You have to link dependencies and re-run the build:
 - Android (API 23+) / Google APIs Intel x86 Atom System Image Rev. 13
 - Check manual installation steps
 - Ensure your API key has permissions for `Google Place` and `Google Android Maps`
--  If you have a different version of play serivces than the one included in this library (which is currently at 10.2.0), use the following instead (switch 10.0.1 for the desired version) in your `android/app/build.grade` file:
+-  If you have a different version of play serivces than the one included in this library (which is currently at 10.2.4), use the following instead (switch 10.2.0 for the desired version) in your `android/app/build.grade` file:
 
    ```groovy
    ...
@@ -370,9 +398,9 @@ You have to link dependencies and re-run the build:
            exclude group: 'com.google.android.gms', module: 'play-services-places'
            exclude group: 'com.google.android.gms', module: 'play-services-location'
        }
-       compile 'com.google.android.gms:play-services-base:10.0.1'
-       compile 'com.google.android.gms:play-services-places:10.0.1'
-       compile 'com.google.android.gms:play-services-location:10.0.1'
+       compile 'com.google.android.gms:play-services-base:10.2.0'
+       compile 'com.google.android.gms:play-services-places:10.2.0'
+       compile 'com.google.android.gms:play-services-location:10.2.0'
    }
    ```
 

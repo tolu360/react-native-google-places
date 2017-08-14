@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8CCBD3501F0BC617003AB529 /* NSDictionary+GMSPlace.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CCBD34F1F0BC616003AB529 /* NSDictionary+GMSPlace.m */; };
 		956D8F8A1E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 956D8F881E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.m */; };
 		957CC2C11D8A86720012D284 /* RNGooglePlacesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 957CC2BF1D8A86720012D284 /* RNGooglePlacesViewController.m */; };
+		95CC447C1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.m in Sources */ = {isa = PBXBuildFile; fileRef = 95CC447B1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.m */; };
 		B3E7B58A1CC2AC0600A0062D /* RNGooglePlaces.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNGooglePlaces.m */; };
 /* End PBXBuildFile section */
 
@@ -27,12 +27,12 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libRNGooglePlaces.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNGooglePlaces.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		8CCBD34E1F0BC616003AB529 /* NSDictionary+GMSPlace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+GMSPlace.h"; sourceTree = "<group>"; };
-		8CCBD34F1F0BC616003AB529 /* NSDictionary+GMSPlace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+GMSPlace.m"; sourceTree = "<group>"; };
 		956D8F881E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RCTConvert+RNGPAutocompleteTypeFilter.m"; sourceTree = "<group>"; };
 		956D8F891E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCTConvert+RNGPAutocompleteTypeFilter.h"; sourceTree = "<group>"; };
 		957CC2BF1D8A86720012D284 /* RNGooglePlacesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNGooglePlacesViewController.m; sourceTree = "<group>"; };
 		957CC2C01D8A86720012D284 /* RNGooglePlacesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNGooglePlacesViewController.h; sourceTree = "<group>"; };
+		95CC447A1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableDictionary+GMSPlace.h"; sourceTree = "<group>"; };
+		95CC447B1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableDictionary+GMSPlace.m"; sourceTree = "<group>"; };
 		B3E7B5881CC2AC0600A0062D /* RNGooglePlaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNGooglePlaces.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNGooglePlaces.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNGooglePlaces.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,10 +59,10 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				8CCBD34E1F0BC616003AB529 /* NSDictionary+GMSPlace.h */,
-				8CCBD34F1F0BC616003AB529 /* NSDictionary+GMSPlace.m */,
 				956D8F881E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.m */,
 				956D8F891E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.h */,
+				95CC447A1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.h */,
+				95CC447B1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.m */,
 				957CC2BF1D8A86720012D284 /* RNGooglePlacesViewController.m */,
 				957CC2C01D8A86720012D284 /* RNGooglePlacesViewController.h */,
 				B3E7B5881CC2AC0600A0062D /* RNGooglePlaces.h */,
@@ -127,8 +127,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8CCBD3501F0BC617003AB529 /* NSDictionary+GMSPlace.m in Sources */,
 				B3E7B58A1CC2AC0600A0062D /* RNGooglePlaces.m in Sources */,
+				95CC447C1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.m in Sources */,
 				957CC2C11D8A86720012D284 /* RNGooglePlacesViewController.m in Sources */,
 				956D8F8A1E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.m in Sources */,
 			);
