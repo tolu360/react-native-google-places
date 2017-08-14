@@ -1,5 +1,6 @@
 
 #import "RNGooglePlaces.h"
+#import "NSMutableDictionary+GMSPlace.h"
 #import <React/RCTBridge.h>
 #import "RNGooglePlacesViewController.h"
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
@@ -99,30 +100,38 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                                  return;
                                              }
                                              
-                                             if (place != nil) {
-                                                 NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
-                                                 placeData[@"name"] = place.name;
-                                                 placeData[@"address"] = place.formattedAddress;
-                                                 placeData[@"attributions"] = place.attributions.string;
-                                                 placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
-                                                 placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
-                                                 placeData[@"phoneNumber"] = place.phoneNumber;
-                                                 placeData[@"website"] = place.website.absoluteString;
-                                                 placeData[@"placeID"] = place.placeID;
-                                                 placeData[@"types"] = place.types;
-                                                 
-                                                 NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-                                                 for( int i=0;i<place.addressComponents.count;i++) {
-                                                     addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
-                                                 }
-                                                 placeData[@"addressComponents"] = addressComponents;
-                                                 
-                                                 resolve(placeData);
+                                             if (place) {
+                                                 resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
                                              } else {
                                                  resolve(@{});
                                              }
                                          }];
 }
+
+
+RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
+                                    rejecter: (RCTPromiseRejectBlock)reject)
+{
+    NSMutableArray *likelyPlacesList = [NSMutableArray array];
+
+    [[GMSPlacesClient sharedClient] currentPlaceWithCallback:^(GMSPlaceLikelihoodList * _Nullable likelihoodList, NSError * _Nullable error) {
+        if (error != nil) {
+            reject(@"E_CURRENT_PLACE_ERROR", [error localizedDescription], nil);
+            return;
+        }
+
+        for (GMSPlaceLikelihood *likelihood in likelihoodList.likelihoods) {
+            // GMSPlace* place = likelihood.place;
+            NSMutableDictionary *placeData = [NSMutableDictionary dictionaryWithGMSPlace:likelihood.place];
+            placeData[@"likelihood"] = [NSNumber numberWithDouble:likelihood.likelihood];
+
+            [likelyPlacesList addObject:placeData];
+        }
+
+        resolve(likelyPlacesList);
+    }];
+}
+
 
 
 - (NSError *) errorFromException: (NSException *) exception

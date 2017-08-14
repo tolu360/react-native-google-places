@@ -1,4 +1,5 @@
 #import "RNGooglePlacesViewController.h"
+#import "NSMutableDictionary+GMSPlace.h"
 
 #import <GooglePlaces/GooglePlaces.h>
 #import <GooglePlacePicker/GooglePlacePicker.h>
@@ -53,24 +54,7 @@
     [_placePicker pickPlaceWithCallback:^(GMSPlace *place, NSError *error) {
         if (place) {
             if (_resolve) {
-		        NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
-		        placeData[@"name"] = place.name;
-		        placeData[@"address"] = place.formattedAddress;
-		        placeData[@"attributions"] = place.attributions.string;
-		        placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
-		        placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
-		        placeData[@"phoneNumber"] = place.phoneNumber;
-		        placeData[@"website"] = place.website.absoluteString;
-		        placeData[@"placeID"] = place.placeID;
-                placeData[@"types"] = place.types;
-
-            NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-            for( int i=0;i<place.addressComponents.count;i++) {
-              addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
-            }
-            placeData[@"addressComponents"] = addressComponents;
-
-		        _resolve(placeData);
+		        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
 		    }
         } else if (error) {
             _reject(@"E_PLACE_PICKER_ERROR", [error localizedDescription], nil);
@@ -90,24 +74,7 @@
     [topController dismissViewControllerAnimated:YES completion:nil];
 	
 	if (_resolve) {
-        NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
-        placeData[@"name"] = place.name;
-        placeData[@"address"] = place.formattedAddress;
-        placeData[@"attributions"] = place.attributions.string;
-        placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
-        placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
-        placeData[@"phoneNumber"] = place.phoneNumber;
-        placeData[@"website"] = place.website.absoluteString;
-        placeData[@"placeID"] = place.placeID;
-        placeData[@"types"] = place.types;
-
-        NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-        for( int i=0;i<place.addressComponents.count;i++) {
-          addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
-        }
-        placeData[@"addressComponents"] = addressComponents;
-
-        _resolve(placeData);
+        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
     }
 }
 
