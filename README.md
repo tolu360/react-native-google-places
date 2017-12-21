@@ -16,6 +16,15 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 
 ## Install
 
+### Google Places API Set-Up
+1. Sign up for [Google Places API for Android in Google API Console](https://console.developers.google.com/flows/enableapi?apiid=placesandroid&reusekey=true) to grab your Android API key (not browser key).
+2. Read further API setup guides at [https://developers.google.com/places/android-api/signup](https://developers.google.com/places/android-api/signup).
+3. Similarly, sign up for [Google Places API for iOS in Google API Console](https://console.developers.google.com/flows/enableapi?apiid=placesios&reusekey=true) to grab your iOS API key (not browser key).
+4. Ensure you check out further guides at [https://developers.google.com/places/ios-api/start](https://developers.google.com/places/ios-api/start).
+5. With both keys in place, you can proceed.
+
+
+### Package installation
 ```
 npm i react-native-google-places --save
 react-native link react-native-google-places
@@ -27,13 +36,21 @@ yarn add react-native-google-places
 react-native link react-native-google-places
 ```
 
+### Install with Cocoapods instead of react-native link
+Add the following to your Podfile, 
+```
+pod 'react-native-google-places', :path => 'node_modules/react-native-google-places'
+```
 
-#### Google Places API Set-Up
-1. Sign up for [Google Places API for Android in Google API Console](https://console.developers.google.com/flows/enableapi?apiid=placesandroid&reusekey=true) to grab your Android API key (not browser key).
-2. Read further API setup guides at [https://developers.google.com/places/android-api/signup](https://developers.google.com/places/android-api/signup).
-3. Similarly, sign up for [Google Places API for iOS in Google API Console](https://console.developers.google.com/flows/enableapi?apiid=placesios&reusekey=true) to grab your iOS API key (not browser key).
-4. Ensure you check out further guides at [https://developers.google.com/places/ios-api/start](https://developers.google.com/places/ios-api/start).
-5. With both keys in place, you can proceed.
+and run 
+```
+yarn add react-native-google-places
+pod install
+```
+
+The right dependencies will be automatically installed for you. Make sure to add your API-keys 
+as stated below.
+
 
 #### Post-install Steps
 

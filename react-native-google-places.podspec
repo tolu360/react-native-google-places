@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   s.compiler_flags = '-fno-modules'
 
   s.dependency 'React'
-  s.dependency 'GooglePlaces', '2.1'
-  s.dependency 'GoogleMaps', '2.1'
-  s.dependency 'GooglePlacePicker', '2.1'
+  s.dependency 'GooglePlaces'
+  s.dependency 'GoogleMaps'
+  s.dependency 'GooglePlacePicker'
 end
