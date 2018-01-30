@@ -324,7 +324,10 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     }
 
                     WritableArray resultList = new WritableNativeArray();
-                    places.forEach(place -> resultList.pushMap(propertiesMapForPlace(place)));
+
+                    for (Place place : places) {
+                        resultList.pushMap(propertiesMapForPlace(place));
+                    }
 
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();
