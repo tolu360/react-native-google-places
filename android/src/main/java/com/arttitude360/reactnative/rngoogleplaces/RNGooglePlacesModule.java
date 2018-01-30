@@ -39,10 +39,10 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -315,7 +315,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         List<Object> placeIDsObjects = placeIDs.toArrayList();
         List<String> placeIDsStrings = new ArrayList<>(placeIDsObjects.size());
         for (Object item : placeIDsObjects) {
-            placeIDsStrings.add(Object.toString(item, null));
+            placeIDsStrings.add(Objects.toString(item, null));
         }
 
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
