@@ -42,6 +42,7 @@ import com.google.maps.android.SphericalUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -311,7 +312,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void lookUpPlaceByIDs(ReadableArray placeIDs, final Promise promise) {
         this.pendingPromise = promise;
 
-        List<String> placeIDsList = placeIDs.toArrayList();
+        List<String> placeIDsList = placeIDs.toArrayList().stream()
+                .map(object -> Objects.toString(object, null))
+                .collect(Collectors.toList());
 
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsList.toArray(new String[placeIDsList.size()]))
                 .setResultCallback(new ResultCallback<PlaceBuffer>() {
