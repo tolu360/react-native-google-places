@@ -108,8 +108,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                          }];
 }
 
-RCT_EXPORT_METHOD(lookUpPlaceByIDs,
-                 placeIDs: (NSArray*)placeIDs
+RCT_EXPORT_METHOD(lookUpPlaceByIDs: (NSArray*)placeIDs
                  resolver: (RCTPromiseResolveBlock)resolve
                  rejecter: (RCTPromiseRejectBlock)reject)
 {
@@ -159,7 +158,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
 
 - (void) lookUpPlaceByIDsRecursively: (NSArray *) placeIDs
                          accumulator: (NSMutableArray *) placesAccumulator
-                            finished: (^(NSArray *infos, NSError *_Nullable error)) finalCallback
+                            finished: (void (^callback)(NSArray *infos, NSError *_Nullable error)) finalCallback
 {
     if (0 == placeIDs.count) {
         finalCallback(placesAccumulator, nil);
