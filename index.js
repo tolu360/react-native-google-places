@@ -41,8 +41,8 @@ class RNGooglePlaces {
 		})
 	}
 
-	lookUpPlaceByID(placeID) {
-		return RNGooglePlacesNative.lookUpPlaceByID(placeID)
+	lookUpPlaceByID(placeIDs) {
+		return RNGooglePlacesNative.lookUpPlaceByID(placeIDs)
 	}
 
 	getCurrentPlace() {
