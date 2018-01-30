@@ -315,7 +315,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         List<Object> placeIDsObjects = placeIDs.toArrayList();
         List<String> placeIDsStrings = new ArrayList<>(placeIDsObjects.size());
         for (Object item : placeIDsObjects) {
-            placeIDsStrings.add(Objects.toString(item, null));
+            placeIDsStrings.add(Object.toString(item, null));
         }
 
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
