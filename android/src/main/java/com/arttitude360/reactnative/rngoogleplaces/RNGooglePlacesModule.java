@@ -382,7 +382,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
     }
 
-    private WritableArray processLookupByIDsPlaces(final List<Place> places) {
+    private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
         WritableArray resultList = new WritableNativeArray();
 
         for (Place place : places) {
