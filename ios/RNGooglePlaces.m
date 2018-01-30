@@ -123,7 +123,7 @@ RCT_EXPORT_METHOD(lookUpPlaceByIDs: (NSArray*)placeIDs
          
          if (infos) {
              NSMutableArray *parsedInfos = [NSMutableArray array];
-             for(c = 0; c < [infos count]; c++) {
+             for(int c = 0; c < [infos count]; c++) {
                  [parsedInfos addObject:[NSMutableDictionary dictionaryWithGMSPlace:[infos objectAtIndex: c]]];
              }
              resolve(parsedInfos);
@@ -158,7 +158,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
 
 - (void) lookUpPlaceByIDsRecursively: (NSArray *) placeIDs
                          accumulator: (NSMutableArray *) placesAccumulator
-                            finished: (void (^callback)(NSArray *infos, NSError *_Nullable error)) finalCallback
+                            finished: ((void (^callback)(NSArray *infos, NSError *_Nullable error))) finalCallback
 {
     if (0 == placeIDs.count) {
         finalCallback(placesAccumulator, nil);
@@ -180,7 +180,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
                  [placesAccumulator addObject:[NSMutableDictionary dictionaryWithGMSPlace:place])];
              }
              
-             [self.lookUpPlaceByIDsRecursively:mutablePlaces accumulator:placesAccumulator finished:finalCallback];
+             [self lookUpPlaceByIDsRecursively:mutablePlaces accumulator:placesAccumulator finished:finalCallback];
          }
      }];
 }
