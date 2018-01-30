@@ -113,10 +113,10 @@ RCT_REMAP_METHOD(lookUpPlaceByIDs,
                  resolver: (RCTPromiseResolveBlock)resolve
                  rejecter: (RCTPromiseRejectBlock)reject)
 {
-    [self.lookUpPlaceByIDsRecursively:placeIDs
-                          accumulator:[NSMutableArray array]
-                             finished:
-     ^(NSArray *infos, NSError *error) {
+    [lookUpPlaceByIDsRecursively:placeIDs
+                     accumulator:[NSMutableArray array]
+                        finished:^(NSArray *infos, NSError *error)
+    {
          if (error != nil) {
              reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
              return;
@@ -157,22 +157,23 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
     }];
 }
 
+- (typedef void(^ LookUpPlaceByIDsRecursivelyCallback)(NSArray *infos, NSError *_Nullable error))
 - (void) lookUpPlaceByIDsRecursively: (NSArray *) placeIDs
                          accumulator: (NSMutableArray *) placesAccumulator
-                            finished: (dispatch_block_t) finalCallback
+                            finished: (LookUpPlaceByIDsRecursivelyCallback) finalCallback
 {
     if (0 == placeIDs.count) {
         finalCallback(placesAccumulator, nil);
         return;
     }
     
-    NSMutableArray *mutablePlaces = [places mutableCopy];
-    NSString *placeIDToSearchFor = [places firstObject];
+    NSMutableArray *mutablePlaces = [placeIDs mutableCopy];
+    NSString *placeIDToSearchFor = [mutablePlaces firstObject];
     [mutablePlaces removeObjectAtIndex:0];
     
     [[GMSPlacesClient sharedClient] lookUpPlaceID:placeIDToSearchFor
-                                         callback:
-     ^(GMSPlace *place, NSError *error) {
+                                         callback:^(GMSPlace *place, NSError *error)
+    {
          if (error != nil) {
              finalCallback(placesAccumulator, error);
              return;
