@@ -72,11 +72,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext())
-            .addApi(Places.GEO_DATA_API)
-            .addApi(Places.PLACE_DETECTION_API)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .build();
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         mGoogleApiClient.connect();
     }
@@ -232,7 +232,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                                 bounds, getFilterType(type, country));
 
         AutocompletePredictionBuffer autocompletePredictions = results
-            .await(60, TimeUnit.SECONDS);
+                .await(60, TimeUnit.SECONDS);
 
         final Status status = autocompletePredictions.getStatus();
 
@@ -291,14 +291,12 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                         return;
                     }
 
-                    final Place place = places.get(0);
-
-                    WritableMap map = propertiesMapForPlace(place);
+                    WritableArray resultList = processLookupByIDsPlaces(places);
 
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();
 
-                    resolvePromise(map);
+                    resolvePromise(resultList);
                 } else {
                     places.release();
                     rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
@@ -320,39 +318,35 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
                 .setResultCallback(new ResultCallback<PlaceBuffer>() {
-            @Override
-            public void onResult(PlaceBuffer places) {
-                if (places.getStatus().isSuccess()) {
-                    if (places.getCount() == 0) {
-                        WritableMap emptyResult = Arguments.createMap();
-                        places.release();
-                        resolvePromise(emptyResult);
-                        return;
+                    @Override
+                    public void onResult(PlaceBuffer places) {
+                        if (places.getStatus().isSuccess()) {
+                            if (places.getCount() == 0) {
+                                WritableMap emptyResult = Arguments.createMap();
+                                places.release();
+                                resolvePromise(emptyResult);
+                                return;
+                            }
+
+                            WritableArray resultList = processLookupByIDsPlaces(places);
+
+                            // Release the PlaceBuffer to prevent a memory leak
+                            places.release();
+
+                            resolvePromise(resultList);
+                        } else {
+                            places.release();
+                            rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
+                            return;
+                        }
                     }
-
-                    WritableArray resultList = new WritableNativeArray();
-
-                    for (Place place : places) {
-                        resultList.pushMap(propertiesMapForPlace(place));
-                    }
-
-                    // Release the PlaceBuffer to prevent a memory leak
-                    places.release();
-
-                    resolvePromise(resultList);
-                } else {
-                    places.release();
-                    rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                    return;
-                }
-            }
-        });
+                });
     }
 
-     @ReactMethod
+    @ReactMethod
     public void getCurrentPlace(final Promise promise) {
         this.pendingPromise = promise;
-        
+
         PendingResult<PlaceLikelihoodBuffer> results = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
 
         PlaceLikelihoodBuffer likelyPlaces = results.await(60, TimeUnit.SECONDS);
@@ -386,6 +380,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.getStatusMessage()));
             return;
         }
+    }
+
+    private WritableArray processLookupByIDsPlaces(final List<Place> places) {
+        WritableArray resultList = new WritableNativeArray();
+
+        for (Place place : places) {
+            resultList.pushMap(propertiesMapForPlace(place));
+        }
+
+        return resultList;
     }
 
     private WritableMap propertiesMapForPlace(Place place) {
@@ -444,43 +448,42 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     private AutocompleteFilter getFilterType(String type, String country) {
         AutocompleteFilter mappedFilter;
 
-        switch (type)
-        {
+        switch (type) {
             case "geocode":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
+                        .setCountry(country)
+                        .build();
                 break;
             case "address":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                        .setCountry(country)
+                        .build();
                 break;
             case "establishment":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                        .setCountry(country)
+                        .build();
                 break;
             case "regions":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
+                        .setCountry(country)
+                        .build();
                 break;
             case "cities":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
+                        .setCountry(country)
+                        .build();
                 break;
             default:
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
+                        .setCountry(country)
+                        .build();
                 break;
         }
 
