@@ -108,6 +108,31 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                          }];
 }
 
+RCT_REMAP_METHOD(lookUpPlaceByIDs,
+                 placeID: (NSArray*)placeIDs
+                 resolver: (RCTPromiseResolveBlock)resolve
+                 rejecter: (RCTPromiseRejectBlock)reject)
+{
+    [self.lookUpPlaceByIDsRecursively:placeIDs
+                          accumulator:[NSMutableArray array]
+                             finished:
+     ^(NSArray *infos, NSError *error) {
+         if (error != nil) {
+             reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
+             return;
+         }
+         
+         if (infos) {
+             NSMutableArray *parsedInfos = [NSMutableArray array];
+             for(c = 0; c < [infos count]; c++) {
+                 [parsedInfos addObject:[NSMutableDictionary dictionaryWithGMSPlace:[infos objectAtIndex: c]]];
+             }
+             resolve(parsedInfos);
+         } else {
+             resolve(@{});
+         }
+    }];
+}
 
 RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
                                     rejecter: (RCTPromiseRejectBlock)reject)
@@ -132,7 +157,34 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
     }];
 }
 
-
+- (void) lookUpPlaceByIDsRecursively: (NSArray *) placeIDs
+                         accumulator: (NSMutableArray *) placesAccumulator
+                            finished: (dispatch_block_t) finalCallback
+{
+    if (0 == placeIDs.count) {
+        finalCallback(placesAccumulator, nil);
+        return;
+    }
+    
+    NSMutableArray *mutablePlaces = [places mutableCopy];
+    NSString *placeIDToSearchFor = [places firstObject];
+    [mutablePlaces removeObjectAtIndex:0];
+    
+    [[GMSPlacesClient sharedClient] lookUpPlaceID:placeIDToSearchFor
+                                         callback:
+     ^(GMSPlace *place, NSError *error) {
+         if (error != nil) {
+             finalCallback(placesAccumulator, error);
+             return;
+         } else {
+             if (place) {
+                 [placesAccumulator addObject:[NSMutableDictionary dictionaryWithGMSPlace:place])];
+             }
+             
+             [self.lookUpPlaceByIDsRecursively:mutablePlaces accumulator:placesAccumulator finished:finalCallback];
+         }
+     }];
+}
 
 - (NSError *) errorFromException: (NSException *) exception
 {
