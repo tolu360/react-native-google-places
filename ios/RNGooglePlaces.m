@@ -122,11 +122,7 @@ RCT_EXPORT_METHOD(lookUpPlaceByIDs: (NSArray*)placeIDs
          }
          
          if (infos) {
-             NSMutableArray *parsedInfos = [NSMutableArray array];
-             for(int c = 0; c < [infos count]; c++) {
-                 [parsedInfos addObject:[NSMutableDictionary dictionaryWithGMSPlace:[infos objectAtIndex: c]]];
-             }
-             resolve(parsedInfos);
+             resolve(infos);
          } else {
              resolve(@{});
          }
