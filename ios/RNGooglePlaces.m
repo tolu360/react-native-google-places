@@ -108,14 +108,14 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                          }];
 }
 
-RCT_REMAP_METHOD(lookUpPlaceByIDs,
-                 placeID: (NSArray*)placeIDs
+RCT_EXPORT_METHOD(lookUpPlaceByIDs,
+                 placeIDs: (NSArray*)placeIDs
                  resolver: (RCTPromiseResolveBlock)resolve
                  rejecter: (RCTPromiseRejectBlock)reject)
 {
-    [lookUpPlaceByIDsRecursively:placeIDs
-                     accumulator:[NSMutableArray array]
-                        finished:^(NSArray *infos, NSError *error)
+    [self lookUpPlaceByIDsRecursively:placeIDs
+                          accumulator:[NSMutableArray array]
+                             finished:^(NSArray *infos, NSError *error)
     {
          if (error != nil) {
              reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
@@ -157,10 +157,9 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
     }];
 }
 
-- (typedef void(^ LookUpPlaceByIDsRecursivelyCallback)(NSArray *infos, NSError *_Nullable error))
 - (void) lookUpPlaceByIDsRecursively: (NSArray *) placeIDs
                          accumulator: (NSMutableArray *) placesAccumulator
-                            finished: (LookUpPlaceByIDsRecursivelyCallback) finalCallback
+                            finished: (^(NSArray *infos, NSError *_Nullable error)) finalCallback
 {
     if (0 == placeIDs.count) {
         finalCallback(placesAccumulator, nil);
