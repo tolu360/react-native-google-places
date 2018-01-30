@@ -318,7 +318,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             placeIDsStrings.add(Objects.toString(item, null));
         }
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsList.toArray(new String[placeIDsList.size()]))
+        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings)
                 .setResultCallback(new ResultCallback<PlaceBuffer>() {
             @Override
             public void onResult(PlaceBuffer places) {
