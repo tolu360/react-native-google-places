@@ -311,7 +311,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void lookUpPlaceByIDs(ReadableArray placeIDs, final Promise promise) {
         this.pendingPromise = promise;
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDs.toArrayList())
+        List<String> placeIDsList = placeIDs.toArrayList();
+
+        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsList.toArray(new String[placeIDsList.size()]))
                 .setResultCallback(new ResultCallback<PlaceBuffer>() {
             @Override
             public void onResult(PlaceBuffer places) {
