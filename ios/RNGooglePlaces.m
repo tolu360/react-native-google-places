@@ -113,7 +113,7 @@ RCT_EXPORT_METHOD(lookUpPlaceByIDs: (NSArray*)placeIDs
                  rejecter: (RCTPromiseRejectBlock)reject)
 {
     [self lookUpPlaceByIDsRecursively:placeIDs
-                          accumulator:[NSMutableArray array]
+                          accumulator:[NSMutableArray new]
                              finished:^(NSArray *infos, NSError *error)
     {
          if (error != nil) {
