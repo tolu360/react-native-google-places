@@ -312,9 +312,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void lookUpPlaceByIDs(ReadableArray placeIDs, final Promise promise) {
         this.pendingPromise = promise;
 
-        List<String> placeIDsList = placeIDs.toArrayList().stream()
-                .map(object -> Objects.toString(object, null))
-                .collect(Collectors.toList());
+        List<Object> placeIDsObjects = placeIDs.toArrayList();
+        List<String> placeIDsStrings = new ArrayList<>(placeIDsObjects.size());
+        for (Object item : placeIDsObjects) {
+            placeIDsStrings.add(Objects.toString(item, null))
+        }
 
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsList.toArray(new String[placeIDsList.size()]))
                 .setResultCallback(new ResultCallback<PlaceBuffer>() {
