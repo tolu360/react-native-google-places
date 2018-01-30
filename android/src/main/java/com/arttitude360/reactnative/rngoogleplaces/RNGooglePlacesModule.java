@@ -13,7 +13,9 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -274,10 +276,10 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void lookUpPlaceByID(String... placeIDs, final Promise promise) {
+    public void lookUpPlaceByID(String placeID, final Promise promise) {
         this.pendingPromise = promise;
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDs).setResultCallback(new ResultCallback<PlaceBuffer>() {
+        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlaceBuffer>() {
             @Override
             public void onResult(PlaceBuffer places) {
                 if (places.getStatus().isSuccess()) {
@@ -296,6 +298,38 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     places.release();
 
                     resolvePromise(map);
+                } else {
+                    places.release();
+                    rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
+                    return;
+                }
+            }
+        });
+    }
+
+    @ReactMethod
+    public void lookUpPlaceByIDs(ReadableNativeArray placeIDs, final Promise promise) {
+        this.pendingPromise = promise;
+
+        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDs.toArrayList())
+                .setResultCallback(new ResultCallback<PlaceBuffer>() {
+            @Override
+            public void onResult(PlaceBuffer places) {
+                if (places.getStatus().isSuccess()) {
+                    if (places.getCount() == 0) {
+                        WritableMap emptyResult = Arguments.createMap();
+                        places.release();
+                        resolvePromise(emptyResult);
+                        return;
+                    }
+
+                    WritableArray resultList = new WritableNativeArray();
+                    places.forEach(place -> resultList.pushMap(propertiesMapForPlace(place)));
+
+                    // Release the PlaceBuffer to prevent a memory leak
+                    places.release();
+
+                    resolvePromise(resultList);
                 } else {
                     places.release();
                     rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
