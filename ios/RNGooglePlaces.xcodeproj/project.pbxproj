@@ -228,6 +228,7 @@
 					"\"${SRCROOT}/../../../ios/Pods/GooglePlacePicker/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Base/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Maps/Frameworks\"",
+					"~/Documents/GoogleSDK/**",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -252,6 +253,7 @@
 					"\"${SRCROOT}/../../../ios/Pods/GooglePlacePicker/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Base/Frameworks\"",
 					"\"${SRCROOT}/../../../ios/Pods/GoogleMaps/Maps/Frameworks\"",
+					"~/Documents/GoogleSDK/**",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
