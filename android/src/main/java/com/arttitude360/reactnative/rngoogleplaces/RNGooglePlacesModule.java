@@ -209,8 +209,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
-        this.pendingPromise = promise;
-
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
@@ -240,7 +238,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             if (autocompletePredictions.getCount() == 0) {
                 WritableArray emptyResult = Arguments.createArray();
                 autocompletePredictions.release();
-                resolvePromise(emptyResult);
+                promise.resolve(emptyResult);
                 return;
             }
 
@@ -266,20 +264,18 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
             // Release the buffer now that all data has been copied.
             autocompletePredictions.release();
-            resolvePromise(predictionsList);
+            promise.resolve(predictionsList);
 
         } else {
             Log.i(TAG, "Error making autocomplete prediction API call: " + status.toString());
             autocompletePredictions.release();
-            rejectPromise("E_AUTOCOMPLETE_ERROR", new Error("Error making autocomplete prediction API call: " + status.toString()));
+            promise.reject("E_AUTOCOMPLETE_ERROR", new Error("Error making autocomplete prediction API call: " + status.toString()));
             return;
         }
     }
 
     @ReactMethod
     public void lookUpPlaceByID(String placeID, final Promise promise) {
-        this.pendingPromise = promise;
-
         Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlaceBuffer>() {
             @Override
             public void onResult(PlaceBuffer places) {
@@ -287,7 +283,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     if (places.getCount() == 0) {
                         WritableMap emptyResult = Arguments.createMap();
                         places.release();
-                        resolvePromise(emptyResult);
+                        promise.resolve(emptyResult);
                         return;
                     }
 
@@ -296,10 +292,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();
 
-                    resolvePromise(resultList);
+                    promise.resolve(resultList);
+
                 } else {
                     places.release();
-                    rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
+                    promise.reject("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
                     return;
                 }
             }
@@ -345,7 +342,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void getCurrentPlace(final Promise promise) {
-        this.pendingPromise = promise;
 
         PendingResult<PlaceLikelihoodBuffer> results = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
 
@@ -357,7 +353,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             if (likelyPlaces.getCount() == 0) {
                 WritableArray emptyResult = Arguments.createArray();
                 likelyPlaces.release();
-                resolvePromise(emptyResult);
+                promise.resolve(emptyResult);
                 return;
             }
 
@@ -372,12 +368,12 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
             // Release the buffer now that all data has been copied.
             likelyPlaces.release();
-            resolvePromise(likelyPlacesList);
+            promise.resolve(likelyPlacesList);
 
         } else {
             Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
             likelyPlaces.release();
-            rejectPromise("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.getStatusMessage()));
+            promise.reject("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.getStatusMessage()));
             return;
         }
     }
