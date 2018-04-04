@@ -363,7 +363,7 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
 #### Look-Up Places By IDs (2 or more places at a time)
 
 ```javascript
-  const placeIDs = 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ' || ['ChIJZa6ezJa8j4AR1p1nTSaRtuQ', 'other_place_id'];
+  const placeIDs = ['ChIJZa6ezJa8j4AR1p1nTSaRtuQ', 'other_place_id'];
   RNGooglePlaces.lookUpPlacesByIDs(placeIDs)
     .then((results) => console.log(results))
     .catch((error) => console.log(error.message));
