@@ -13,7 +13,9 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -37,6 +39,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -69,11 +72,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext())
-            .addApi(Places.GEO_DATA_API)
-            .addApi(Places.PLACE_DETECTION_API)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .build();
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         mGoogleApiClient.connect();
     }
@@ -227,7 +230,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                                 bounds, getFilterType(type, country));
 
         AutocompletePredictionBuffer autocompletePredictions = results
-            .await(60, TimeUnit.SECONDS);
+                .await(60, TimeUnit.SECONDS);
 
         final Status status = autocompletePredictions.getStatus();
 
@@ -284,14 +287,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                         return;
                     }
 
-                    final Place place = places.get(0);
-
-                    WritableMap map = propertiesMapForPlace(place);
+                    WritableArray resultList = processLookupByIDsPlaces(places);
 
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();
 
-                    promise.resolve(map);
+                    promise.resolve(resultList);
+
                 } else {
                     places.release();
                     promise.reject("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
@@ -301,8 +303,46 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         });
     }
 
-     @ReactMethod
+    @ReactMethod
+    public void lookUpPlaceByIDs(ReadableArray placeIDs, final Promise promise) {
+        this.pendingPromise = promise;
+
+        List<Object> placeIDsObjects = placeIDs.toArrayList();
+        List<String> placeIDsStrings = new ArrayList<>(placeIDsObjects.size());
+        for (Object item : placeIDsObjects) {
+            placeIDsStrings.add(Objects.toString(item, null));
+        }
+
+        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
+                .setResultCallback(new ResultCallback<PlaceBuffer>() {
+                    @Override
+                    public void onResult(PlaceBuffer places) {
+                        if (places.getStatus().isSuccess()) {
+                            if (places.getCount() == 0) {
+                                WritableMap emptyResult = Arguments.createMap();
+                                places.release();
+                                resolvePromise(emptyResult);
+                                return;
+                            }
+
+                            WritableArray resultList = processLookupByIDsPlaces(places);
+
+                            // Release the PlaceBuffer to prevent a memory leak
+                            places.release();
+
+                            resolvePromise(resultList);
+                        } else {
+                            places.release();
+                            rejectPromise("E_PLACE_DETAILS_ERROR", new Error("Error making place lookup API call: " + places.getStatus().toString()));
+                            return;
+                        }
+                    }
+                });
+    }
+
+    @ReactMethod
     public void getCurrentPlace(final Promise promise) {
+
         PendingResult<PlaceLikelihoodBuffer> results = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
 
         PlaceLikelihoodBuffer likelyPlaces = results.await(60, TimeUnit.SECONDS);
@@ -336,6 +376,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             promise.reject("E_PLACE_DETECTION_API_ERROR", new Error("Error making places detection api call: " + status.getStatusMessage()));
             return;
         }
+    }
+
+    private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
+        WritableArray resultList = new WritableNativeArray();
+
+        for (Place place : places) {
+            resultList.pushMap(propertiesMapForPlace(place));
+        }
+
+        return resultList;
     }
 
     private WritableMap propertiesMapForPlace(Place place) {
@@ -394,43 +444,42 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     private AutocompleteFilter getFilterType(String type, String country) {
         AutocompleteFilter mappedFilter;
 
-        switch (type)
-        {
+        switch (type) {
             case "geocode":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
+                        .setCountry(country)
+                        .build();
                 break;
             case "address":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                        .setCountry(country)
+                        .build();
                 break;
             case "establishment":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                        .setCountry(country)
+                        .build();
                 break;
             case "regions":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
+                        .setCountry(country)
+                        .build();
                 break;
             case "cities":
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
+                        .setCountry(country)
+                        .build();
                 break;
             default:
                 mappedFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
-                    .setCountry(country)
-                    .build();
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
+                        .setCountry(country)
+                        .build();
                 break;
         }
 

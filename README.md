@@ -342,22 +342,25 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
 #### Look-Up A Place By ID
 
 ```javascript
-  RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ')
+  const placeIDs = 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ' || ['ChIJZa6ezJa8j4AR1p1nTSaRtuQ', 'other_place_id'];
+  RNGooglePlaces.lookUpPlaceByID(placeIDs)
     .then((results) => console.log(results))
     .catch((error) => console.log(error.message));
 ```
 #### Example Response from Calling lookUpPlaceByID()
 
 ```javascript
-{ name: 'Facebook HQ',
-  website: 'https://www.facebook.com/',
-  longitude: -122.14835169999999,
-  address: '1 Hacker Way, Menlo Park, CA 94025, USA',
-  latitude: 37.48485,
-  placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
-  types: [ 'street_address', 'geocode' ],
-  phoneNumber: '+1 650-543-4800',
-}
+[
+    { name: 'Facebook HQ',
+      website: 'https://www.facebook.com/',
+      longitude: -122.14835169999999,
+      address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+      latitude: 37.48485,
+      placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+      types: [ 'street_address', 'geocode' ],
+      phoneNumber: '+1 650-543-4800',
+    }
+]
 ```
 - Note: Check Autocomplete & PlacePicker response for notes and other available keys.
 
