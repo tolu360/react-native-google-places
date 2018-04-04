@@ -41,12 +41,12 @@ class RNGooglePlaces {
 		})
 	}
 
-	lookUpPlaceByID(placeIDs) {
-	    if (placeIDs instanceof Array) {
-            return RNGooglePlacesNative.lookUpPlaceByIDs(placeIDs)
-        }
+	lookUpPlaceByID(placeID) {
+	    return RNGooglePlacesNative.lookUpPlaceByID(placeID)
+	}
 
-        return RNGooglePlacesNative.lookUpPlaceByID(placeIDs)
+	lookUpPlacesByIDs(placeIDs) {
+	    return RNGooglePlacesNative.lookUpPlacesByIDs(placeIDs)
 	}
 
 	getCurrentPlace() {

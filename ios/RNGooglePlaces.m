@@ -108,7 +108,7 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                          }];
 }
 
-RCT_EXPORT_METHOD(lookUpPlaceByIDs: (NSArray*)placeIDs
+RCT_EXPORT_METHOD(lookUpPlacesByIDs: (NSArray*)placeIDs
                  resolver: (RCTPromiseResolveBlock)resolve
                  rejecter: (RCTPromiseRejectBlock)reject)
 {

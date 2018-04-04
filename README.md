@@ -339,15 +339,36 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
 ]
 ```
 
-#### Look-Up A Place By ID
+#### Look-Up Place By ID
 
 ```javascript
-  const placeIDs = 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ' || ['ChIJZa6ezJa8j4AR1p1nTSaRtuQ', 'other_place_id'];
-  RNGooglePlaces.lookUpPlaceByID(placeIDs)
+  RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ')
     .then((results) => console.log(results))
     .catch((error) => console.log(error.message));
 ```
 #### Example Response from Calling lookUpPlaceByID()
+
+```javascript
+{ name: 'Facebook HQ',
+  website: 'https://www.facebook.com/',
+  longitude: -122.14835169999999,
+  address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+  latitude: 37.48485,
+  placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+  types: [ 'street_address', 'geocode' ],
+  phoneNumber: '+1 650-543-4800',
+}
+```
+
+#### Look-Up Places By IDs (2 or more places at a time)
+
+```javascript
+  const placeIDs = 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ' || ['ChIJZa6ezJa8j4AR1p1nTSaRtuQ', 'other_place_id'];
+  RNGooglePlaces.lookUpPlacesByIDs(placeIDs)
+    .then((results) => console.log(results))
+    .catch((error) => console.log(error.message));
+```
+#### Example Response from Calling lookUpPlacesByIDs()
 
 ```javascript
 [
