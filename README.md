@@ -11,8 +11,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.4.0)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.5.0)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0) **No longer updated**
 
 ## Sample App
 - A new [sample app](https://github.com/tolu360/TestRNGP) is available to help with sample usage and debugging issues.
@@ -106,6 +106,46 @@ dependencies {
     compile project(':react-native-google-places')
 }
 ```
+- Option 1: Use Project-Wide Gradle Config:
+
+You can define *[project-wide properties](https://developer.android.com/studio/build/gradle-tips.html)* (**recommended**) in your root `/android/build.gradle`, and let the library auto-detect the presence of the following properties:
+
+```groovy
+    buildscript {...}
+    allprojects {...}
+
+    /**
+     + Project-wide Gradle configuration properties (replace versions as appropriate)
+     */
+    ext {
+      compileSdkVersion   = 25
+      targetSdkVersion    = 25
+      buildToolsVersion   = "25.0.2"
+      supportLibVersion   = "25.0.2"
+      googlePlayServicesVersion = "11.6.2"
+      androidMapsUtilsVersion = "0.5+"
+    }
+```
+
+- Option 2: Use Specific Gradle Config:
+
+If you do **not** have *project-wide properties* defined or want to use a different Google Play-Services version than the one included in this library (shown above), use the following instead (switch 11.6.2 for the desired version):
+
+```groovy
+  ...
+  dependencies {
+      ...
+      compile(project(':react-native-google-places')){
+          exclude group: 'com.google.android.gms', module: 'play-services-base'
+          exclude group: 'com.google.android.gms', module: 'play-services-places'
+          exclude group: 'com.google.android.gms', module: 'play-services-location'
+      }
+      compile 'com.google.android.gms:play-services-base:11.6.2'
+      compile 'com.google.android.gms:play-services-places:11.6.2'
+      compile 'com.google.android.gms:play-services-location:11.6.2'
+  }
+```
+
 - Add the following in your `...MainApplication.java` file:
 
 ```java
@@ -425,9 +465,9 @@ You have to link dependencies and re-run the build:
            exclude group: 'com.google.android.gms', module: 'play-services-places'
            exclude group: 'com.google.android.gms', module: 'play-services-location'
        }
-       compile 'com.google.android.gms:play-services-base:10.2.0'
-       compile 'com.google.android.gms:play-services-places:10.2.0'
-       compile 'com.google.android.gms:play-services-location:10.2.0'
+       compile 'com.google.android.gms:play-services-base:11.6.2'
+       compile 'com.google.android.gms:play-services-places:11.6.2'
+       compile 'com.google.android.gms:play-services-location:11.6.2'
    }
    ```
 
