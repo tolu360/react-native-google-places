@@ -106,6 +106,25 @@ dependencies {
     compile project(':react-native-google-places')
 }
 ```
+
+- Add the following in your `...MainApplication.java` file:
+
+```java
+import com.arttitude360.reactnative.rngoogleplaces.RNGooglePlacesPackage;
+
+@Override
+protected List<ReactPackage> getPackages() {
+  return Arrays.<ReactPackage>asList(
+      new MainReactPackage(),
+      ...
+      new RNGooglePlacesPackage() //<-- Add line
+  );
+}
+```
+- Finally, we can run `react-native run-android` to get started.
+
+##### Configuring Versions for Dependencies (Optional on Android Only)
+
 - Option 1: Use Project-Wide Gradle Config:
 
 You can define *[project-wide properties](https://developer.android.com/studio/build/gradle-tips.html)* (**recommended**) in your root `/android/build.gradle`, and let the library auto-detect the presence of the following properties:
@@ -145,22 +164,6 @@ If you do **not** have *project-wide properties* defined or want to use a differ
       compile 'com.google.android.gms:play-services-location:11.6.2'
   }
 ```
-
-- Add the following in your `...MainApplication.java` file:
-
-```java
-import com.arttitude360.reactnative.rngoogleplaces.RNGooglePlacesPackage;
-
-@Override
-protected List<ReactPackage> getPackages() {
-  return Arrays.<ReactPackage>asList(
-      new MainReactPackage(),
-      ...
-      new RNGooglePlacesPackage() //<-- Add line
-  );
-}
-```
-- Finally, we can run `react-native run-android` to get started.
 
 
 ## Usage
