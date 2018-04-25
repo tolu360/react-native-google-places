@@ -94,16 +94,33 @@ end
 - The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
-```java
+```groovy
 include ':react-native-google-places'
 project(':react-native-google-places').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places/android')
 ```
 - Add the following in your `android/app/build.grade` file:
 
-```java
+```groovy
 dependencies {
     ...
     compile project(':react-native-google-places')
+}
+```
+
+- Add the Google Maven Repo in your `android/build.gradle` file:
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        maven {
+            url "https://maven.google.com" 
+        }
+    }
 }
 ```
 
@@ -123,7 +140,8 @@ protected List<ReactPackage> getPackages() {
 ```
 - Finally, we can run `react-native run-android` to get started.
 
-##### Configuring Versions for Dependencies (Optional on Android Only)
+
+##### Configuring Versions for Dependencies (Optional & for Android Only)
 
 - Option 1: Use Project-Wide Gradle Config:
 
