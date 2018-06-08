@@ -11,8 +11,11 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.4.0)
-- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.5.0)
+- for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0) **No longer updated**
+
+## Sample App
+- A new [sample app](https://github.com/tolu360/TestRNGP) is available to help with sample usage and debugging issues.
 
 ## Install
 
@@ -91,18 +94,36 @@ end
 - The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
-```java
+```groovy
 include ':react-native-google-places'
 project(':react-native-google-places').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places/android')
 ```
 - Add the following in your `android/app/build.grade` file:
 
-```java
+```groovy
 dependencies {
     ...
     compile project(':react-native-google-places')
 }
 ```
+
+- Add the Google Maven Repo in your `android/build.gradle` file:
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        maven {
+            url "https://maven.google.com" 
+        }
+    }
+}
+```
+
 - Add the following in your `...MainApplication.java` file:
 
 ```java
@@ -118,6 +139,49 @@ protected List<ReactPackage> getPackages() {
 }
 ```
 - Finally, we can run `react-native run-android` to get started.
+
+
+##### Configuring Versions for Dependencies (Optional & for Android Only)
+
+- Option 1: Use Project-Wide Gradle Config:
+
+You can define *[project-wide properties](https://developer.android.com/studio/build/gradle-tips.html)* (**recommended**) in your root `/android/build.gradle`, and let the library auto-detect the presence of the following properties:
+
+```groovy
+    buildscript {...}
+    allprojects {...}
+
+    /**
+     + Project-wide Gradle configuration properties (replace versions as appropriate)
+     */
+    ext {
+      compileSdkVersion   = 25
+      targetSdkVersion    = 25
+      buildToolsVersion   = "25.0.2"
+      supportLibVersion   = "25.0.2"
+      googlePlayServicesVersion = "11.6.2"
+      androidMapsUtilsVersion = "0.5+"
+    }
+```
+
+- Option 2: Use Specific Gradle Config:
+
+If you do **not** have *project-wide properties* defined or want to use a different Google Play-Services version than the one included in this library (shown above), use the following instead (switch 11.6.2 for the desired version):
+
+```groovy
+  ...
+  dependencies {
+      ...
+      compile(project(':react-native-google-places')){
+          exclude group: 'com.google.android.gms', module: 'play-services-base'
+          exclude group: 'com.google.android.gms', module: 'play-services-places'
+          exclude group: 'com.google.android.gms', module: 'play-services-location'
+      }
+      compile 'com.google.android.gms:play-services-base:11.6.2'
+      compile 'com.google.android.gms:play-services-places:11.6.2'
+      compile 'com.google.android.gms:play-services-location:11.6.2'
+  }
+```
 
 
 ## Usage
@@ -339,7 +403,7 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
 ]
 ```
 
-#### Look-Up A Place By ID
+#### Look-Up Place By ID
 
 ```javascript
   RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ')
@@ -358,6 +422,30 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
   types: [ 'street_address', 'geocode' ],
   phoneNumber: '+1 650-543-4800',
 }
+```
+
+#### Look-Up Places By IDs (2 or more places at a time)
+
+```javascript
+  const placeIDs = ['ChIJZa6ezJa8j4AR1p1nTSaRtuQ', 'other_place_id'];
+  RNGooglePlaces.lookUpPlacesByIDs(placeIDs)
+    .then((results) => console.log(results))
+    .catch((error) => console.log(error.message));
+```
+#### Example Response from Calling lookUpPlacesByIDs()
+
+```javascript
+[
+    { name: 'Facebook HQ',
+      website: 'https://www.facebook.com/',
+      longitude: -122.14835169999999,
+      address: '1 Hacker Way, Menlo Park, CA 94025, USA',
+      latitude: 37.48485,
+      placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+      types: [ 'street_address', 'geocode' ],
+      phoneNumber: '+1 650-543-4800',
+    }
+]
 ```
 - Note: Check Autocomplete & PlacePicker response for notes and other available keys.
 
@@ -398,9 +486,9 @@ You have to link dependencies and re-run the build:
            exclude group: 'com.google.android.gms', module: 'play-services-places'
            exclude group: 'com.google.android.gms', module: 'play-services-location'
        }
-       compile 'com.google.android.gms:play-services-base:10.2.0'
-       compile 'com.google.android.gms:play-services-places:10.2.0'
-       compile 'com.google.android.gms:play-services-location:10.2.0'
+       compile 'com.google.android.gms:play-services-base:11.6.2'
+       compile 'com.google.android.gms:play-services-places:11.6.2'
+       compile 'com.google.android.gms:play-services-location:11.6.2'
    }
    ```
 

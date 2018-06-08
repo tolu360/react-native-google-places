@@ -108,6 +108,26 @@ RCT_REMAP_METHOD(lookUpPlaceByID,
                                          }];
 }
 
+RCT_EXPORT_METHOD(lookUpPlacesByIDs: (NSArray*)placeIDs
+                 resolver: (RCTPromiseResolveBlock)resolve
+                 rejecter: (RCTPromiseRejectBlock)reject)
+{
+    [self lookUpPlaceByIDsRecursively:placeIDs
+                          accumulator:[NSMutableArray new]
+                             finished:^(NSArray *infos, NSError *error)
+    {
+         if (error != nil) {
+             reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
+             return;
+         }
+         
+         if (infos) {
+             resolve(infos);
+         } else {
+             resolve(@{});
+         }
+    }];
+}
 
 RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
                                     rejecter: (RCTPromiseRejectBlock)reject)
@@ -132,7 +152,34 @@ RCT_EXPORT_METHOD(getCurrentPlace: (RCTPromiseResolveBlock)resolve
     }];
 }
 
-
+- (void) lookUpPlaceByIDsRecursively: (NSArray *) placeIDs
+                         accumulator: (NSMutableArray *) placesAccumulator
+                            finished: (void (^)(NSArray *, NSError *_Nullable)) finalCallback
+{
+    if (0 == placeIDs.count) {
+        finalCallback(placesAccumulator, nil);
+        return;
+    }
+    
+    NSMutableArray *mutablePlaces = [placeIDs mutableCopy];
+    NSString *placeIDToSearchFor = [mutablePlaces firstObject];
+    [mutablePlaces removeObjectAtIndex:0];
+    
+    [[GMSPlacesClient sharedClient] lookUpPlaceID:placeIDToSearchFor
+                                         callback:^(GMSPlace *place, NSError *error)
+    {
+         if (error != nil) {
+             finalCallback(placesAccumulator, error);
+             return;
+         } else {
+             if (place) {
+                 [placesAccumulator addObject:[NSMutableDictionary dictionaryWithGMSPlace:place]];
+             }
+             
+             [self lookUpPlaceByIDsRecursively:mutablePlaces accumulator:placesAccumulator finished:finalCallback];
+         }
+     }];
+}
 
 - (NSError *) errorFromException: (NSException *) exception
 {
