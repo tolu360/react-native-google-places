@@ -1,6 +1,7 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -57,6 +58,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public static int PLACE_PICKER_REQUEST_CODE = 361;
     public static String REACT_CLASS = "RNGooglePlaces";
 
+    ProgressDialog progressDialog;
+
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
@@ -108,6 +111,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
 
         if (requestCode == PLACE_PICKER_REQUEST_CODE) {
+            if(progressDialog != null) {
+                progressDialog.dismiss();
+            }
             if (resultCode == Activity.RESULT_OK) {
                 Place place = PlacePicker.getPlace(this.reactContext.getApplicationContext(), data);
 
@@ -173,12 +179,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void openPlacePickerModal(ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
         Activity currentActivity = getCurrentActivity();
+        progressDialog = new ProgressDialog(currentActivity);
         double latitude = options.getDouble("latitude");
         double longitude = options.getDouble("longitude");
         double radius = options.getDouble("radius");
         LatLng center = new LatLng(latitude, longitude);
 
         try {
+            progressDialog.setMessage("Loading maps...");
+            progressDialog.show();
+            
             PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
 
             if (latitude != 0 && longitude != 0 && radius != 0) {
