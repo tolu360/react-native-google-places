@@ -354,41 +354,41 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void getCurrentPlace(final Promise promise) {
+        Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null)
+            .setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+                @Override
+                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
+                    final Status status = likelyPlaces.getStatus();
 
-        PendingResult<PlaceLikelihoodBuffer> results = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
+                    if (status.isSuccess()) {
+                        if (likelyPlaces.getCount() == 0) {
+                            WritableArray emptyResult = Arguments.createArray();
+                            likelyPlaces.release();
+                            promise.resolve(emptyResult);
+                            return;
+                        }
 
-        PlaceLikelihoodBuffer likelyPlaces = results.await(60, TimeUnit.SECONDS);
+                        WritableArray likelyPlacesList = Arguments.createArray();
 
-        final Status status = likelyPlaces.getStatus();
+                        for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                            WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
+                            map.putDouble("likelihood", placeLikelihood.getLikelihood());
 
-        if (status.isSuccess()) {
-            if (likelyPlaces.getCount() == 0) {
-                WritableArray emptyResult = Arguments.createArray();
-                likelyPlaces.release();
-                promise.resolve(emptyResult);
-                return;
-            }
+                            likelyPlacesList.pushMap(map);
+                        }
 
-            WritableArray likelyPlacesList = Arguments.createArray();
-
-            for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
-                map.putDouble("likelihood", placeLikelihood.getLikelihood());
-
-                likelyPlacesList.pushMap(map);
-            }
-
-            // Release the buffer now that all data has been copied.
-            likelyPlaces.release();
-            promise.resolve(likelyPlacesList);
-
-        } else {
-            Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
-            likelyPlaces.release();
-            promise.reject("E_PLACE_DETECTION_API_ERROR",
-                    new Error("Error making places detection api call: " + status.getStatusMessage()));
-            return;
-        }
+                        // Release the buffer now that all data has been copied.
+                        likelyPlaces.release();
+                        promise.resolve(likelyPlacesList);
+                    } else {
+                        Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
+                        likelyPlaces.release();
+                        promise.reject("E_PLACE_DETECTION_API_ERROR",
+                                new Error("Error making places detection api call: " + status.getStatusMessage()));
+                        return;
+                    }
+                }
+            });
     }
 
     private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
