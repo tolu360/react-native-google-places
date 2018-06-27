@@ -94,18 +94,55 @@ end
 - The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
-```java
+```groovy
 include ':react-native-google-places'
 project(':react-native-google-places').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places/android')
 ```
 - Add the following in your `android/app/build.grade` file:
 
-```java
+```groovy
 dependencies {
     ...
     compile project(':react-native-google-places')
 }
 ```
+
+- Add the Google Maven Repo in your `android/build.gradle` file:
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        maven {
+            url "https://maven.google.com" 
+        }
+    }
+}
+```
+
+- Add the following in your `...MainApplication.java` file:
+
+```java
+import com.arttitude360.reactnative.rngoogleplaces.RNGooglePlacesPackage;
+
+@Override
+protected List<ReactPackage> getPackages() {
+  return Arrays.<ReactPackage>asList(
+      new MainReactPackage(),
+      ...
+      new RNGooglePlacesPackage() //<-- Add line
+  );
+}
+```
+- Finally, we can run `react-native run-android` to get started.
+
+
+##### Configuring Versions for Dependencies (Optional & for Android Only)
+
 - Option 1: Use Project-Wide Gradle Config:
 
 You can define *[project-wide properties](https://developer.android.com/studio/build/gradle-tips.html)* (**recommended**) in your root `/android/build.gradle`, and let the library auto-detect the presence of the following properties:
@@ -145,22 +182,6 @@ If you do **not** have *project-wide properties* defined or want to use a differ
       compile 'com.google.android.gms:play-services-location:11.6.2'
   }
 ```
-
-- Add the following in your `...MainApplication.java` file:
-
-```java
-import com.arttitude360.reactnative.rngoogleplaces.RNGooglePlacesPackage;
-
-@Override
-protected List<ReactPackage> getPackages() {
-  return Arrays.<ReactPackage>asList(
-      new MainReactPackage(),
-      ...
-      new RNGooglePlacesPackage() //<-- Add line
-  );
-}
-```
-- Finally, we can run `react-native run-android` to get started.
 
 
 ## Usage
