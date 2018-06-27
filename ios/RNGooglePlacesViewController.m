@@ -6,7 +6,7 @@
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
 
-@interface RNGooglePlacesViewController ()<GMSAutocompleteViewControllerDelegate>
+@interface RNGooglePlacesViewController ()<GMSAutocompleteViewControllerDelegate, GMSPlacePickerViewControllerDelegate>
 @end
 
 @implementation RNGooglePlacesViewController
@@ -15,7 +15,6 @@
 
 	RCTPromiseResolveBlock _resolve;
 	RCTPromiseRejectBlock _reject;
-	GMSPlacePicker *_placePicker;
 }
 
 - (instancetype)init 
@@ -42,6 +41,38 @@
 	[topController presentViewController:viewController animated:YES completion:nil];
 }
 
+- (void)placePicker: (GMSPlacePickerViewController *) placePicker
+       didPickPlace: (GMSPlace *) place
+{
+    UIViewController *topController = [self getTopController];
+    [topController dismissViewControllerAnimated:YES completion:nil];
+    
+    if (_resolve) {
+        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
+    }
+}
+
+- (void)placePicker: (GMSPlacePickerViewController *) placePicker
+   didFailWithError: (NSError *) error
+{
+    UIViewController *topController = [self getTopController];
+    [topController dismissViewControllerAnimated:YES completion:nil];
+    
+    if (_reject) {
+        _reject(@"E_PLACE_PICKER_ERROR", [error localizedDescription], nil);
+    }
+}
+
+- (void)placePickerDidCancel: (GMSPlacePickerViewController *) placePicker
+{
+    UIViewController *topController = [self getTopController];
+    [topController dismissViewControllerAnimated:YES completion:nil];
+    
+    if (_reject) {
+        _reject(@"E_USER_CANCELED", @"Search cancelled", nil);
+    }
+}
+
 - (void)openPlacePickerModal: (GMSCoordinateBounds *)bounds
                     resolver: (RCTPromiseResolveBlock)resolve
 					rejecter: (RCTPromiseRejectBlock)reject;
@@ -50,19 +81,10 @@
 	_reject = reject;
 
 	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:bounds];
-    _placePicker = [[GMSPlacePicker alloc] initWithConfig:config];
-    [_placePicker pickPlaceWithCallback:^(GMSPlace *place, NSError *error) {
-        if (place) {
-            if (_resolve) {
-		        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
-		    }
-        } else if (error) {
-            _reject(@"E_PLACE_PICKER_ERROR", [error localizedDescription], nil);
-
-        } else {
-            _reject(@"E_USER_CANCELED", @"Search cancelled", nil);
-        }
-    }];
+    GMSPlacePickerViewController *viewController = [[GMSPlacePickerViewController alloc] initWithConfig:config];
+    viewController.delegate = self;
+    UIViewController *topController = [self getTopController];
+    [topController presentViewController:viewController animated:YES completion:nil];
 }
 
 
