@@ -3,6 +3,8 @@ package com.arttitude360.reactnative.rngoogleplaces;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -34,6 +36,10 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadata;
+import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadataResult;
+import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -41,10 +47,13 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
-import java.util.Objects;
+import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 
 public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -391,6 +400,81 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             });
     }
 
+    @ReactMethod
+    public void getPlacePhotos(final String placeID, final Promise promise) {
+        this.pendingPromise = promise;
+
+        if (this.isClientDisconnected()) return;
+
+        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlacePhotoMetadataResult>() {
+            @Override
+            public void onResult(PlacePhotoMetadataResult placePhotosResult) {
+                if (!placePhotosResult.getStatus().isSuccess()) {
+                    promise.reject(
+                        "E_PLACE_PHOTOS_ERROR",
+                        new Error("Error making place lookup API call: " + placePhotosResult.getStatus().toString()));
+                    return;
+                }
+
+                PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
+                WritableArray photosList = Arguments.createArray();
+
+                if (placePhotos.getCount() > 0) {
+                    photosList = photosArray(placeID, placePhotos);
+                }
+
+                placePhotos.release();
+                promise.resolve(photosList);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void getPlacePhoto(final String placeID, final Integer index, final Promise promise) {
+        this.pendingPromise = promise;
+
+        if (this.isClientDisconnected()) return;
+
+        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlacePhotoMetadataResult>() {
+            @Override
+            public void onResult(PlacePhotoMetadataResult placePhotosResult) {
+                if (!placePhotosResult.getStatus().isSuccess()) {
+                    promise.reject(
+                        "E_PLACE_PHOTOS_ERROR",
+                        new Error("Error making place lookup API call: " + placePhotosResult.getStatus().toString()));
+                    return;
+                }
+
+                PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
+                PlacePhotoMetadata photoMeta = placePhotos.get(index);
+                getPhotoUriFromMeta(photoMeta, promise);
+                placePhotos.release();
+            }
+        });
+    }
+
+    private void getPhotoUriFromMeta(PlacePhotoMetadata photoMeta, final Promise promise) {
+      photoMeta.getPhoto(mGoogleApiClient).setResultCallback(new ResultCallback<PlacePhotoResult>() {
+        @Override
+        public void onResult(PlacePhotoResult placePhoto) {
+          if (!placePhoto.getStatus().isSuccess()) {
+              promise.reject(
+                  "E_PLACE_PHOTOS_ERROR",
+                  new Error("Error retrieving place photo API call: " + placePhoto.getStatus().toString()));
+              return;
+          }
+
+          Bitmap photoData = placePhoto.getBitmap();
+
+          try {
+              promise.resolve(getURIForBitmap(photoData));
+          } catch (Exception e) {
+              promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
+          }
+        }
+      });
+    }
+
     private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
         WritableArray resultList = new WritableNativeArray();
 
@@ -452,6 +536,50 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
 
         return map;
+    }
+
+    private WritableArray photosArray(final String placeID, final PlacePhotoMetadataBuffer photos) {
+      WritableArray resultList = new WritableNativeArray();
+
+      for (PlacePhotoMetadata photo : photos) {
+          resultList.pushMap(propertiesMapForPhotoMetadata(placeID, photo));
+      }
+
+      return resultList;
+    }
+
+    private WritableMap propertiesMapForPhotoMetadata(final String placeID, final PlacePhotoMetadata photo) {
+        WritableMap map = Arguments.createMap();
+        CharSequence attributions = photo.getAttributions();
+
+        map.putString("placeID", placeID);
+
+        if (!TextUtils.isEmpty(attributions)) {
+            map.putString("attributions", attributions.toString());
+        }
+
+        map.putInt("maxWidth", photo.getMaxWidth());
+        map.putInt("maxHeight", photo.getMaxHeight());
+
+        return map;
+    }
+
+    private String getURIForBitmap(Bitmap bitmap) throws IOException {
+        Activity currentActivity = this.reactContext.getCurrentActivity();
+        // We should probably use getCacheDir() instead of getFilesDir(),
+        // but I can't seem to successfully read from the files I attempt to
+        // write to this directory from RN
+        File file = File.createTempFile(
+            "gplacephoto", ".jpg", currentActivity.getFilesDir());
+        FileOutputStream out = currentActivity.openFileOutput(
+            file.getName(), this.reactContext.MODE_PRIVATE);
+
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+        out.flush();
+        out.close();
+
+        return Uri.fromFile(file).toString();
     }
 
     private AutocompleteFilter getFilterType(String type, String country) {

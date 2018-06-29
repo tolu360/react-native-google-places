@@ -49,6 +49,15 @@ class RNGooglePlaces {
 	getCurrentPlace() {
 		return RNGooglePlacesNative.getCurrentPlace()
 	}
+
+	async getPlacePhotos(placeID) {
+		const photos = await RNGooglePlacesNative.getPlacePhotos(placeID)
+		return photos.map((photo, idx) => ({photoID: idx, ...photo}))
+	}
+
+	getPlacePhoto({placeID, photoID}) {
+		return RNGooglePlacesNative.getPlacePhoto(placeID, photoID)
+	}
 }
 
 export default new RNGooglePlaces()
