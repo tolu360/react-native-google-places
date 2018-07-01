@@ -566,13 +566,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     private String getURIForBitmap(Bitmap bitmap) throws IOException {
         Activity currentActivity = this.reactContext.getCurrentActivity();
-        // We should probably use getCacheDir() instead of getFilesDir(),
-        // but I can't seem to successfully read from the files I attempt to
-        // write to this directory from RN
         File file = File.createTempFile(
-            "gplacephoto", ".jpg", currentActivity.getFilesDir());
-        FileOutputStream out = currentActivity.openFileOutput(
-            file.getName(), this.reactContext.MODE_PRIVATE);
+            "gPlacePhoto", ".jpg", currentActivity.getCacheDir());
+        FileOutputStream out = new FileOutputStream(file);
 
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
 
