@@ -467,7 +467,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
           Bitmap photoData = placePhoto.getBitmap();
 
           try {
-              promise.resolve(getURIForBitmap(photoData).toString());
+              promise.resolve(getUriForBitmap(photoData).toString());
           } catch (Exception e) {
               promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
           }
@@ -564,7 +564,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return map;
     }
 
-    private URI getURIForBitmap(Bitmap bitmap) throws IOException {
+    private Uri getUriForBitmap(Bitmap bitmap) throws IOException {
         Activity currentActivity = this.reactContext.getCurrentActivity();
         File file = File.createTempFile(
             "gPlacePhoto", ".jpg", currentActivity.getCacheDir());
@@ -575,7 +575,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         out.flush();
         out.close();
 
-        return file.toURI();
+        return Uri.fromFile(file);
     }
 
     private AutocompleteFilter getFilterType(String type, String country) {
