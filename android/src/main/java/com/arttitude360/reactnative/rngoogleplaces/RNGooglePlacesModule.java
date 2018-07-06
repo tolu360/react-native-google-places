@@ -26,6 +26,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Batch;
+import com.google.android.gms.common.api.BatchResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -399,6 +401,72 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                                 new Error("Error making places detection api call: " + status.getStatusMessage()));
                         return;
                     }
+                }
+            });
+    }
+
+    @ReactMethod
+    public void getPlacePhotos(final String placeID, final Promise promise) {
+        final List<WritableMap> photoMetaList = new ArrayList<>();
+        final List<PendingResult> pendingPhotoResults = new ArrayList<>();
+
+        this.pendingPromise = promise;
+
+        if (this.isClientDisconnected()) return;
+
+        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID)
+            .then(new ResultTransform<PlacePhotoMetadataResult, BatchResult>() {
+                @Override
+                public PendingResult<BatchResult> onSuccess(PlacePhotoMetadataResult placePhotosResult) {
+                    PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
+                    final Batch.Builder batchBuilder = new Batch.Builder(mGoogleApiClient);
+
+                    for (PlacePhotoMetadata photoMeta : placePhotos) {
+                      PendingResult<PlacePhotoResult> photoResult = photoMeta.getPhoto(mGoogleApiClient);
+
+                      photoMetaList.add(propertiesMapForPhotoMetadata(placeID, photoMeta));
+                      pendingPhotoResults.add(photoResult);
+                      batchBuilder.add(photoResult);
+                    }
+
+                    placePhotos.release();
+
+                    return batchBuilder.build();
+                }
+            })
+            .andFinally(new ResultCallbacks<BatchResult>() {
+                @Override
+                public void onSuccess(BatchResult photoResults) {
+                    WritableArray nativeResults = new WritableNativeArray();
+                    int idx = 0;
+
+                    for (PendingResult<PlacePhotoResult> pendingResult : pendingPhotoResults) {
+                        WritableMap photoMeta = photoMetaList.get(idx);
+                        PlacePhotoResult photoResult = pendingResult.await(0, TimeUnit.SECONDS);
+                        Bitmap photoData = photoResult.getBitmap();
+                        String uri;
+
+                        try {
+                            uri = getUriForBitmap(photoData).toString();
+                        } catch (Exception e) {
+                            promise.reject("E_PHOTO_PERSIST_ERROR", e);
+                            return;
+                        }
+
+                        photoMeta.putString("uri", uri);
+                        nativeResults.pushMap(photoMeta);
+
+                        ++idx;
+                    }
+
+                    promise.resolve(nativeResults);
+                }
+
+                @Override
+                public void onFailure(Status status) {
+                    promise.reject(
+                        "E_PLACE_PHOTOS_ERROR",
+                        new Error("Error retrieving place photos: " + status.toString()));
                 }
             });
     }
