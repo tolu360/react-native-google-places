@@ -414,11 +414,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 @Override
                 public void onSuccess(PlacePhotoMetadataResult placePhotosResult) {
                     PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
-                    WritableArray photosList = Arguments.createArray();
-
-                    if (placePhotos.getCount() > 0) {
-                        photosList = photosArray(placeID, placePhotos);
-                    }
+                    WritableArray photosList = photosArray(placeID, placePhotos);
 
                     placePhotos.release();
                     promise.resolve(photosList);
@@ -427,8 +423,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 @Override
                 public void onFailure(Status status) {
                     promise.reject(
-                            "E_PLACE_PHOTOS_ERROR",
-                            new Error("Error making place photo meta API call: " + status.toString()));
+                        "E_PLACE_PHOTOS_ERROR",
+                        new Error("Error making place photo meta API call: " + status.toString()));
                 }
             });
     }
