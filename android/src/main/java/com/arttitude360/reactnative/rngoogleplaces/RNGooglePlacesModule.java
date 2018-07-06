@@ -28,6 +28,8 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.ResultCallbacks;
+import com.google.android.gms.common.api.ResultTransform;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.AutocompletePrediction;
@@ -406,27 +408,28 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         if (this.isClientDisconnected()) return;
 
-        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlacePhotoMetadataResult>() {
-            @Override
-            public void onResult(PlacePhotoMetadataResult placePhotosResult) {
-                if (!placePhotosResult.getStatus().isSuccess()) {
+        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID)
+            .setResultCallback(new ResultCallbacks<PlacePhotoMetadataResult>() {
+                @Override
+                public void onSuccess(PlacePhotoMetadataResult placePhotosResult) {
+                    PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
+                    WritableArray photosList = Arguments.createArray();
+
+                    if (placePhotos.getCount() > 0) {
+                        photosList = photosArray(placeID, placePhotos);
+                    }
+
+                    placePhotos.release();
+                    promise.resolve(photosList);
+                }
+
+                @Override
+                public void onFailure(Status status) {
                     promise.reject(
-                        "E_PLACE_PHOTOS_ERROR",
-                        new Error("Error making place lookup API call: " + placePhotosResult.getStatus().toString()));
-                    return;
+                            "E_PLACE_PHOTOS_ERROR",
+                            new Error("Error making place photo meta API call: " + status.toString()));
                 }
-
-                PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
-                WritableArray photosList = Arguments.createArray();
-
-                if (placePhotos.getCount() > 0) {
-                    photosList = photosArray(placeID, placePhotos);
-                }
-
-                placePhotos.release();
-                promise.resolve(photosList);
-            }
-        });
+            });
     }
 
     @ReactMethod
@@ -435,44 +438,35 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         if (this.isClientDisconnected()) return;
 
-        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlacePhotoMetadataResult>() {
-            @Override
-            public void onResult(PlacePhotoMetadataResult placePhotosResult) {
-                if (!placePhotosResult.getStatus().isSuccess()) {
-                    promise.reject(
-                        "E_PLACE_PHOTOS_ERROR",
-                        new Error("Error making place lookup API call: " + placePhotosResult.getStatus().toString()));
-                    return;
-                }
+        Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID)
+                .then(new ResultTransform<PlacePhotoMetadataResult, PlacePhotoResult>() {
+                    @Override
+                    public PendingResult<PlacePhotoResult> onSuccess(PlacePhotoMetadataResult placePhotosResult) {
+                        PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
+                        PlacePhotoMetadata photoMeta = placePhotos.get(index);
 
-                PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
-                PlacePhotoMetadata photoMeta = placePhotos.get(index);
-                getPhotoUriFromMeta(photoMeta, promise);
-                placePhotos.release();
-            }
-        });
-    }
+                        return photoMeta.getPhoto(mGoogleApiClient);
+                    }
+                })
+                .andFinally(new ResultCallbacks<PlacePhotoResult>() {
+                    @Override
+                    public void onSuccess(PlacePhotoResult placePhotoResult) {
+                        Bitmap photoData = placePhotoResult.getBitmap();
 
-    private void getPhotoUriFromMeta(PlacePhotoMetadata photoMeta, final Promise promise) {
-      photoMeta.getPhoto(mGoogleApiClient).setResultCallback(new ResultCallback<PlacePhotoResult>() {
-        @Override
-        public void onResult(PlacePhotoResult placePhoto) {
-          if (!placePhoto.getStatus().isSuccess()) {
-              promise.reject(
-                  "E_PLACE_PHOTOS_ERROR",
-                  new Error("Error retrieving place photo API call: " + placePhoto.getStatus().toString()));
-              return;
-          }
+                        try {
+                            promise.resolve(getUriForBitmap(photoData).toString());
+                        } catch (Exception e) {
+                            promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
+                        }
+                    }
 
-          Bitmap photoData = placePhoto.getBitmap();
-
-          try {
-              promise.resolve(getUriForBitmap(photoData).toString());
-          } catch (Exception e) {
-              promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
-          }
-        }
-      });
+                    @Override
+                    public void onFailure(Status status) {
+                        promise.reject(
+                                "E_PLACE_PHOTOS_ERROR",
+                                new Error("Error retrieving place photo: " + status.toString()));
+                    }
+                });
     }
 
     private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
