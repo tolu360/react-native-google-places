@@ -446,12 +446,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 public PendingResult<PlacePhotoResult> onSuccess(PlacePhotoMetadataResult placePhotosResult) {
                     PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
                     PlacePhotoMetadata photoMeta = placePhotos.get(index);
+                    PendingResult<PlacePhotoResult> pendingPhotoResult;
 
                     if (width != null && height != null) {
-                        return photoMeta.getScaledPhoto(mGoogleApiClient, width, height);
+                        pendingPhotoResult = photoMeta.getScaledPhoto(mGoogleApiClient, width, height);
                     }
 
-                    return photoMeta.getPhoto(mGoogleApiClient);
+                    pendingPhotoResult = photoMeta.getPhoto(mGoogleApiClient);
+                    placePhotos.release();
+
+                    return pendingPhotoResult;
                 }
             })
             .andFinally(new ResultCallbacks<PlacePhotoResult>() {
@@ -462,7 +466,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     try {
                         promise.resolve(getUriForBitmap(photoData).toString());
                     } catch (Exception e) {
-                        promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
+                        promise.reject("E_PHOTO_PERSIST_ERROR", e);
                     }
                 }
 
