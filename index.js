@@ -1,6 +1,3 @@
-
-import React from 'react'
-
 import { NativeModules } from 'react-native'
 
 const RNGooglePlacesNative = NativeModules.RNGooglePlaces
@@ -51,6 +48,24 @@ class RNGooglePlaces {
 
 	getCurrentPlace() {
 		return RNGooglePlacesNative.getCurrentPlace()
+	}
+
+	async getPlacePhotos(placeID) {
+		const photos = await RNGooglePlacesNative.getPlacePhotos(placeID)
+		return photos.map((photo, idx) => ({photoID: idx, ...photo}))
+	}
+
+	async getPlacePhotosMetadata(placeID) {
+		const photos = await RNGooglePlacesNative.getPlacePhotosMetadata(placeID)
+		return photos.map((photo, idx) => ({photoID: idx, ...photo}))
+	}
+
+	getPlacePhoto({placeID, photoID}) {
+		return RNGooglePlacesNative.getPlacePhoto(placeID, photoID)
+	}
+
+	getScaledPlacePhoto({placeID, photoID}, width, height) {
+		return RNGooglePlacesNative.getScaledPlacePhoto(placeID, photoID, width, height)
 	}
 }
 
