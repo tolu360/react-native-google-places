@@ -404,7 +404,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void getPlacePhotos(final String placeID, final Promise promise) {
+    public void getPlacePhotosMetadata(final String placeID, final Promise promise) {
         this.pendingPromise = promise;
 
         if (this.isClientDisconnected()) return;

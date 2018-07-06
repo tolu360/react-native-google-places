@@ -50,8 +50,8 @@ class RNGooglePlaces {
 		return RNGooglePlacesNative.getCurrentPlace()
 	}
 
-	async getPlacePhotos(placeID) {
-		const photos = await RNGooglePlacesNative.getPlacePhotos(placeID)
+	async getPlacePhotosMetadata(placeID) {
+		const photos = await RNGooglePlacesNative.getPlacePhotosMetadata(placeID)
 		return photos.map((photo, idx) => ({photoID: idx, ...photo}))
 	}
 
