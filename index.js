@@ -58,6 +58,10 @@ class RNGooglePlaces {
 	getPlacePhoto({placeID, photoID}) {
 		return RNGooglePlacesNative.getPlacePhoto(placeID, photoID)
 	}
+
+	getScaledPlacePhoto({placeID, photoID}, width, height) {
+		return RNGooglePlacesNative.getScaledPlacePhoto(placeID, photoID, width, height)
+	}
 }
 
 export default new RNGooglePlaces()

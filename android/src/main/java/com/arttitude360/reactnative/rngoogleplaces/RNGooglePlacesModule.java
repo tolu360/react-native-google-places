@@ -6,6 +6,7 @@ import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -434,39 +435,48 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void getPlacePhoto(final String placeID, final Integer index, final Promise promise) {
+      this.getScaledPlacePhoto(placeID, index, null, null, promise);
+    }
+
+    @ReactMethod
+    public void getScaledPlacePhoto(final String placeID, final Integer index, @Nullable final Integer width, @Nullable final Integer height, final Promise promise) {
         this.pendingPromise = promise;
 
         if (this.isClientDisconnected()) return;
 
         Places.GeoDataApi.getPlacePhotos(mGoogleApiClient, placeID)
-                .then(new ResultTransform<PlacePhotoMetadataResult, PlacePhotoResult>() {
-                    @Override
-                    public PendingResult<PlacePhotoResult> onSuccess(PlacePhotoMetadataResult placePhotosResult) {
-                        PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
-                        PlacePhotoMetadata photoMeta = placePhotos.get(index);
+            .then(new ResultTransform<PlacePhotoMetadataResult, PlacePhotoResult>() {
+                @Override
+                public PendingResult<PlacePhotoResult> onSuccess(PlacePhotoMetadataResult placePhotosResult) {
+                    PlacePhotoMetadataBuffer placePhotos = placePhotosResult.getPhotoMetadata();
+                    PlacePhotoMetadata photoMeta = placePhotos.get(index);
 
-                        return photoMeta.getPhoto(mGoogleApiClient);
-                    }
-                })
-                .andFinally(new ResultCallbacks<PlacePhotoResult>() {
-                    @Override
-                    public void onSuccess(PlacePhotoResult placePhotoResult) {
-                        Bitmap photoData = placePhotoResult.getBitmap();
-
-                        try {
-                            promise.resolve(getUriForBitmap(photoData).toString());
-                        } catch (Exception e) {
-                            promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
-                        }
+                    if (width != null && height != null) {
+                        return photoMeta.getScaledPhoto(mGoogleApiClient, width, height);
                     }
 
-                    @Override
-                    public void onFailure(Status status) {
-                        promise.reject(
-                                "E_PLACE_PHOTOS_ERROR",
-                                new Error("Error retrieving place photo: " + status.toString()));
+                    return photoMeta.getPhoto(mGoogleApiClient);
+                }
+            })
+            .andFinally(new ResultCallbacks<PlacePhotoResult>() {
+                @Override
+                public void onSuccess(PlacePhotoResult placePhotoResult) {
+                    Bitmap photoData = placePhotoResult.getBitmap();
+
+                    try {
+                        promise.resolve(getUriForBitmap(photoData).toString());
+                    } catch (Exception e) {
+                        promise.reject("E_PHOTO_PERSIST_ERROR", "Error saving photo: " + e.getMessage());
                     }
-                });
+                }
+
+                @Override
+                public void onFailure(Status status) {
+                    promise.reject(
+                            "E_PLACE_PHOTOS_ERROR",
+                            new Error("Error retrieving place photo: " + status.toString()));
+                }
+            });
     }
 
     private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
