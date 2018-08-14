@@ -5,6 +5,7 @@ def DEFAULT_BUILD_TOOLS_VERSION             = "25.0.2"
 def DEFAULT_TARGET_SDK_VERSION              = 25
 def DEFAULT_GOOGLE_PLAY_SERVICES_VERSION    = "11.6.2"
 def DEFAULT_ANDROID_MAPS_UTILS_VERSION      = "0.5+"
+def DEFAULT_SUPPORT_LIB_VERSION             = "25.2.0"
 
 android {
     compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : DEFAULT_COMPILE_SDK_VERSION
@@ -42,4 +43,10 @@ dependencies {
     compile "com.google.android.gms:play-services-places:$googlePlayServicesVersion"
     compile "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
     compile "com.google.maps.android:android-maps-utils:$androidMapsUtilsVersion"
+}
+
+configurations.all {
+    def supportLibVersion = rootProject.hasProperty('supportLibVersion') ? rootProject.supportLibVersion : DEFAULT_SUPPORT_LIB_VERSION
+    
+	resolutionStrategy.force "com.android.support:support-v4:$supportLibVersion"
 }
