@@ -245,7 +245,7 @@ To filter autocomplete results as listed for [Android](https://developers.google
 - **`country`** _(String)_ - Limit results to a specific country using a [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (case insensitive). If this is not set, no country filtering will take place. *(optional)*
 - **`latitude`** _(Number)_ - Latitude of the point around which you wish to retrieve place information *(required if `longitude` is given)*
 - **`longitude`** _(Number)_ - Longitude of the point around which you wish to retrieve place information *(required if `latitude` is given)*
-- **`radius`** _(Number)_ - Radius (in kilo-meters) within which to retrieve place information. Only works if `latitude` and `longitude` are also given. Note that setting a radius biases results to the indicated area, but may not fully restrict results to the specified area. Defaults to `0.1`.
+- **`radius`** _(Number)_ - Radius (in kilometers) within which to retrieve place information. Only works if `latitude` and `longitude` are also given. Note that setting a radius biases results to the indicated area, but may not fully restrict results to the specified area. Defaults to `0.1`.
 - **`useOverlay`** _(Boolean)_ [Android Only] - If true, the autocomplete modal will open as an [overlay](https://developers.google.com/places/images/acw_overlay.png). Defaults to `false`.
 
 ### Open PlacePicker Modal
@@ -279,7 +279,7 @@ To set the initial viewport that the place picker map should show when the picke
 
 - **`latitude`** _(Number)_ - Latitude of the point which you want the map centered on *(required if `longitude` is given)*
 - **`longitude`** _(Number)_ - Longitude of the point which you want the map centered on *(required if `latitude` is given)*
-- **`radius`** _(Number)_ - Radius (in kilo-meters) from the center of the map view to the edge. Use this to set the default "zoom" of the map view when it is first opened. Only works if `latitude` and `longitude` are also given. Defaults to `0.1`.
+- **`radius`** _(Number)_ - Radius (in kilometers) from the center of the map view to the edge. Use this to set the default "zoom" of the map view when it is first opened. Only works if `latitude` and `longitude` are also given. Defaults to `0.1`.
 
 If no initial viewport is set (no argument is passed to the `openPlacePickerModal()` method), the viewport will be centered on the device's location, with the zoom at city-block level.
 
