@@ -119,6 +119,10 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 WritableMap map = propertiesMapForPlace(place);
 
                 resolvePromise(map);
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Indicates that the activity closed before a selection was made. For example if
+                // the user pressed the back button.
+                rejectPromise("E_USER_CANCELED", new Error("Search cancelled"));
             }
         }
 
