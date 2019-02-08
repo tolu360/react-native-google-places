@@ -1,9 +1,12 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.os.Bundle;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -18,25 +21,24 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.annotations.ReactProp;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.AutocompletePrediction;
-import com.google.android.gms.location.places.AutocompletePredictionBuffer;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBuffer;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.compat.AutocompleteFilter;
+import com.google.android.libraries.places.compat.AutocompletePrediction;
+import com.google.android.libraries.places.compat.AutocompletePredictionBufferResponse;
+import com.google.android.libraries.places.compat.GeoDataClient;
+import com.google.android.libraries.places.compat.Place;
+import com.google.android.libraries.places.compat.PlaceBufferResponse;
+import com.google.android.libraries.places.compat.PlaceDetectionClient;
+import com.google.android.libraries.places.compat.PlaceLikelihood;
+import com.google.android.libraries.places.compat.PlaceLikelihoodBufferResponse;
+import com.google.android.libraries.places.compat.Places;
+import com.google.android.libraries.places.compat.ui.PlaceAutocomplete;
+import com.google.android.libraries.places.compat.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
@@ -44,26 +46,25 @@ import com.google.maps.android.SphericalUtil;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener {
 
     private ReactApplicationContext reactContext;
     private Promise pendingPromise;
     public static final String TAG = "RNGooglePlaces";
 
-    protected GoogleApiClient mGoogleApiClient;
+    private GeoDataClient mGeoDataClient;
+    private PlaceDetectionClient mPlaceDetectionClient;
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static int PLACE_PICKER_REQUEST_CODE = 361;
-    public static int PLACES_RESOLUTION_CODE = 362;
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        buildGoogleApiClient();
+        mGeoDataClient = Places.getGeoDataClient(getReactApplicationContext());
+        mPlaceDetectionClient = Places.getPlaceDetectionClient(getReactApplicationContext());
 
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
@@ -72,14 +73,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     @Override
     public String getName() {
         return REACT_CLASS;
-    }
-
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext()).addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API).addConnectionCallbacks(this).addOnConnectionFailedListener(this)
-                .build();
-
-        mGoogleApiClient.connect();
     }
 
     /**
@@ -119,16 +112,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 WritableMap map = propertiesMapForPlace(place);
 
                 resolvePromise(map);
-            }
-        }
-
-        if (requestCode == PLACES_RESOLUTION_CODE) {
-            Log.i(TAG, "Google API Client resolution result: " + resultCode);
-            if (resultCode == Activity.RESULT_OK) {
-                if (!mGoogleApiClient.isConnecting() &&
-                        !mGoogleApiClient.isConnected()) {
-                    mGoogleApiClient.connect();
-                }
             }
         }
     }
@@ -206,7 +189,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             GoogleApiAvailability.getInstance()
                     .getErrorDialog(currentActivity, e.getConnectionStatusCode(), PLACE_PICKER_REQUEST_CODE).show();
         } catch (GooglePlayServicesNotAvailableException e) {
-
             rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
         }
     }
@@ -214,8 +196,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     @ReactMethod
     public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
-
-        if (this.isClientDisconnected()) return;
 
         String type = options.getString("type");
         String country = options.getString("country");
@@ -232,74 +212,72 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             bounds = this.getLatLngBounds(center, radius);
         }
 
-        PendingResult<AutocompletePredictionBuffer> results = Places.GeoDataApi
-                .getAutocompletePredictions(mGoogleApiClient, query, bounds, getFilterType(type, country));
+        mGeoDataClient
+                .getAutocompletePredictions(query, bounds, getFilterType(type, country))
+                .addOnCompleteListener(new OnCompleteListener<AutocompletePredictionBufferResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AutocompletePredictionBufferResponse> task) {
+                        if (task.isSuccessful()) {
+                            AutocompletePredictionBufferResponse autocompletePredictions = task.getResult();
 
-        AutocompletePredictionBuffer autocompletePredictions = results.await(60, TimeUnit.SECONDS);
+                            if (autocompletePredictions == null) {
+                                promise.resolve(Arguments.createArray());
+                                return;
+                            }
 
-        final Status status = autocompletePredictions.getStatus();
+                            WritableArray predictionsList = Arguments.createArray();
 
-        if (status.isSuccess()) {
-            if (autocompletePredictions.getCount() == 0) {
-                WritableArray emptyResult = Arguments.createArray();
-                autocompletePredictions.release();
-                promise.resolve(emptyResult);
-                return;
-            }
+                            for (AutocompletePrediction prediction : autocompletePredictions) {
+                                WritableMap map = Arguments.createMap();
+                                map.putString("fullText", prediction.getFullText(null).toString());
+                                map.putString("primaryText", prediction.getPrimaryText(null).toString());
+                                map.putString("secondaryText", prediction.getSecondaryText(null).toString());
+                                map.putString("placeID", prediction.getPlaceId());
 
-            WritableArray predictionsList = Arguments.createArray();
+                                if (prediction.getPlaceTypes() != null) {
+                                    List<String> types = new ArrayList<>();
+                                    for (Integer placeType : prediction.getPlaceTypes()) {
+                                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                                    }
+                                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                                }
 
-            for (AutocompletePrediction prediction : autocompletePredictions) {
-                WritableMap map = Arguments.createMap();
-                map.putString("fullText", prediction.getFullText(null).toString());
-                map.putString("primaryText", prediction.getPrimaryText(null).toString());
-                map.putString("secondaryText", prediction.getSecondaryText(null).toString());
-                map.putString("placeID", prediction.getPlaceId().toString());
+                                predictionsList.pushMap(map);
+                            }
 
-                if (prediction.getPlaceTypes() != null) {
-                    List<String> types = new ArrayList<>();
-                    for (Integer placeType : prediction.getPlaceTypes()) {
-                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                            // Release the buffer now that all data has been copied.
+                            autocompletePredictions.release();
+                            promise.resolve(predictionsList);
+
+                        } else {
+                            Exception e = task.getException();
+                            String msg = e != null ? e.toString() : "Unknown Error";
+                            Log.i(TAG, "Error making autocomplete prediction API call: " + msg);
+                            promise.reject("E_AUTOCOMPLETE_ERROR",
+                                    new Error("Error making autocomplete prediction API call: " + msg));
+                        }
                     }
-                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
-                }
-
-                predictionsList.pushMap(map);
-            }
-
-            // Release the buffer now that all data has been copied.
-            autocompletePredictions.release();
-            promise.resolve(predictionsList);
-
-        } else {
-            Log.i(TAG, "Error making autocomplete prediction API call: " + status.toString());
-            autocompletePredictions.release();
-            promise.reject("E_AUTOCOMPLETE_ERROR",
-                    new Error("Error making autocomplete prediction API call: " + status.toString()));
-            return;
-        }
+                });
     }
 
     @ReactMethod
     public void lookUpPlaceByID(String placeID, final Promise promise) {
         this.pendingPromise = promise;
 
-        if (this.isClientDisconnected()) return;
-
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlaceBuffer>() {
+        mGeoDataClient.getPlaceById(placeID).addOnCompleteListener(new OnCompleteListener<PlaceBufferResponse>() {
             @Override
-            public void onResult(PlaceBuffer places) {
-                if (places.getStatus().isSuccess()) {
-                    if (places.getCount() == 0) {
-                        WritableMap emptyResult = Arguments.createMap();
-                        places.release();
-                        promise.resolve(emptyResult);
+            public void onComplete(@NonNull Task<PlaceBufferResponse> task) {
+                if (task.isSuccessful()) {
+                    PlaceBufferResponse places = task.getResult();
+
+                    if (places == null) {
+                        promise.resolve(Arguments.createMap());
                         return;
                     }
 
-                    final Place place = places.get(0);
-
-                    WritableMap map = propertiesMapForPlace(place);
+                    WritableMap map = places.getCount() == 0
+                            ? Arguments.createMap()
+                            : propertiesMapForPlace(places.get(0));
 
                     // Release the PlaceBuffer to prevent a memory leak
                     places.release();
@@ -307,10 +285,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     promise.resolve(map);
 
                 } else {
-                    places.release();
                     promise.reject("E_PLACE_DETAILS_ERROR",
-                            new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                    return;
+                            new Error("Error making place lookup API call: " + task.getException()));
                 }
             }
         });
@@ -324,15 +300,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             placeIDsStrings.add(Objects.toString(item, null));
         }
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
-                .setResultCallback(new ResultCallback<PlaceBuffer>() {
+        mGeoDataClient.getPlaceById(placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
+                .addOnCompleteListener(new OnCompleteListener<PlaceBufferResponse>() {
                     @Override
-                    public void onResult(PlaceBuffer places) {
-                        if (places.getStatus().isSuccess()) {
-                            if (places.getCount() == 0) {
-                                WritableMap emptyResult = Arguments.createMap();
-                                places.release();
-                                promise.resolve(emptyResult);
+                    public void onComplete(@NonNull Task<PlaceBufferResponse> task) {
+
+                        if (task.isSuccessful()) {
+                            PlaceBufferResponse places = task.getResult();
+
+                            if (places == null) {
+                                promise.resolve(Arguments.createMap());
                                 return;
                             }
 
@@ -343,32 +320,37 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
                             promise.resolve(resultList);
                         } else {
-                            places.release();
+                            Exception e = task.getException();
+                            String msg = e != null ? e.toString() : "Unknown Error";
                             promise.reject("E_PLACE_DETAILS_ERROR",
-                                    new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                            return;
+                                    new Error("Error making place lookup API call: " + msg));
                         }
                     }
                 });
     }
 
+    @SuppressLint("MissingPermission") // user should add this permission at the app level
     @ReactMethod
     public void getCurrentPlace(final Promise promise) {
-        Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null)
-            .setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
-                @Override
-                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
-                    final Status status = likelyPlaces.getStatus();
+        // check in case permission denied at run time in >= 23
+        if (ContextCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            promise.reject("E_PERMISSION_ERROR", new Error("User denied location permission"));
+            return;
+        }
 
-                    if (status.isSuccess()) {
-                        if (likelyPlaces.getCount() == 0) {
-                            WritableArray emptyResult = Arguments.createArray();
-                            likelyPlaces.release();
-                            promise.resolve(emptyResult);
-                            return;
-                        }
+        mPlaceDetectionClient.getCurrentPlace(null)
+            .addOnCompleteListener(new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
+                @Override
+                public void onComplete(@NonNull Task<PlaceLikelihoodBufferResponse> task) {
+                    if (task.isSuccessful()) {
 
                         WritableArray likelyPlacesList = Arguments.createArray();
+                        PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
+
+                        if (likelyPlaces == null) {
+                            promise.resolve(likelyPlacesList);
+                            return;
+                        }
 
                         for (PlaceLikelihood placeLikelihood : likelyPlaces) {
                             WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
@@ -381,17 +363,17 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                         likelyPlaces.release();
                         promise.resolve(likelyPlacesList);
                     } else {
-                        Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
-                        likelyPlaces.release();
+                        Exception e = task.getException();
+                        String msg = e != null ? e.toString() : "Unknown Error";
+                        Log.i(TAG, "Error making places detection api call: " + msg);
                         promise.reject("E_PLACE_DETECTION_API_ERROR",
-                                new Error("Error making places detection api call: " + status.getStatusMessage()));
-                        return;
+                                new Error("Error making places detection api call: " + msg));
                     }
                 }
             });
     }
 
-    private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
+    private WritableArray processLookupByIDsPlaces(final PlaceBufferResponse places) {
         WritableArray resultList = new WritableNativeArray();
 
         for (Place place : places) {
@@ -511,58 +493,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return RNGooglePlacesPlaceTypeEnum.findByTypeId(id).getLabel();
     }
 
-    // check before any use of Google API Client
-    private boolean isClientDisconnected() {
-        if (!mGoogleApiClient.isConnecting() &&
-                !mGoogleApiClient.isConnected()) {
-            rejectPromise("E_GOOGLE_CLIENT_DISCONNECTED", new Error("GoogleApiClient is not connected. Will try connect again"));
-            // this will trigger again resolution on connection failure when
-            // autoClientResolution is true and if has resolution
-            mGoogleApiClient.connect();
-            return true;
-        }
-
-        return false;
-    }
-
     @Override
     public void onNewIntent(Intent intent) {
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "GoogleApiClient Connected");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // Refer to Google Play documentation for what errors can be logged
-        boolean hasResolution = result.hasResolution();
-
-        Log.i(TAG, "GoogleApiClient: connection failed with error: " + result.getErrorMessage() +
-                " (" + result.getErrorCode() + ")" +
-                ", has resolution: " +
-                (hasResolution ? "YES" : "NO"));
-
-        if (hasResolution) {
-            Activity activity = getCurrentActivity();
-            if (activity != null) {
-                try {
-                    result.startResolutionForResult(activity, PLACES_RESOLUTION_CODE);
-                } catch (IntentSender.SendIntentException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // activity sometimes not attached to react context on app start,
-                // client connection will be checked before making request
-                Log.i(TAG, "GoogleApiClient: can't resolve, activity == null");
-            }
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        // Attempts to reconnect if a disconnect occurs
-        Log.i(TAG, "GoogleApiClient Connection Suspended");
     }
 }
