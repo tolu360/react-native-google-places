@@ -45,29 +45,6 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
-
-// import com.google.android.gms.common.ConnectionResult;
-// import com.google.android.gms.common.GoogleApiAvailability;
-// import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-// import com.google.android.gms.common.GooglePlayServicesRepairableException;
-// import com.google.android.gms.common.api.GoogleApiClient;
-// import com.google.android.gms.common.api.PendingResult;
-// import com.google.android.gms.common.api.ResultCallback;
-// import com.google.android.gms.common.api.Status;
-// import com.google.android.gms.location.places.AutocompleteFilter;
-// import com.google.android.gms.location.places.AutocompletePrediction;
-// import com.google.android.gms.location.places.AutocompletePredictionBuffer;
-// import com.google.android.gms.location.places.Place;
-// import com.google.android.gms.location.places.PlaceBuffer;
-// import com.google.android.gms.location.places.PlaceLikelihood;
-// import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
-// import com.google.android.gms.location.places.Places;
-// import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-// import com.google.android.gms.location.places.ui.PlacePicker;
-// import com.google.android.gms.maps.model.LatLngBounds;
-// import com.google.android.gms.maps.model.LatLng;
-// import com.google.maps.android.SphericalUtil;
-
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,15 +57,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     private List<Place.Field> lastSelectedFields;
     public static final String TAG = "RNGooglePlaces";
 
-    // protected GoogleApiClient mGoogleApiClient;
-
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
-
-        // buildGoogleApiClient();
 
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
@@ -98,14 +71,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public String getName() {
         return REACT_CLASS;
     }
-
-    // protected synchronized void buildGoogleApiClient() {
-    //     mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext()).addApi(Places.GEO_DATA_API)
-    //             .addApi(Places.PLACE_DETECTION_API).addConnectionCallbacks(this).addOnConnectionFailedListener(this)
-    //             .build();
-
-    //     mGoogleApiClient.connect();
-    // }
 
     /**
      * Called after the autocomplete activity has finished to return its result.
@@ -491,68 +456,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
     }
 
-    private LatLngBounds getLatLngBounds(LatLng center, double radius) {
-        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
-        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
-        return new LatLngBounds(southwest, northeast);
-    }
-
     private String findPlaceTypeLabelByPlaceTypeId(Integer id) {
         return RNGooglePlacesPlaceTypeEnum.findByTypeId(id).getLabel();
     }
 
-    // check before any use of Google API Client
-    private boolean isClientDisconnected() {
-        if (!mGoogleApiClient.isConnecting() &&
-                !mGoogleApiClient.isConnected()) {
-            rejectPromise("E_GOOGLE_CLIENT_DISCONNECTED", new Error("GoogleApiClient is not connected. Will try connect again"));
-            // this will trigger again resolution on connection failure when
-            // autoClientResolution is true and if has resolution
-            mGoogleApiClient.connect();
-            return true;
-        }
-
-        return false;
-    }
-
     @Override
     public void onNewIntent(Intent intent) {
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "GoogleApiClient Connected");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // Refer to Google Play documentation for what errors can be logged
-        boolean hasResolution = result.hasResolution();
-
-        Log.i(TAG, "GoogleApiClient: connection failed with error: " + result.getErrorMessage() +
-                " (" + result.getErrorCode() + ")" +
-                ", has resolution: " +
-                (hasResolution ? "YES" : "NO"));
-
-        if (hasResolution) {
-            Activity activity = getCurrentActivity();
-            if (activity != null) {
-                try {
-                    result.startResolutionForResult(activity, PLACES_RESOLUTION_CODE);
-                } catch (IntentSender.SendIntentException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // activity sometimes not attached to react context on app start,
-                // client connection will be checked before making request
-                Log.i(TAG, "GoogleApiClient: can't resolve, activity == null");
-            }
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        // Attempts to reconnect if a disconnect occurs
-        Log.i(TAG, "GoogleApiClient Connection Suspended");
     }
 }
