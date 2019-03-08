@@ -27,7 +27,7 @@ public enum RNGooglePlacesPlaceFieldEnum {
     private final Place.Field field;
 
     private static class Indexer {
-        private static SparseArray<RNGooglePlacesPlaceTypeEnum> index = new SparseArray<>();
+        private static SparseArray<RNGooglePlacesPlaceFieldEnum> index = new SparseArray<>();
     }
 
     RNGooglePlacesPlaceFieldEnum(int id, String key, Place.Field field) {
@@ -36,7 +36,7 @@ public enum RNGooglePlacesPlaceFieldEnum {
         Indexer.index.put(id, this);
     }
 
-    public String getField() {
+    public Place.Field getField() {
         return field;
     }
 
