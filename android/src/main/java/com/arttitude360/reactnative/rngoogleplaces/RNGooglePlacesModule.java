@@ -273,38 +273,21 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void lookUpPlaceByID(String placeID, final Promise promise) {
+    public void lookUpPlaceByID(String placeID, ReadableArray fields, final Promise promise) {
         this.pendingPromise = promise;
+        
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList());
 
-        if (this.isClientDisconnected()) return;
+        FetchPlaceRequest request = FetchPlaceRequest.builder(placeID, selectedFields).build();
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlaceBuffer>() {
-            @Override
-            public void onResult(PlaceBuffer places) {
-                if (places.getStatus().isSuccess()) {
-                    if (places.getCount() == 0) {
-                        WritableMap emptyResult = Arguments.createMap();
-                        places.release();
-                        promise.resolve(emptyResult);
-                        return;
-                    }
+        placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+            Place place = response.getPlace();
+            WritableMap map = propertiesMapForPlace(place);
 
-                    final Place place = places.get(0);
-
-                    WritableMap map = propertiesMapForPlace(place);
-
-                    // Release the PlaceBuffer to prevent a memory leak
-                    places.release();
-
-                    promise.resolve(map);
-
-                } else {
-                    places.release();
-                    promise.reject("E_PLACE_DETAILS_ERROR",
-                            new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                    return;
-                }
-            }
+            promise.resolve(map);
+        }).addOnFailureListener((exception) -> {
+            promise.reject("E_PLACE_DETAILS_ERROR", new Error(exception.getMessage()));
+            return;
         });
     }
 
