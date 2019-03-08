@@ -292,42 +292,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void lookUpPlacesByIDs(ReadableArray placeIDs, final Promise promise) {
-        List<Object> placeIDsObjects = placeIDs.toArrayList();
-        List<String> placeIDsStrings = new ArrayList<>(placeIDsObjects.size());
-        for (Object item : placeIDsObjects) {
-            placeIDsStrings.add(Objects.toString(item, null));
-        }
-
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
-                .setResultCallback(new ResultCallback<PlaceBuffer>() {
-                    @Override
-                    public void onResult(PlaceBuffer places) {
-                        if (places.getStatus().isSuccess()) {
-                            if (places.getCount() == 0) {
-                                WritableMap emptyResult = Arguments.createMap();
-                                places.release();
-                                promise.resolve(emptyResult);
-                                return;
-                            }
-
-                            WritableArray resultList = processLookupByIDsPlaces(places);
-
-                            // Release the PlaceBuffer to prevent a memory leak
-                            places.release();
-
-                            promise.resolve(resultList);
-                        } else {
-                            places.release();
-                            promise.reject("E_PLACE_DETAILS_ERROR",
-                                    new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                            return;
-                        }
-                    }
-                });
-    }
-
-    @ReactMethod
     public void getCurrentPlace(ReadableArray fields, final Promise promise) {
         if (ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission.ACCESS_WIFI_STATE)
             != PackageManager.PERMISSION_GRANTED
@@ -383,16 +347,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 promise.reject("E_CURRENT_PLACE_ERROR", new Error(exception.getMessage()));
                 return;
             });
-    }
-
-    private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
-        WritableArray resultList = new WritableNativeArray();
-
-        for (Place place : places) {
-            resultList.pushMap(propertiesMapForPlace(place));
-        }
-
-        return resultList;
     }
 
     private WritableMap propertiesMapForPlace(Place place) {
