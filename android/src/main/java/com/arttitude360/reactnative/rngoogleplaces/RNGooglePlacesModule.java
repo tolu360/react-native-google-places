@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -43,7 +44,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.net.FetchPlaceResponse;
@@ -59,6 +59,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     private Promise pendingPromise;
     private List<Place.Field> lastSelectedFields;
     public static final String TAG = "RNGooglePlaces";
+    private PlacesClient placesClient;
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static String REACT_CLASS = "RNGooglePlaces";
@@ -72,6 +73,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         if (!Places.isInitialized() && !apiKey.equals("")) {
             Places.initialize(reactContext.getApplicationContext(), apiKey);
         }
+
+        placesClient = Places.createClient(reactContext.getApplicationContext());
 
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
