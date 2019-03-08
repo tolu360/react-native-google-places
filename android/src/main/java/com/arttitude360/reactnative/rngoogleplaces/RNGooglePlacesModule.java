@@ -82,8 +82,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     // protected GoogleApiClient mGoogleApiClient;
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
-    public static int PLACE_PICKER_REQUEST_CODE = 361;
-    public static int PLACES_RESOLUTION_CODE = 362;
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
@@ -128,28 +126,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             } else if (resultCode == AutocompleteActivity.RESULT_CANCELED) {
                 rejectPromise("E_USER_CANCELED", new Error("Search cancelled"));
             }           
-        }
-
-        if (requestCode == PLACE_PICKER_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                Place place = PlacePicker.getPlace(this.reactContext.getApplicationContext(), intent);
-
-                Log.i(TAG, "Place Selected: " + place.getName());
-
-                WritableMap map = propertiesMapForPlace(place);
-
-                resolvePromise(map);
-            }
-        }
-
-        if (requestCode == PLACES_RESOLUTION_CODE) {
-            Log.i(TAG, "Google API Client resolution result: " + resultCode);
-            if (resultCode == Activity.RESULT_OK) {
-                if (!mGoogleApiClient.isConnecting() &&
-                        !mGoogleApiClient.isConnected()) {
-                    mGoogleApiClient.connect();
-                }
-            }
         }
     }
 
@@ -205,35 +181,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         autocompleteIntent.setTypeFilter(getFilterType(type));
 
         currentActivity.startActivityForResult(autocompleteIntent.build(currentActivity), AUTOCOMPLETE_REQUEST_CODE);        
-    }
-
-    @ReactMethod
-    public void openPlacePickerModal(ReadableMap options, final Promise promise) {
-        this.pendingPromise = promise;
-        Activity currentActivity = getCurrentActivity();
-        double latitude = options.getDouble("latitude");
-        double longitude = options.getDouble("longitude");
-        double radius = options.getDouble("radius");
-        LatLng center = new LatLng(latitude, longitude);
-
-        try {
-            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-
-            if (latitude != 0 && longitude != 0 && radius != 0) {
-                intentBuilder.setLatLngBounds(this.getLatLngBounds(center, radius));
-            }
-            Intent intent = intentBuilder.build(currentActivity);
-
-            // Start the Intent by requesting a result, identified by a request code.
-            currentActivity.startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
-
-        } catch (GooglePlayServicesRepairableException e) {
-            GoogleApiAvailability.getInstance()
-                    .getErrorDialog(currentActivity, e.getConnectionStatusCode(), PLACE_PICKER_REQUEST_CODE).show();
-        } catch (GooglePlayServicesNotAvailableException e) {
-
-            rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
-        }
     }
 
     @ReactMethod
