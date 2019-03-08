@@ -77,6 +77,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     private ReactApplicationContext reactContext;
     private Promise pendingPromise;
+    private List<Place.Field> lastSelectedFields;
     public static final String TAG = "RNGooglePlaces";
 
     // protected GoogleApiClient mGoogleApiClient;
@@ -116,7 +117,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == AutocompleteActivity.RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(intent);
-                WritableMap map = propertiesMapForPlace(place);
+                WritableMap map = propertiesMapForPlace(place, this.lastSelectedFields);
 
                 resolvePromise(map);
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
@@ -137,6 +138,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void openAutocompleteModal(ReadableMap options, ReadableArray fields, final Promise promise) {
 
         this.pendingPromise = promise;
+        this.lastSelectedFields = new ArrayList<>();
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
@@ -158,9 +160,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         Activity currentActivity = getCurrentActivity();
         
-        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList());
+        this.lastSelectedFields = getPlaceFields(fields.toArrayList());
         Intent autocompleteIntent = new Autocomplete.IntentBuilder(
-                useOverlay ? AutocompleteActivityMode.OVERLAY : AutocompleteActivityMode.FULLSCREEN, selectedFields);
+                useOverlay ? AutocompleteActivityMode.OVERLAY : AutocompleteActivityMode.FULLSCREEN, this.lastSelectedFields);
 
         if (biasToLatitudeSW != 0 && biasToLongitudeSW != 0 && biasToLatitudeNE != 0 && biasToLongitudeNE != 0) {
             autocompleteIntent.setLocationBias(RectangularBounds.newInstance(
@@ -282,7 +284,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
             Place place = response.getPlace();
-            WritableMap map = propertiesMapForPlace(place);
+            WritableMap map = propertiesMapForPlace(place, selectedFields);
 
             promise.resolve(map);
         }).addOnFailureListener((exception) -> {
@@ -333,7 +335,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
                 for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
 
-                    WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
+                    WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace(), selectedFields);
                     map.putDouble("likelihood", placeLikelihood.getLikelihood());
 
                     likelyPlacesList.pushMap(map);
@@ -349,54 +351,76 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             });
     }
 
-    private WritableMap propertiesMapForPlace(Place place) {
+    private WritableMap propertiesMapForPlace(Place place, List<Place.Field> selectedFields) {
         // Display attributions if required.
         CharSequence attributions = place.getAttributions();
 
         WritableMap map = Arguments.createMap();
-        map.putDouble("latitude", place.getLatLng().latitude);
-        map.putDouble("longitude", place.getLatLng().longitude);
-        map.putString("name", place.getName().toString());
 
-        if (!TextUtils.isEmpty(place.getAddress())) {
-            map.putString("address", place.getAddress().toString());
+        if (selectedFields.contains(Place.Field.LAT_LNG)) {
+            map.putDouble("latitude", place.getLatLng().latitude);
+            map.putDouble("longitude", place.getLatLng().longitude);
         }
 
-        if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-            map.putString("phoneNumber", place.getPhoneNumber().toString());
+        if (selectedFields.contains(Place.Field.NAME)) {
+            map.putString("name", place.getName().toString());
         }
 
-        if (null != place.getWebsiteUri()) {
-            map.putString("website", place.getWebsiteUri().toString());
+        if (selectedFields.contains(Place.Field.ADDRESS)) {
+            if (!TextUtils.isEmpty(place.getAddress())) {
+                map.putString("address", place.getAddress().toString());
+            }
         }
 
-        map.putString("placeID", place.getId());
+        if (selectedFields.contains(Place.Field.PHONE_NUMBER)) {
+            if (!TextUtils.isEmpty(place.getPhoneNumber())) {
+                map.putString("phoneNumber", place.getPhoneNumber().toString());
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.WEBSITE_URI)) {
+            if (null != place.getWebsiteUri()) {
+                map.putString("website", place.getWebsiteUri().toString());
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.ID)) {
+            map.putString("placeID", place.getId());
+        }
 
         if (!TextUtils.isEmpty(attributions)) {
             map.putString("attributions", attributions.toString());
         }
 
-        if (place.getPlaceTypes() != null) {
-            List<String> types = new ArrayList<>();
-            for (Integer placeType : place.getPlaceTypes()) {
-                types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+        if (selectedFields.contains(Place.Field.TYPES)) {
+            if (place.getPlaceTypes() != null) {
+                List<String> types = new ArrayList<>();
+                for (Integer placeType : place.getPlaceTypes()) {
+                    types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                }
+                map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
             }
-            map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
         }
 
-        if (place.getViewport() != null) {
-            map.putDouble("north", place.getViewport().northeast.latitude);
-            map.putDouble("east", place.getViewport().northeast.longitude);
-            map.putDouble("south", place.getViewport().southwest.latitude);
-            map.putDouble("west", place.getViewport().southwest.longitude);
+        if (selectedFields.contains(Place.Field.VIEWPORT)) {
+            if (place.getViewport() != null) {
+                map.putDouble("north", place.getViewport().northeast.latitude);
+                map.putDouble("east", place.getViewport().northeast.longitude);
+                map.putDouble("south", place.getViewport().southwest.latitude);
+                map.putDouble("west", place.getViewport().southwest.longitude);
+            }
         }
 
-        if (place.getPriceLevel() >= 0) {
-            map.putInt("priceLevel", place.getPriceLevel());
+        if (selectedFields.contains(Place.Field.PRICE_LEVEL)) {
+            if (place.getPriceLevel() >= 0) {
+                map.putInt("priceLevel", place.getPriceLevel());
+            }
         }
 
-        if (place.getRating() >= 0) {
-            map.putDouble("rating", place.getRating());
+        if (selectedFields.contains(Place.Field.RATING)) {
+            if (place.getRating() >= 0) {
+                map.putDouble("rating", place.getRating());
+            }
         }
 
         return map;
