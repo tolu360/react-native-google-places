@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
-import androidx.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
