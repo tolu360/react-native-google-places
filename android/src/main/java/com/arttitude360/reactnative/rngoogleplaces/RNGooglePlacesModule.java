@@ -233,69 +233,89 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
 
-        if (this.isClientDisconnected()) return;
-
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
+        boolean useSessionToken = options.getBoolean("useSessionToken");
 
-        double latitude = options.getDouble("latitude");
-        double longitude = options.getDouble("longitude");
-        double radius = options.getDouble("radius");
-        LatLng center = new LatLng(latitude, longitude);
+        ReadableMap locationBias = options.getMap("locationBias");
+        double biasToLatitudeSW = locationBias.getDouble("latitudeSW");
+        double biasToLongitudeSW = locationBias.getDouble("longitudeSW");
+        double biasToLatitudeNE = locationBias.getDouble("latitudeNE");
+        double biasToLongitudeNE = locationBias.getDouble("longitudeNE");
 
-        LatLngBounds bounds = null;
-
-        if (latitude != 0 && longitude != 0 && radius != 0) {
-            bounds = this.getLatLngBounds(center, radius);
+        ReadableMap locationRestriction = options.getMap("locationRestriction");
+        double restrictToLatitudeSW = locationRestriction.getDouble("latitudeSW");
+        double restrictToLongitudeSW = locationRestriction.getDouble("longitudeSW");
+        double restrictToLatitudeNE = locationRestriction.getDouble("latitudeNE");
+        double restrictToLongitudeNE = locationRestriction.getDouble("longitudeNE");
+        
+        FindAutocompletePredictionsRequest.Builder requestBuilder =
+        FindAutocompletePredictionsRequest.builder()
+        .setQuery(query);
+        
+        if (country != null) {
+            requestBuilder.setCountry(country);
+        }
+        
+        if (biasToLatitudeSW != 0 && biasToLongitudeSW != 0 && biasToLatitudeNE != 0 && biasToLongitudeNE != 0) {
+            requestBuilder.setLocationBias(RectangularBounds.newInstance(
+                new LatLng(biasToLatitudeSW, biasToLongitudeSW),
+                new LatLng(biasToLatitudeNE, biasToLongitudeNE)));
         }
 
-        PendingResult<AutocompletePredictionBuffer> results = Places.GeoDataApi
-                .getAutocompletePredictions(mGoogleApiClient, query, bounds, getFilterType(type, country));
+        if (restrictToLatitudeSW != 0 && restrictToLongitudeSW != 0 && restrictToLatitudeNE != 0 && restrictToLongitudeNE != 0) {
+            requestBuilder.setLocationRestriction(RectangularBounds.newInstance(
+                new LatLng(restrictToLatitudeSW, restrictToLongitudeSW),
+                new LatLng(restrictToLatitudeNE, restrictToLongitudeNE)));
+        }
+            
+        requestBuilder.setTypeFilter(getFilterType(type));
 
-        AutocompletePredictionBuffer autocompletePredictions = results.await(60, TimeUnit.SECONDS);
-
-        final Status status = autocompletePredictions.getStatus();
-
-        if (status.isSuccess()) {
-            if (autocompletePredictions.getCount() == 0) {
-                WritableArray emptyResult = Arguments.createArray();
-                autocompletePredictions.release();
-                promise.resolve(emptyResult);
-                return;
-            }
-
-            WritableArray predictionsList = Arguments.createArray();
-
-            for (AutocompletePrediction prediction : autocompletePredictions) {
-                WritableMap map = Arguments.createMap();
-                map.putString("fullText", prediction.getFullText(null).toString());
-                map.putString("primaryText", prediction.getPrimaryText(null).toString());
-                map.putString("secondaryText", prediction.getSecondaryText(null).toString());
-                map.putString("placeID", prediction.getPlaceId().toString());
-
-                if (prediction.getPlaceTypes() != null) {
-                    List<String> types = new ArrayList<>();
-                    for (Integer placeType : prediction.getPlaceTypes()) {
-                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
-                    }
-                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+        if (useSessionToken) {
+            requestBuilder.setSessionToken(AutocompleteSessionToken.newInstance());
+        }
+            
+        Task<FindAutocompletePredictionsResponse> task =
+            placesClient.findAutocompletePredictions(requestBuilder.build());
+    
+        task.addOnSuccessListener(
+            (response) -> {
+                if (response.getAutocompletePredictions().size() == 0) {
+                    WritableArray emptyResult = Arguments.createArray();
+                    promise.resolve(emptyResult);
+                    return;
                 }
-
-                predictionsList.pushMap(map);
-            }
-
-            // Release the buffer now that all data has been copied.
-            autocompletePredictions.release();
-            promise.resolve(predictionsList);
-
-        } else {
-            Log.i(TAG, "Error making autocomplete prediction API call: " + status.toString());
-            autocompletePredictions.release();
-            promise.reject("E_AUTOCOMPLETE_ERROR",
-                    new Error("Error making autocomplete prediction API call: " + status.toString()));
-            return;
-        }
+    
+                WritableArray predictionsList = Arguments.createArray();
+    
+                for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                    WritableMap map = Arguments.createMap();
+                    map.putString("fullText", prediction.getFullText(null).toString());
+                    map.putString("primaryText", prediction.getPrimaryText(null).toString());
+                    map.putString("secondaryText", prediction.getSecondaryText(null).toString());
+                    map.putString("placeID", prediction.getPlaceId().toString());
+    
+                    if (prediction.getPlaceTypes() != null) {
+                        List<String> types = new ArrayList<>();
+                        for (Integer placeType : prediction.getPlaceTypes()) {
+                            types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                        }
+                        map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                    }
+    
+                    predictionsList.pushMap(map);
+                }
+    
+                promise.resolve(predictionsList);
+    
+            });
+    
+        task.addOnFailureListener(
+            (exception) -> {
+                promise.reject("E_AUTOCOMPLETE_ERROR", new Error(exception.getMessage()));
+                return;
+            });       
     }
 
     @ReactMethod
@@ -472,6 +492,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return map;
     }
 
+    @Nullable
     private TypeFilter getFilterType(String type) {
         TypeFilter mappedFilter;
 
@@ -492,7 +513,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             mappedFilter = TypeFilter.TYPE_FILTER_CITIES;
             break;
         default:
-            mappedFilter = TypeFilter.TYPE_FILTER_NONE;
+            mappedFilter = null;
             break;
         }
 
