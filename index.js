@@ -14,9 +14,13 @@ class RNGooglePlaces {
 		useSessionToken: true,
 		locationBias: {
 			latitudeSW: 0,
-			longitudeSW: 0
+			longitudeSW: 0,
+			latitudeNE: 0,
+			longitudeNE: 0
 		},
 		locationRestriction: {
+			latitudeSW: 0,
+			longitudeSW: 0,
 			latitudeNE: 0,
 			longitudeNE: 0
 		}
