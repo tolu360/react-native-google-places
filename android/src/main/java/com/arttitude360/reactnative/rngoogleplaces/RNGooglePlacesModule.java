@@ -66,6 +66,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
+        String apiKey = getString(R.string.places_api_key);
+
+        // Setup Places Client
+        if (!Places.isInitialized() && !apiKey.equals("")) {
+            Places.initialize(reactContext.getApplicationContext(), apiKey);
+        }
+
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
     }
@@ -104,6 +111,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     @ReactMethod
     public void openAutocompleteModal(ReadableMap options, ReadableArray fields, final Promise promise) {
+
+        if (!Places.isInitialized()) {
+            promise.reject("E_API_KEY_ERROR", new Error("No API key defined in gradle.properties or errors initializing Places"));
+            return;
+        }
 
         this.pendingPromise = promise;
         this.lastSelectedFields = new ArrayList<>();
@@ -156,6 +168,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     @ReactMethod
     public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
+
+        if (!Places.isInitialized()) {
+            promise.reject("E_API_KEY_ERROR", new Error("No API key defined in gradle.properties or errors initializing Places"));
+            return;
+        }
 
         String type = options.getString("type");
         String country = options.getString("country");
@@ -245,6 +262,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     @ReactMethod
     public void lookUpPlaceByID(String placeID, ReadableArray fields, final Promise promise) {
         this.pendingPromise = promise;
+
+        if (!Places.isInitialized()) {
+            promise.reject("E_API_KEY_ERROR", new Error("No API key defined in gradle.properties or errors initializing Places"));
+            return;
+        }
         
         List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList());
 
