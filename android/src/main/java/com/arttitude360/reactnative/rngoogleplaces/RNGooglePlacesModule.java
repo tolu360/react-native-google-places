@@ -6,6 +6,8 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.Manifest.permission;
+import android.content.pm.PackageManager;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -38,6 +40,11 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+
 
 // import com.google.android.gms.common.ConnectionResult;
 // import com.google.android.gms.common.GoogleApiAvailability;
@@ -391,41 +398,60 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     }
 
     @ReactMethod
-    public void getCurrentPlace(final Promise promise) {
-        Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null)
-            .setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
-                @Override
-                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
-                    final Status status = likelyPlaces.getStatus();
+    public void getCurrentPlace(ReadableArray fields, final Promise promise) {
+        if (ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission.ACCESS_WIFI_STATE)
+            != PackageManager.PERMISSION_GRANTED
+        || ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {        
+            promise.reject("E_CURRENT_PLACE_ERROR", new Error("Both ACCESS_WIFI_STATE & ACCESS_FINE_LOCATION permissions are required"));
+            return;
+        }
 
-                    if (status.isSuccess()) {
-                        if (likelyPlaces.getCount() == 0) {
-                            WritableArray emptyResult = Arguments.createArray();
-                            likelyPlaces.release();
-                            promise.resolve(emptyResult);
-                            return;
-                        }
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList());
 
-                        WritableArray likelyPlacesList = Arguments.createArray();
+        if (checkPermission(ACCESS_FINE_LOCATION)) {
+            findCurrentPlaceWithPermissions(selectedFields, promise);
+        }
+    }
 
-                        for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                            WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
-                            map.putDouble("likelihood", placeLikelihood.getLikelihood());
+    /**
+   * Fetches a list of {@link PlaceLikelihood} instances that represent the Places the user is
+   * most
+   * likely to be at currently.
+   */
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
+    private void findCurrentPlaceWithPermissions(List<Place.Field> selectedFields, final Promise promise) {
 
-                            likelyPlacesList.pushMap(map);
-                        }
+        FindCurrentPlaceRequest currentPlaceRequest =
+            FindCurrentPlaceRequest.newInstance(selectedFields);
+        Task<FindCurrentPlaceResponse> currentPlaceTask =
+            placesClient.findCurrentPlace(currentPlaceRequest);
 
-                        // Release the buffer now that all data has been copied.
-                        likelyPlaces.release();
-                        promise.resolve(likelyPlacesList);
-                    } else {
-                        Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
-                        likelyPlaces.release();
-                        promise.reject("E_PLACE_DETECTION_API_ERROR",
-                                new Error("Error making places detection api call: " + status.getStatusMessage()));
-                        return;
-                    }
+        currentPlaceTask.addOnSuccessListener(
+            (response) -> {
+                if (response.getPlaceLikelihoods().size() == 0) {
+                    WritableArray emptyResult = Arguments.createArray();
+                    promise.resolve(emptyResult);
+                    return;
                 }
+
+                WritableArray likelyPlacesList = Arguments.createArray();
+
+                for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
+
+                    WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
+                    map.putDouble("likelihood", placeLikelihood.getLikelihood());
+
+                    likelyPlacesList.pushMap(map);
+                }
+
+                promise.resolve(likelyPlacesList);
+            });
+
+        currentPlaceTask.addOnFailureListener(
+            (exception) -> {
+                promise.reject("E_CURRENT_PLACE_ERROR", new Error(exception.getMessage()));
+                return;
             });
     }
 
@@ -532,6 +558,15 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
 
         return selectedFields;
+    }
+
+    private boolean checkPermission(String permission) {
+        boolean hasPermission =
+            ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
+        if (!hasPermission) {
+          ActivityCompat.requestPermissions(getCurrentActivity(), new String[]{permission}, 0);
+        }
+        return hasPermission;
     }
 
     private void rejectPromise(String code, Error err) {
