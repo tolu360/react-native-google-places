@@ -408,19 +408,19 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         switch (type) {
         case "geocode":
-            mappedFilter = TypeFilter.TYPE_FILTER_GEOCODE;
+            mappedFilter = TypeFilter.GEOCODE;
             break;
         case "address":
-            mappedFilter = TypeFilter.TYPE_FILTER_ADDRESS;
+            mappedFilter = TypeFilter.ADDRESS;
             break;
         case "establishment":
-            mappedFilter = TypeFilter.TYPE_FILTER_ESTABLISHMENT;
+            mappedFilter = TypeFilter.ESTABLISHMENT;
             break;
         case "regions":
-            mappedFilter = TypeFilter.TYPE_FILTER_REGIONS;
+            mappedFilter = TypeFilter.REGIONS;
             break;
         case "cities":
-            mappedFilter = TypeFilter.TYPE_FILTER_CITIES;
+            mappedFilter = TypeFilter.CITIES;
             break;
         default:
             mappedFilter = null;
@@ -448,7 +448,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         boolean hasPermission =
             ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
         if (!hasPermission) {
-          ActivityCompat.requestPermissions(getCurrentActivity(), new String[]{permission}, 0);
+            ActivityCompat.requestPermissions(getCurrentActivity(), new String[]{permission}, 0);
         }
         return hasPermission;
     }
