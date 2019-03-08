@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    provided "com.facebook.react:react-native:+"
+    compileOnly "com.facebook.react:react-native:+"
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'com.google.android.libraries.places:places:1.0.0'
 }
