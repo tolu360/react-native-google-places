@@ -9,6 +9,12 @@ import android.util.Log;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
+import android.support.v4.content.ContextCompat;
+import 	android.support.v4.app.ActivityCompat;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -47,9 +53,11 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.net.FetchPlaceResponse;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 
 import java.util.Objects;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +75,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        String apiKey = getString(R.string.places_api_key);
+        String apiKey = reactContext.getApplicationContext().getString(R.string.places_api_key);
 
         // Setup Places Client
         if (!Places.isInitialized() && !apiKey.equals("")) {
@@ -120,6 +128,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             return;
         }
 
+        Activity currentActivity = getCurrentActivity();
+
+        if (currentActivity == null) {
+            promise.reject("E_ACTIVITY_DOES_NOT_EXIST", new Error("Activity doesn't exist"));
+            return;
+        }
+
         this.pendingPromise = promise;
         this.lastSelectedFields = new ArrayList<>();
         String type = options.getString("type");
@@ -127,7 +142,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         country = country.isEmpty() ? null : country;
         String initialQuery = options.getString("initialQuery");
         boolean useOverlay = options.getBoolean("useOverlay");
-
 
         ReadableMap locationBias = options.getMap("locationBias");
         double biasToLatitudeSW = locationBias.getDouble("latitudeSW");
@@ -140,11 +154,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         double restrictToLongitudeSW = locationRestriction.getDouble("longitudeSW");
         double restrictToLatitudeNE = locationRestriction.getDouble("latitudeNE");
         double restrictToLongitudeNE = locationRestriction.getDouble("longitudeNE");
-
-        Activity currentActivity = getCurrentActivity();
         
         this.lastSelectedFields = getPlaceFields(fields.toArrayList());
-        Intent autocompleteIntent = new Autocomplete.IntentBuilder(
+        Autocomplete.IntentBuilder autocompleteIntent = new Autocomplete.IntentBuilder(
                 useOverlay ? AutocompleteActivityMode.OVERLAY : AutocompleteActivityMode.FULLSCREEN, this.lastSelectedFields);
 
         if (biasToLatitudeSW != 0 && biasToLongitudeSW != 0 && biasToLatitudeNE != 0 && biasToLongitudeNE != 0) {
@@ -163,9 +175,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             autocompleteIntent.setCountry(country);
         }
 
+        if (initialQuery != null) {
+            autocompleteIntent.setInitialQuery(initialQuery);
+        }
+
         autocompleteIntent.setTypeFilter(getFilterType(type));
 
-        currentActivity.startActivityForResult(autocompleteIntent.build(currentActivity), AUTOCOMPLETE_REQUEST_CODE);        
+        currentActivity.startActivityForResult(autocompleteIntent.build(this.reactContext.getApplicationContext()), AUTOCOMPLETE_REQUEST_CODE);        
     }
 
     @ReactMethod
@@ -240,10 +256,10 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     map.putString("secondaryText", prediction.getSecondaryText(null).toString());
                     map.putString("placeID", prediction.getPlaceId().toString());
     
-                    if (prediction.getPlaceTypes() != null) {
+                    if (prediction.getPlaceTypes().size() > 0) {
                         List<String> types = new ArrayList<>();
-                        for (Integer placeType : prediction.getPlaceTypes()) {
-                            types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                        for (Place.Type placeType : prediction.getPlaceTypes()) {
+                            types.add(RNGooglePlacesPlaceTypeMapper.getTypeSlug(placeType));
                         }
                         map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
                     }
@@ -258,7 +274,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         task.addOnFailureListener(
             (exception) -> {
                 promise.reject("E_AUTOCOMPLETE_ERROR", new Error(exception.getMessage()));
-                return;
             });       
     }
 
@@ -282,7 +297,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             promise.resolve(map);
         }).addOnFailureListener((exception) -> {
             promise.reject("E_PLACE_DETAILS_ERROR", new Error(exception.getMessage()));
-            return;
         });
     }
 
@@ -340,13 +354,12 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         currentPlaceTask.addOnFailureListener(
             (exception) -> {
                 promise.reject("E_CURRENT_PLACE_ERROR", new Error(exception.getMessage()));
-                return;
             });
     }
 
     private WritableMap propertiesMapForPlace(Place place, List<Place.Field> selectedFields) {
         // Display attributions if required.
-        CharSequence attributions = place.getAttributions();
+        // CharSequence attributions = place.getAttributions();
 
         WritableMap map = Arguments.createMap();
 
@@ -356,18 +369,18 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
 
         if (selectedFields.contains(Place.Field.NAME)) {
-            map.putString("name", place.getName().toString());
+            map.putString("name", place.getName());
         }
 
         if (selectedFields.contains(Place.Field.ADDRESS)) {
             if (!TextUtils.isEmpty(place.getAddress())) {
-                map.putString("address", place.getAddress().toString());
+                map.putString("address", place.getAddress());
             }
         }
 
         if (selectedFields.contains(Place.Field.PHONE_NUMBER)) {
             if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-                map.putString("phoneNumber", place.getPhoneNumber().toString());
+                map.putString("phoneNumber", place.getPhoneNumber());
             }
         }
 
@@ -381,15 +394,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             map.putString("placeID", place.getId());
         }
 
-        if (!TextUtils.isEmpty(attributions)) {
-            map.putString("attributions", attributions.toString());
+        if (place.getAttributions() != null) {
+            List<String> attributions = new ArrayList<>(place.getAttributions());
+            map.putArray("attributions", Arguments.fromArray(attributions.toArray(new String[0])));
         }
 
         if (selectedFields.contains(Place.Field.TYPES)) {
-            if (place.getPlaceTypes() != null) {
+            if (place.getTypes() != null) {
                 List<String> types = new ArrayList<>();
-                for (Integer placeType : place.getPlaceTypes()) {
-                    types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+                for (Place.Type placeType : place.getTypes()) {
+                    types.add(RNGooglePlacesPlaceTypeMapper.getTypeSlug(placeType));
                 }
                 map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
             }
@@ -405,13 +419,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
 
         if (selectedFields.contains(Place.Field.PRICE_LEVEL)) {
-            if (place.getPriceLevel() >= 0) {
+            if (place.getPriceLevel() != null) {
                 map.putInt("priceLevel", place.getPriceLevel());
             }
         }
 
         if (selectedFields.contains(Place.Field.RATING)) {
-            if (place.getRating() >= 0) {
+            if (place.getRating() != null) {
                 map.putDouble("rating", place.getRating());
             }
         }
@@ -447,28 +461,33 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return mappedFilter;
     }
 
-    private List<Place.Field> getPlaceFields(ArrayList<String> placeFields) {
+    private List<Place.Field> getPlaceFields(ArrayList<Object> placeFields) {
         List<Place.Field> selectedFields = new ArrayList<>();
 
         if (placeFields.size() == 0) {
-            return Place.Field.values();
+            return Arrays.asList(Place.Field.values());
         }
 
-        for (String placeField : placeFields) {
-            selectedFields.add(RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField).getField());            
+        for (Object placeField : placeFields) {
+            if (RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField.toString()) != null) {
+                selectedFields.add(RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField.toString()).getField());            
+            }
         }
 
         return selectedFields;
     }
 
     private boolean checkPermission(String permission) {
+        Activity currentActivity = getCurrentActivity();
+        
         boolean hasPermission =
             ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
-        if (!hasPermission) {
-            ActivityCompat.requestPermissions(getCurrentActivity(), new String[]{permission}, 0);
+        if (!hasPermission && currentActivity != null) {
+            ActivityCompat.requestPermissions(currentActivity, new String[]{permission}, 0);
         }
         return hasPermission;
     }
+
 
     private void rejectPromise(String code, Error err) {
         if (this.pendingPromise != null) {
