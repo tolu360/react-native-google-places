@@ -16,10 +16,10 @@
 
     placeData[@"attributions"] = place.attributions.string;
 
-    if (place.coordinate) {
+    if (place.coordinate.latitude) {
         NSMutableDictionary *locationMap = [[NSMutableDictionary alloc] init];
-        location[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
-        location[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
+        locationMap[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
+        locationMap[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
 
         placeData[@"location"] = locationMap;
     }
@@ -79,7 +79,7 @@
     }
 
     if (place.userRatingsTotal) {
-        placeData[@"userRatingsTotal"] = place.userRatingsTotal;
+        placeData[@"userRatingsTotal"] = @(place.userRatingsTotal);
     }
     
     return placeData;
