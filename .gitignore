@@ -58,4 +58,5 @@ project.xcworkspace
 react-native-google-places.iml
 .idea
 .gradle
+.vscode
 local.properties
