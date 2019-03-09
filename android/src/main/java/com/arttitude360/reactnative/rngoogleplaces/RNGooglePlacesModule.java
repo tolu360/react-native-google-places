@@ -364,8 +364,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         WritableMap map = Arguments.createMap();
 
         if (selectedFields.contains(Place.Field.LAT_LNG)) {
-            map.putDouble("latitude", place.getLatLng().latitude);
-            map.putDouble("longitude", place.getLatLng().longitude);
+            WritableMap locationMap = Arguments.createMap();
+            locationMap.putDouble("latitude", place.getLatLng().latitude);
+            locationMap.putDouble("longitude", place.getLatLng().longitude);
+
+            map.putMap("location", locationMap);
         }
 
         if (selectedFields.contains(Place.Field.NAME)) {
@@ -375,18 +378,24 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         if (selectedFields.contains(Place.Field.ADDRESS)) {
             if (!TextUtils.isEmpty(place.getAddress())) {
                 map.putString("address", place.getAddress());
+            } else {
+                map.putString("address", "");
             }
         }
 
         if (selectedFields.contains(Place.Field.PHONE_NUMBER)) {
             if (!TextUtils.isEmpty(place.getPhoneNumber())) {
                 map.putString("phoneNumber", place.getPhoneNumber());
+            } else {
+                map.putString("phoneNumber", "");
             }
         }
 
         if (selectedFields.contains(Place.Field.WEBSITE_URI)) {
             if (null != place.getWebsiteUri()) {
                 map.putString("website", place.getWebsiteUri().toString());
+            } else {
+                map.putString("website", "");
             }
         }
 
@@ -397,6 +406,9 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         if (place.getAttributions() != null) {
             List<String> attributions = new ArrayList<>(place.getAttributions());
             map.putArray("attributions", Arguments.fromArray(attributions.toArray(new String[0])));
+        } else {
+            WritableArray emptyResult = Arguments.createArray();
+            map.putArray("attributions", emptyResult);
         }
 
         if (selectedFields.contains(Place.Field.TYPES)) {
@@ -406,27 +418,70 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                     types.add(RNGooglePlacesPlaceTypeMapper.getTypeSlug(placeType));
                 }
                 map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+            } else {
+                WritableArray emptyResult = Arguments.createArray();
+                map.putArray("types", emptyResult);
             }
         }
 
         if (selectedFields.contains(Place.Field.VIEWPORT)) {
             if (place.getViewport() != null) {
-                map.putDouble("north", place.getViewport().northeast.latitude);
-                map.putDouble("east", place.getViewport().northeast.longitude);
-                map.putDouble("south", place.getViewport().southwest.latitude);
-                map.putDouble("west", place.getViewport().southwest.longitude);
+                WritableMap viewportMap = Arguments.createMap();
+                viewportMap.putDouble("latitudeNE", place.getViewport().northeast.latitude);
+                viewportMap.putDouble("longitudeNE", place.getViewport().northeast.longitude);
+                viewportMap.putDouble("latitudeSW", place.getViewport().southwest.latitude);
+                viewportMap.putDouble("longitudeSW", place.getViewport().southwest.longitude);
+
+                map.putMap("viewport", viewportMap);
+            } else {
+                WritableMap emptyResult = Arguments.createMap();
+                map.putMap("viewport", emptyResult);
             }
         }
 
         if (selectedFields.contains(Place.Field.PRICE_LEVEL)) {
             if (place.getPriceLevel() != null) {
                 map.putInt("priceLevel", place.getPriceLevel());
+            } else {
+                map.putInt("priceLevel", 0);
             }
         }
 
         if (selectedFields.contains(Place.Field.RATING)) {
             if (place.getRating() != null) {
                 map.putDouble("rating", place.getRating());
+            } else {
+                map.putDouble("rating", 0);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.OPENING_HOURS)) {
+            if (place.getOpeningHours() != null) {
+                List<String> openingHours = new ArrayList<>(place.getOpeningHours().getWeekdayText());
+                map.putArray("openingHours", Arguments.fromArray(openingHours.toArray(new String[0])));                
+            } else {
+                WritableArray emptyResult = Arguments.createArray();
+                map.putArray("openingHours", emptyResult);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.PLUS_CODE)) {
+            if (place.getPlusCode() != null) {
+                WritableMap plusCodeMap = Arguments.createMap();
+                plusCodeMap.putString("compoundCode", place.getPlusCode().getCompoundCode());
+                plusCodeMap.putString("globalCode", place.getPlusCode().getGlobalCode());
+                map.putMap("plusCode", plusCodeMap);
+            } else {
+                WritableMap emptyResult = Arguments.createMap();
+                map.putMap("plusCode", emptyResult);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.USER_RATINGS_TOTAL)) {
+            if (place.getUserRatingsTotal() != null) {
+                map.putInt("userRatingsTotal", place.getUserRatingsTotal());
+            } else {
+                map.putInt("userRatingsTotal", 0);
             }
         }
 
