@@ -155,7 +155,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         double restrictToLatitudeNE = locationRestriction.getDouble("latitudeNE");
         double restrictToLongitudeNE = locationRestriction.getDouble("longitudeNE");
         
-        this.lastSelectedFields = getPlaceFields(fields.toArrayList());
+        this.lastSelectedFields = getPlaceFields(fields.toArrayList(), false);
         Autocomplete.IntentBuilder autocompleteIntent = new Autocomplete.IntentBuilder(
                 useOverlay ? AutocompleteActivityMode.OVERLAY : AutocompleteActivityMode.FULLSCREEN, this.lastSelectedFields);
 
@@ -286,7 +286,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             return;
         }
         
-        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList());
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), true);
 
         FetchPlaceRequest request = FetchPlaceRequest.builder(placeID, selectedFields).build();
 
@@ -310,7 +310,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             return;
         }
 
-        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList());
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), true);
 
         if (checkPermission(ACCESS_FINE_LOCATION)) {
             findCurrentPlaceWithPermissions(selectedFields, promise);
@@ -461,17 +461,28 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return mappedFilter;
     }
 
-    private List<Place.Field> getPlaceFields(ArrayList<Object> placeFields) {
+    private List<Place.Field> getPlaceFields(ArrayList<Object> placeFields, boolean isCurrentOrFetchPlace) {
         List<Place.Field> selectedFields = new ArrayList<>();
 
-        if (placeFields.size() == 0) {
+        if (placeFields.size() == 0 && !isCurrentOrFetchPlace) {
             return Arrays.asList(Place.Field.values());
+        }
+
+        if (placeFields.size() == 0 && isCurrentOrFetchPlace) {
+            List<Place.Field> allPlaceFields = new ArrayList<>(Arrays.asList(Place.Field.values()));
+            allPlaceFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI));
+
+            return allPlaceFields;
         }
 
         for (Object placeField : placeFields) {
             if (RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField.toString()) != null) {
                 selectedFields.add(RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField.toString()).getField());            
             }
+        }
+
+        if (placeFields.size() != 0 && isCurrentOrFetchPlace) {
+            selectedFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI));
         }
 
         return selectedFields;
