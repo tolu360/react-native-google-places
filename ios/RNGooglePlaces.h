@@ -9,6 +9,8 @@
 @interface RNGooglePlaces : NSObject <RCTBridgeModule>
 
 - (GMSPlacesAutocompleteTypeFilter) getFilterType:(NSString *)type;
+- (GMSPlaceField) getSelectedFields:(NSArray *)fields isCurrentOrFetchPlace:(boolean)currentOrFetch;
+- (NSDictionary) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions;
 
 @end
   
