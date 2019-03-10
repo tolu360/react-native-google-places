@@ -2,7 +2,6 @@
 #import "NSMutableDictionary+GMSPlace.h"
 
 #import <GooglePlaces/GooglePlaces.h>
-#import <GooglePlacePicker/GooglePlacePicker.h>
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
 
@@ -26,6 +25,7 @@
 }
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
+                    placeFields: (GMSPlaceField)selectedFields
                        bounds: (GMSCoordinateBounds *)autocompleteBounds
                        boundsMode: (GMSAutocompleteBoundsMode)autocompleteBoundsMode
                      resolver: (RCTPromiseResolveBlock)resolve
@@ -38,6 +38,7 @@
     viewController.autocompleteFilter = autocompleteFilter;
     viewController.autocompleteBounds = autocompleteBounds;
     viewController.autocompleteBoundsMode = autocompleteBoundsMode;
+    viewController.placeFields = selectedFields;
 	viewController.delegate = self;
     UIViewController *topController = [self getTopController];
 	[topController presentViewController:viewController animated:YES completion:nil];
