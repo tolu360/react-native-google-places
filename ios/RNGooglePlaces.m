@@ -4,20 +4,52 @@
 #import <React/RCTBridge.h>
 #import "RNGooglePlacesViewController.h"
 #import "RCTConvert+RNGPAutocompleteTypeFilter.h"
-#import "RNGooglePlacesGMSPlaceFields.h"
 #import <React/RCTRootView.h>
 #import <React/RCTLog.h>
 #import <React/RCTConvert.h>
 
 #import <GooglePlaces/GooglePlaces.h>
 
+@interface RNGooglePlaces() <CLLocationManagerDelegate>
+
+@property (strong, nonatomic) CLLocationManager *locationManager;
+@property GMSAutocompleteBoundsMode boundsMode;
+
+@end
+
+
 @implementation RNGooglePlaces
+
+RNGooglePlaces *_instance;
 
 RCT_EXPORT_MODULE()
 
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _instance = self;
+        self.locationManager = [[CLLocationManager alloc] init];
+        self.locationManager.delegate = self;
+        
+        self.boundsMode = kGMSAutocompleteBoundsModeBias;
+    }
+    
+    return self;
+}
+
+- (void)dealloc
+{
+    self.locationManager = nil;
 }
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
@@ -30,17 +62,18 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
         RNGooglePlacesViewController* acController = [[RNGooglePlacesViewController alloc] init];
 
         GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:false];
-        acController.placeFields = selectedFields;
 
         GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
         autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
         autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
         
-        NSDictionary *boundsMap = [self getBounds:options[@"locationBias"] andRestrictOptions:options[@"locationRestriction"]];
-        (GMSCoordinateBounds*) autocompleteBounds = boundsMap[@"bounds"];
-        (GMSAutocompleteBoundsMode) autocompleteBoundsMode = boundsMap[@"boundsMode"];
+        NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
+        NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
+        
+        
+        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
 
-        [acController openAutocompleteModal: autocompleteFilter bounds: autocompleteBounds boundsMode: autocompleteBoundsMode resolver: resolve rejecter: reject];
+        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds boundsMode: self.boundsMode resolver: resolve rejecter: reject];
     }
     @catch (NSException * e) {
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
@@ -56,14 +89,17 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
     autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
     autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
-
-    NSDictionary *boundsMap = [self getBounds:options[@"locationBias"] andRestrictOptions:options[@"locationRestriction"]];
-    (GMSCoordinateBounds*) autocompleteBounds = boundsMap[@"bounds"];
-    (GMSAutocompleteBoundsMode) autocompleteBoundsMode = boundsMap[@"boundsMode"];
+    
+    NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
+    NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
+    
+    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+    
+    GMSAutocompleteSessionToken *token = [[GMSAutocompleteSessionToken alloc] init];
     
     [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
                                                bounds:autocompleteBounds
-                                               boundsMode:autocompleteBoundsMode
+                                               boundsMode:self.boundsMode
                                                filter:autocompleteFilter
                                                sessionToken:token
                                              callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
@@ -119,6 +155,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
                                     rejecter: (RCTPromiseRejectBlock)reject)
 {
     [self.locationManager requestAlwaysAuthorization];
+    
 
     GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:true];
 
@@ -171,12 +208,30 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     } else if ([type isEqualToString: @"cities"]) {
         return kGMSPlacesAutocompleteTypeFilterCity;
     } else {
-        return nil;
+        return kGMSPlacesAutocompleteTypeFilterNoFilter;
     }
 }
 
-- (GMSPlaceField) getSelectedFields:(NSArray *)fields isCurrentOrFetchPlace:(boolean)currentOrFetch
+- (GMSPlaceField) getSelectedFields:(NSArray *)fields isCurrentOrFetchPlace:(Boolean)currentOrFetch
 {
+    NSDictionary *fieldsMapping = @{
+        @"name" : @(GMSPlaceFieldName),
+        @"placeID" : @(GMSPlaceFieldPlaceID),
+        @"plusCode" : @(GMSPlaceFieldPlusCode),
+        @"location" : @(GMSPlaceFieldCoordinate),
+        @"openingHours" : @(GMSPlaceFieldOpeningHours),
+        @"phoneNumber" : @(GMSPlaceFieldPhoneNumber),
+        @"address" : @(GMSPlaceFieldFormattedAddress),
+        @"rating" : @(GMSPlaceFieldRating),
+        @"userRatingsTotal" : @(GMSPlaceFieldUserRatingsTotal),
+        @"priceLevel" : @(GMSPlaceFieldPriceLevel),
+        @"types" : @(GMSPlaceFieldTypes),
+        @"website" : @(GMSPlaceFieldWebsite),
+        @"viewport" : @(GMSPlaceFieldViewport),
+        @"addressComponents" : @(GMSPlaceFieldAddressComponents),
+        @"photos" : @(GMSPlaceFieldPhotos),
+    };
+    
     if ([fields count] == 0 && !currentOrFetch) {
         return GMSPlaceFieldAll;
     }
@@ -184,7 +239,10 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     if ([fields count] == 0 && currentOrFetch) {
         GMSPlaceField placeFields = 0;
         for (NSString *fieldLabel in fieldsMapping) {
-            if (fieldsMapping[fieldLabel] != GMSPlaceFieldName) {
+            if ([fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldAddressComponents &&
+                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldOpeningHours &&
+                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldPhoneNumber &&
+                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldWebsite) {
                 placeFields |= [fieldsMapping[fieldLabel] integerValue];
             }
         }
@@ -194,7 +252,10 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     if ([fields count] != 0 && currentOrFetch) {
         GMSPlaceField placeFields = 0;
         for (NSString *fieldLabel in fields) {
-            if (fieldsMapping[fieldLabel] != GMSPlaceFieldName) {
+            if ([fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldAddressComponents &&
+                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldOpeningHours &&
+                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldPhoneNumber &&
+                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldWebsite) {
                 placeFields |= [fieldsMapping[fieldLabel] integerValue];
             }
         }
@@ -208,13 +269,12 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
         }
         return placeFields;
     }
+    
+    return GMSPlaceFieldAll;
 }
 
-- (NSDictionary) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions
+- (GMSCoordinateBounds *) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions
 {
-    GMSAutocompleteBoundsMode boundsMode = kGMSAutocompleteBoundsModeBias;
-    GMSCoordinateBounds *bounds;
-
     double biasLatitudeSW = [[RCTConvert NSNumber:biasOptions[@"latitudeSW"]] doubleValue];
     double biasLongitudeSW = [[RCTConvert NSNumber:biasOptions[@"longitudeSW"]] doubleValue];
     double biasLatitudeNE = [[RCTConvert NSNumber:biasOptions[@"latitudeNE"]] doubleValue];
@@ -231,12 +291,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
         GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:neBoundsCorner
                                                                         coordinate:swBoundsCorner];
 
-        NSDictionary *boundsMap = @{
-            @"bounds" : @(bounds),
-            @"boundsMode" : @(boundsMode),
-        };
-
-        return boundsMap;
+        return bounds;
     }  
 
     if (restrictLatitudeSW != 0 && restrictLongitudeSW != 0 && restrictLatitudeNE != 0 && restrictLongitudeNE != 0) {
@@ -245,22 +300,12 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
         GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:neBoundsCorner
                                                                         coordinate:swBoundsCorner];
         
-        boundsMode = kGMSAutocompleteBoundsModeRestrict;
+        self.boundsMode = kGMSAutocompleteBoundsModeRestrict;
         
-        NSDictionary *boundsMap = @{
-            @"bounds" : @(bounds),
-            @"boundsMode" : @(boundsMode),
-        };
-        
-        return boundsMap;
+        return bounds;
     }
-
-    NSDictionary *boundsMap = @{
-        @"bounds" : @(nil),
-        @"boundsMode" : @(boundsMode),
-    };
     
-    return boundsMap;
+    return nil;
 }
 
 
