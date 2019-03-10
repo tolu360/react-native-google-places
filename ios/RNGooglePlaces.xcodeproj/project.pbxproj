@@ -33,7 +33,6 @@
 		957CC2C01D8A86720012D284 /* RNGooglePlacesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNGooglePlacesViewController.h; sourceTree = "<group>"; };
 		95CC447A1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableDictionary+GMSPlace.h"; sourceTree = "<group>"; };
 		95CC447B1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableDictionary+GMSPlace.m"; sourceTree = "<group>"; };
-		95D08A2D2234705500594E57 /* RNGooglePlacesGMSPlaceFields.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNGooglePlacesGMSPlaceFields.h; sourceTree = "<group>"; };
 		B3E7B5881CC2AC0600A0062D /* RNGooglePlaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNGooglePlaces.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNGooglePlaces.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNGooglePlaces.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -60,7 +59,6 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				95D08A2D2234705500594E57 /* RNGooglePlacesGMSPlaceFields.h */,
 				956D8F881E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.m */,
 				956D8F891E294D230053A28D /* RCTConvert+RNGPAutocompleteTypeFilter.h */,
 				95CC447A1F1ECC3B00DBA07E /* NSMutableDictionary+GMSPlace.h */,
