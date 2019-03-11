@@ -1,6 +1,10 @@
 # react-native-google-places
 iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services for React Native Apps
 
+### **Notice: The Google Play Services version of the Places SDK for Android (in Google Play Services 16.0.0) is deprecated as of January 29, 2019, and will be turned off on July 29, 2019. A new version of the Places SDK for Android is now available.**
+
+### I recommend you migrate your applications to the version 3 of this package **(now in beta)** - Heads up! There are tons of breaking changes in the new release. **[Visit the beta README to get started](/BETA_README.md)**
+
 ## Shots
 
 <img width=200 title="Modal Open - iOS" src="./shots/modal-open-ios.png">
@@ -13,6 +17,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 ## Versioning:
 - for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.5.2)
 - for RN (0.33.0 - 0.39.0), use v1+ or 0.8.8 (e.g. react-native-google-places@1.1.0) **No longer supported/updated**
+
+### I recommend you migrate your applications to the version 3 of this package **(now in beta)** - Heads up! There are tons of breaking changes in the new release. **[Visit the beta README to get started](/BETA_README.md)**
 
 ## Sample App
 - A new [sample app](https://github.com/tolu360/TestRNGP) is available to help with sample usage and debugging issues.
