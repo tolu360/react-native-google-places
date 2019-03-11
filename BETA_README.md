@@ -453,7 +453,7 @@ The typical use flow would be to call `getAutocompletePredictions()` when the va
 #### Android API Key
 
 - From version 3 of this package, on Android, the package would, by default, first look for your API key in `System Variables` before checking for it in your `gradle.properties` file - this ensures you can totally keep your keys out of `Version Control`. 
-- Remove your API key from `gradle.properties`, if already defined. Define a system variable represnting your Android API key e.g. on a Unix/Mac terminal run:
+- Remove your API key from `gradle.properties`, if already defined. Define a system variable representing your Android API key e.g. on a Unix/Mac terminal run:
 
 ```bash
 export RNGP_ANDRIOD_API_KEY=Insert_API_KEY_here
