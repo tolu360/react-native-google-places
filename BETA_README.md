@@ -102,7 +102,7 @@ on top of the file.
 - In your `/android/gradle.properties` file, add your API key, **read about a better way to secure this below**
 
 ```groovy
-RNGP_ANDRIOD_API_KEY=Insert_API_KEY_here
+RNGP_ANDROID_API_KEY=Insert_API_KEY_here
 ```
 
 ##### Manual Linking With Your Project (Android)
@@ -456,7 +456,7 @@ The typical use flow would be to call `getAutocompletePredictions()` when the va
 - Remove your API key from `gradle.properties`, if already defined. Define a system variable representing your Android API key e.g. on a Unix/Mac terminal run:
 
 ```bash
-export RNGP_ANDRIOD_API_KEY=Insert_API_KEY_here
+export RNGP_ANDROID_API_KEY=Insert_API_KEY_here
 ```
 - You may need to export this system/environment variable before every build or add them to your `~/.bash_profile` file or similar files.
 - Ensure you have the system/environment variable replicated in your `CI/CD` build and you should be fine.
