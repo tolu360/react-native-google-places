@@ -6,51 +6,48 @@ import { NativeModules } from 'react-native'
 const RNGooglePlacesNative = NativeModules.RNGooglePlaces
 
 class RNGooglePlaces {
-	static filterDefaults = {
-		type: 'noFilter',
+	static optionsDefaults = {
+		type: '',
 		country: '',
-		useOverlay: false
+		useOverlay: false,
+		initialQuery: '',
+		useSessionToken: true,
+		locationBias: {
+			latitudeSW: 0,
+			longitudeSW: 0,
+			latitudeNE: 0,
+			longitudeNE: 0
+		},
+		locationRestriction: {
+			latitudeSW: 0,
+			longitudeSW: 0,
+			latitudeNE: 0,
+			longitudeNE: 0
+		}
 	}
 
-	static boundsDefaults = {
-		latitude: 0,
-		longitude: 0,
-		radius: 0.1
-	}
+	static placeFieldsDefaults = []
 
-	openAutocompleteModal(filterOptions = {}) {
+	openAutocompleteModal(options = {}, placeFields = []) {
 		return RNGooglePlacesNative.openAutocompleteModal({
-			...RNGooglePlaces.filterDefaults,
-            ...RNGooglePlaces.boundsDefaults,
-			...filterOptions
-		})
+			...RNGooglePlaces.optionsDefaults,
+			...options
+		}, [...RNGooglePlaces.placeFieldsDefaults, ...placeFields])
 	}
 
-	openPlacePickerModal(latLngBounds = {}) {
-		return RNGooglePlacesNative.openPlacePickerModal({
-            ...RNGooglePlaces.boundsDefaults,
-		    ...latLngBounds
-        })
-	}
-
-	getAutocompletePredictions(query, filterOptions = {}) {
+	getAutocompletePredictions(query, options = {}) {
 		return RNGooglePlacesNative.getAutocompletePredictions(query, {
-            ...RNGooglePlaces.filterDefaults,
-            ...RNGooglePlaces.boundsDefaults,
-			...filterOptions
+            ...RNGooglePlaces.optionsDefaults,
+			...options
 		})
 	}
 
-	lookUpPlaceByID(placeID) {
-	    return RNGooglePlacesNative.lookUpPlaceByID(placeID)
+	lookUpPlaceByID(placeID, placeFields = []) {
+	    return RNGooglePlacesNative.lookUpPlaceByID(placeID, [...RNGooglePlaces.placeFieldsDefaults, ...placeFields])
 	}
 
-	lookUpPlacesByIDs(placeIDs) {
-	    return RNGooglePlacesNative.lookUpPlacesByIDs(placeIDs)
-	}
-
-	getCurrentPlace() {
-		return RNGooglePlacesNative.getCurrentPlace()
+	getCurrentPlace(placeFields = []) {
+		return RNGooglePlacesNative.getCurrentPlace([...RNGooglePlaces.placeFieldsDefaults, ...placeFields])
 	}
 }
 

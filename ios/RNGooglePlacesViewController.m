@@ -2,11 +2,10 @@
 #import "NSMutableDictionary+GMSPlace.h"
 
 #import <GooglePlaces/GooglePlaces.h>
-#import <GooglePlacePicker/GooglePlacePicker.h>
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
 
-@interface RNGooglePlacesViewController ()<GMSAutocompleteViewControllerDelegate, GMSPlacePickerViewControllerDelegate>
+@interface RNGooglePlacesViewController ()<GMSAutocompleteViewControllerDelegate>
 @end
 
 @implementation RNGooglePlacesViewController
@@ -26,7 +25,9 @@
 }
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
-                       bounds: (GMSCoordinateBounds *)bounds
+                    placeFields: (GMSPlaceField)selectedFields
+                       bounds: (GMSCoordinateBounds *)autocompleteBounds
+                       boundsMode: (GMSAutocompleteBoundsMode)autocompleteBoundsMode
                      resolver: (RCTPromiseResolveBlock)resolve
                      rejecter: (RCTPromiseRejectBlock)reject;
 {
@@ -35,58 +36,13 @@
     
     GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
     viewController.autocompleteFilter = autocompleteFilter;
-    viewController.autocompleteBounds = bounds;
+    viewController.autocompleteBounds = autocompleteBounds;
+    viewController.autocompleteBoundsMode = autocompleteBoundsMode;
+    viewController.placeFields = selectedFields;
 	viewController.delegate = self;
     UIViewController *topController = [self getTopController];
 	[topController presentViewController:viewController animated:YES completion:nil];
 }
-
-- (void)placePicker: (GMSPlacePickerViewController *) placePicker
-       didPickPlace: (GMSPlace *) place
-{
-    UIViewController *topController = [self getTopController];
-    [topController dismissViewControllerAnimated:YES completion:nil];
-    
-    if (_resolve) {
-        _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
-    }
-}
-
-- (void)placePicker: (GMSPlacePickerViewController *) placePicker
-   didFailWithError: (NSError *) error
-{
-    UIViewController *topController = [self getTopController];
-    [topController dismissViewControllerAnimated:YES completion:nil];
-    
-    if (_reject) {
-        _reject(@"E_PLACE_PICKER_ERROR", [error localizedDescription], nil);
-    }
-}
-
-- (void)placePickerDidCancel: (GMSPlacePickerViewController *) placePicker
-{
-    UIViewController *topController = [self getTopController];
-    [topController dismissViewControllerAnimated:YES completion:nil];
-    
-    if (_reject) {
-        _reject(@"E_USER_CANCELED", @"Search cancelled", nil);
-    }
-}
-
-- (void)openPlacePickerModal: (GMSCoordinateBounds *)bounds
-                    resolver: (RCTPromiseResolveBlock)resolve
-					rejecter: (RCTPromiseRejectBlock)reject;
-{
-	_resolve = resolve;
-	_reject = reject;
-
-	GMSPlacePickerConfig *config = [[GMSPlacePickerConfig alloc] initWithViewport:bounds];
-    GMSPlacePickerViewController *viewController = [[GMSPlacePickerViewController alloc] initWithConfig:config];
-    viewController.delegate = self;
-    UIViewController *topController = [self getTopController];
-    [topController presentViewController:viewController animated:YES completion:nil];
-}
-
 
 // Handle the user's selection.
 - (void)viewController:(GMSAutocompleteViewController *)viewController

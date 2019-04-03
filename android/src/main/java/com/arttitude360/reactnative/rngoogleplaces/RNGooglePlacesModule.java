@@ -6,6 +6,15 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.Manifest.permission;
+import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
+import android.support.v4.content.ContextCompat;
+import 	android.support.v4.app.ActivityCompat;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -19,51 +28,61 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
+
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.AutocompletePrediction;
-import com.google.android.gms.location.places.AutocompletePredictionBuffer;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBuffer;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.LocationBias;
+import com.google.android.libraries.places.api.model.LocationRestriction;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.SphericalUtil;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.net.FetchPlaceResponse;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 
 import java.util.Objects;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements ActivityEventListener {
 
     private ReactApplicationContext reactContext;
     private Promise pendingPromise;
+    private List<Place.Field> lastSelectedFields;
     public static final String TAG = "RNGooglePlaces";
-
-    protected GoogleApiClient mGoogleApiClient;
+    private PlacesClient placesClient;
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
-    public static int PLACE_PICKER_REQUEST_CODE = 361;
-    public static int PLACES_RESOLUTION_CODE = 362;
     public static String REACT_CLASS = "RNGooglePlaces";
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        buildGoogleApiClient();
+        String apiKey = reactContext.getApplicationContext().getString(R.string.places_api_key);
+
+        // Setup Places Client
+        if (!Places.isInitialized() && !apiKey.equals("")) {
+            Places.initialize(reactContext.getApplicationContext(), apiKey);
+        }
+
+        placesClient = Places.createClient(reactContext.getApplicationContext());
 
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
@@ -74,62 +93,26 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         return REACT_CLASS;
     }
 
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(getReactApplicationContext()).addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API).addConnectionCallbacks(this).addOnConnectionFailedListener(this)
-                .build();
-
-        mGoogleApiClient.connect();
-    }
-
     /**
      * Called after the autocomplete activity has finished to return its result.
      */
     @Override
-    public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent data) {
+    public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent intent) {
 
         // Check that the result was from the autocomplete widget.
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                // Get the user's selected place from the Intent.
-                Place place = PlaceAutocomplete.getPlace(this.reactContext.getApplicationContext(), data);
-                Log.i(TAG, "Place Selected: " + place.getName());
-
-                WritableMap map = propertiesMapForPlace(place);
+            if (resultCode == AutocompleteActivity.RESULT_OK) {
+                Place place = Autocomplete.getPlaceFromIntent(intent);
+                WritableMap map = propertiesMapForPlace(place, this.lastSelectedFields);
 
                 resolvePromise(map);
-
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this.reactContext.getApplicationContext(), data);
-                Log.e(TAG, "Error: Status = " + status.toString());
-                rejectPromise("E_RESULT_ERROR", new Error(status.toString()));
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                // Indicates that the activity closed before a selection was made. For example if
-                // the user pressed the back button.
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(intent);
+                
+                rejectPromise("E_RESULT_ERROR", new Error(status.getStatusMessage()));
+            } else if (resultCode == AutocompleteActivity.RESULT_CANCELED) {
                 rejectPromise("E_USER_CANCELED", new Error("Search cancelled"));
-            }
-        }
-
-        if (requestCode == PLACE_PICKER_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                Place place = PlacePicker.getPlace(this.reactContext.getApplicationContext(), data);
-
-                Log.i(TAG, "Place Selected: " + place.getName());
-
-                WritableMap map = propertiesMapForPlace(place);
-
-                resolvePromise(map);
-            }
-        }
-
-        if (requestCode == PLACES_RESOLUTION_CODE) {
-            Log.i(TAG, "Google API Client resolution result: " + resultCode);
-            if (resultCode == Activity.RESULT_OK) {
-                if (!mGoogleApiClient.isConnecting() &&
-                        !mGoogleApiClient.isConnected()) {
-                    mGoogleApiClient.connect();
-                }
-            }
+            }           
         }
     }
 
@@ -138,354 +121,439 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
      */
 
     @ReactMethod
-    public void openAutocompleteModal(ReadableMap options, final Promise promise) {
+    public void openAutocompleteModal(ReadableMap options, ReadableArray fields, final Promise promise) {
+
+        if (!Places.isInitialized()) {
+            promise.reject("E_API_KEY_ERROR", new Error("No API key defined in gradle.properties or errors initializing Places"));
+            return;
+        }
+
+        Activity currentActivity = getCurrentActivity();
+
+        if (currentActivity == null) {
+            promise.reject("E_ACTIVITY_DOES_NOT_EXIST", new Error("Activity doesn't exist"));
+            return;
+        }
 
         this.pendingPromise = promise;
+        this.lastSelectedFields = new ArrayList<>();
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
+        String initialQuery = options.getString("initialQuery");
         boolean useOverlay = options.getBoolean("useOverlay");
 
-        double latitude = options.getDouble("latitude");
-        double longitude = options.getDouble("longitude");
-        double radius = options.getDouble("radius");
-        LatLng center = new LatLng(latitude, longitude);
+        ReadableMap locationBias = options.getMap("locationBias");
+        double biasToLatitudeSW = locationBias.getDouble("latitudeSW");
+        double biasToLongitudeSW = locationBias.getDouble("longitudeSW");
+        double biasToLatitudeNE = locationBias.getDouble("latitudeNE");
+        double biasToLongitudeNE = locationBias.getDouble("longitudeNE");
 
-        Activity currentActivity = getCurrentActivity();
+        ReadableMap locationRestriction = options.getMap("locationRestriction");
+        double restrictToLatitudeSW = locationRestriction.getDouble("latitudeSW");
+        double restrictToLongitudeSW = locationRestriction.getDouble("longitudeSW");
+        double restrictToLatitudeNE = locationRestriction.getDouble("latitudeNE");
+        double restrictToLongitudeNE = locationRestriction.getDouble("longitudeNE");
+        
+        this.lastSelectedFields = getPlaceFields(fields.toArrayList(), false);
+        Autocomplete.IntentBuilder autocompleteIntent = new Autocomplete.IntentBuilder(
+                useOverlay ? AutocompleteActivityMode.OVERLAY : AutocompleteActivityMode.FULLSCREEN, this.lastSelectedFields);
 
-        try {
-            // The autocomplete activity requires Google Play Services to be available. The intent
-            // builder checks this and throws an exception if it is not the case.
-            PlaceAutocomplete.IntentBuilder intentBuilder = new PlaceAutocomplete.IntentBuilder(
-                    useOverlay ? PlaceAutocomplete.MODE_OVERLAY : PlaceAutocomplete.MODE_FULLSCREEN);
-
-            if (latitude != 0 && longitude != 0 && radius != 0) {
-                intentBuilder.setBoundsBias(this.getLatLngBounds(center, radius));
-            }
-            Intent intent = intentBuilder.setFilter(getFilterType(type, country)).build(currentActivity);
-
-            currentActivity.startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-        } catch (GooglePlayServicesRepairableException e) {
-            // Indicates that Google Play Services is either not installed or not up to date. Prompt
-            // the user to correct the issue.
-            GoogleApiAvailability.getInstance()
-                    .getErrorDialog(currentActivity, e.getConnectionStatusCode(), AUTOCOMPLETE_REQUEST_CODE).show();
-        } catch (GooglePlayServicesNotAvailableException e) {
-            // Indicates that Google Play Services is not available and the problem is not easily
-            // resolvable.
-            String message = "Google Play Services is not available: "
-                    + GoogleApiAvailability.getInstance().getErrorString(e.errorCode);
-
-            Log.e(TAG, message);
-
-            rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
+        if (biasToLatitudeSW != 0 && biasToLongitudeSW != 0 && biasToLatitudeNE != 0 && biasToLongitudeNE != 0) {
+            autocompleteIntent.setLocationBias(RectangularBounds.newInstance(
+                new LatLng(biasToLatitudeSW, biasToLongitudeSW),
+                new LatLng(biasToLatitudeNE, biasToLongitudeNE)));
         }
-    }
 
-    @ReactMethod
-    public void openPlacePickerModal(ReadableMap options, final Promise promise) {
-        this.pendingPromise = promise;
-        Activity currentActivity = getCurrentActivity();
-        double latitude = options.getDouble("latitude");
-        double longitude = options.getDouble("longitude");
-        double radius = options.getDouble("radius");
-        LatLng center = new LatLng(latitude, longitude);
-
-        try {
-            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-
-            if (latitude != 0 && longitude != 0 && radius != 0) {
-                intentBuilder.setLatLngBounds(this.getLatLngBounds(center, radius));
-            }
-            Intent intent = intentBuilder.build(currentActivity);
-
-            // Start the Intent by requesting a result, identified by a request code.
-            currentActivity.startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
-
-        } catch (GooglePlayServicesRepairableException e) {
-            GoogleApiAvailability.getInstance()
-                    .getErrorDialog(currentActivity, e.getConnectionStatusCode(), PLACE_PICKER_REQUEST_CODE).show();
-        } catch (GooglePlayServicesNotAvailableException e) {
-
-            rejectPromise("E_INTENT_ERROR", new Error("Google Play Services is not available"));
+        if (restrictToLatitudeSW != 0 && restrictToLongitudeSW != 0 && restrictToLatitudeNE != 0 && restrictToLongitudeNE != 0) {
+            autocompleteIntent.setLocationRestriction(RectangularBounds.newInstance(
+                new LatLng(restrictToLatitudeSW, restrictToLongitudeSW),
+                new LatLng(restrictToLatitudeNE, restrictToLongitudeNE)));
         }
+
+        if (country != null) {
+            autocompleteIntent.setCountry(country);
+        }
+
+        if (initialQuery != null) {
+            autocompleteIntent.setInitialQuery(initialQuery);
+        }
+
+        autocompleteIntent.setTypeFilter(getFilterType(type));
+
+        currentActivity.startActivityForResult(autocompleteIntent.build(this.reactContext.getApplicationContext()), AUTOCOMPLETE_REQUEST_CODE);        
     }
 
     @ReactMethod
     public void getAutocompletePredictions(String query, ReadableMap options, final Promise promise) {
         this.pendingPromise = promise;
 
-        if (this.isClientDisconnected()) return;
+        if (!Places.isInitialized()) {
+            promise.reject("E_API_KEY_ERROR", new Error("No API key defined in gradle.properties or errors initializing Places"));
+            return;
+        }
 
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
+        boolean useSessionToken = options.getBoolean("useSessionToken");
 
-        double latitude = options.getDouble("latitude");
-        double longitude = options.getDouble("longitude");
-        double radius = options.getDouble("radius");
-        LatLng center = new LatLng(latitude, longitude);
+        ReadableMap locationBias = options.getMap("locationBias");
+        double biasToLatitudeSW = locationBias.getDouble("latitudeSW");
+        double biasToLongitudeSW = locationBias.getDouble("longitudeSW");
+        double biasToLatitudeNE = locationBias.getDouble("latitudeNE");
+        double biasToLongitudeNE = locationBias.getDouble("longitudeNE");
 
-        LatLngBounds bounds = null;
-
-        if (latitude != 0 && longitude != 0 && radius != 0) {
-            bounds = this.getLatLngBounds(center, radius);
+        ReadableMap locationRestriction = options.getMap("locationRestriction");
+        double restrictToLatitudeSW = locationRestriction.getDouble("latitudeSW");
+        double restrictToLongitudeSW = locationRestriction.getDouble("longitudeSW");
+        double restrictToLatitudeNE = locationRestriction.getDouble("latitudeNE");
+        double restrictToLongitudeNE = locationRestriction.getDouble("longitudeNE");
+        
+        FindAutocompletePredictionsRequest.Builder requestBuilder =
+        FindAutocompletePredictionsRequest.builder()
+        .setQuery(query);
+        
+        if (country != null) {
+            requestBuilder.setCountry(country);
+        }
+        
+        if (biasToLatitudeSW != 0 && biasToLongitudeSW != 0 && biasToLatitudeNE != 0 && biasToLongitudeNE != 0) {
+            requestBuilder.setLocationBias(RectangularBounds.newInstance(
+                new LatLng(biasToLatitudeSW, biasToLongitudeSW),
+                new LatLng(biasToLatitudeNE, biasToLongitudeNE)));
         }
 
-        PendingResult<AutocompletePredictionBuffer> results = Places.GeoDataApi
-                .getAutocompletePredictions(mGoogleApiClient, query, bounds, getFilterType(type, country));
+        if (restrictToLatitudeSW != 0 && restrictToLongitudeSW != 0 && restrictToLatitudeNE != 0 && restrictToLongitudeNE != 0) {
+            requestBuilder.setLocationRestriction(RectangularBounds.newInstance(
+                new LatLng(restrictToLatitudeSW, restrictToLongitudeSW),
+                new LatLng(restrictToLatitudeNE, restrictToLongitudeNE)));
+        }
+            
+        requestBuilder.setTypeFilter(getFilterType(type));
 
-        AutocompletePredictionBuffer autocompletePredictions = results.await(60, TimeUnit.SECONDS);
-
-        final Status status = autocompletePredictions.getStatus();
-
-        if (status.isSuccess()) {
-            if (autocompletePredictions.getCount() == 0) {
-                WritableArray emptyResult = Arguments.createArray();
-                autocompletePredictions.release();
-                promise.resolve(emptyResult);
-                return;
-            }
-
-            WritableArray predictionsList = Arguments.createArray();
-
-            for (AutocompletePrediction prediction : autocompletePredictions) {
-                WritableMap map = Arguments.createMap();
-                map.putString("fullText", prediction.getFullText(null).toString());
-                map.putString("primaryText", prediction.getPrimaryText(null).toString());
-                map.putString("secondaryText", prediction.getSecondaryText(null).toString());
-                map.putString("placeID", prediction.getPlaceId().toString());
-
-                if (prediction.getPlaceTypes() != null) {
-                    List<String> types = new ArrayList<>();
-                    for (Integer placeType : prediction.getPlaceTypes()) {
-                        types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
-                    }
-                    map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+        if (useSessionToken) {
+            requestBuilder.setSessionToken(AutocompleteSessionToken.newInstance());
+        }
+            
+        Task<FindAutocompletePredictionsResponse> task =
+            placesClient.findAutocompletePredictions(requestBuilder.build());
+    
+        task.addOnSuccessListener(
+            (response) -> {
+                if (response.getAutocompletePredictions().size() == 0) {
+                    WritableArray emptyResult = Arguments.createArray();
+                    promise.resolve(emptyResult);
+                    return;
                 }
-
-                predictionsList.pushMap(map);
-            }
-
-            // Release the buffer now that all data has been copied.
-            autocompletePredictions.release();
-            promise.resolve(predictionsList);
-
-        } else {
-            Log.i(TAG, "Error making autocomplete prediction API call: " + status.toString());
-            autocompletePredictions.release();
-            promise.reject("E_AUTOCOMPLETE_ERROR",
-                    new Error("Error making autocomplete prediction API call: " + status.toString()));
-            return;
-        }
+    
+                WritableArray predictionsList = Arguments.createArray();
+    
+                for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                    WritableMap map = Arguments.createMap();
+                    map.putString("fullText", prediction.getFullText(null).toString());
+                    map.putString("primaryText", prediction.getPrimaryText(null).toString());
+                    map.putString("secondaryText", prediction.getSecondaryText(null).toString());
+                    map.putString("placeID", prediction.getPlaceId().toString());
+    
+                    if (prediction.getPlaceTypes().size() > 0) {
+                        List<String> types = new ArrayList<>();
+                        for (Place.Type placeType : prediction.getPlaceTypes()) {
+                            types.add(RNGooglePlacesPlaceTypeMapper.getTypeSlug(placeType));
+                        }
+                        map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+                    }
+    
+                    predictionsList.pushMap(map);
+                }
+    
+                promise.resolve(predictionsList);
+    
+            });
+    
+        task.addOnFailureListener(
+            (exception) -> {
+                promise.reject("E_AUTOCOMPLETE_ERROR", new Error(exception.getMessage()));
+            });       
     }
 
     @ReactMethod
-    public void lookUpPlaceByID(String placeID, final Promise promise) {
+    public void lookUpPlaceByID(String placeID, ReadableArray fields, final Promise promise) {
         this.pendingPromise = promise;
 
-        if (this.isClientDisconnected()) return;
+        if (!Places.isInitialized()) {
+            promise.reject("E_API_KEY_ERROR", new Error("No API key defined in gradle.properties or errors initializing Places"));
+            return;
+        }
+        
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), true);
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeID).setResultCallback(new ResultCallback<PlaceBuffer>() {
-            @Override
-            public void onResult(PlaceBuffer places) {
-                if (places.getStatus().isSuccess()) {
-                    if (places.getCount() == 0) {
-                        WritableMap emptyResult = Arguments.createMap();
-                        places.release();
-                        promise.resolve(emptyResult);
-                        return;
-                    }
+        FetchPlaceRequest request = FetchPlaceRequest.builder(placeID, selectedFields).build();
 
-                    final Place place = places.get(0);
+        placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+            Place place = response.getPlace();
+            WritableMap map = propertiesMapForPlace(place, selectedFields);
 
-                    WritableMap map = propertiesMapForPlace(place);
-
-                    // Release the PlaceBuffer to prevent a memory leak
-                    places.release();
-
-                    promise.resolve(map);
-
-                } else {
-                    places.release();
-                    promise.reject("E_PLACE_DETAILS_ERROR",
-                            new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                    return;
-                }
-            }
+            promise.resolve(map);
+        }).addOnFailureListener((exception) -> {
+            promise.reject("E_PLACE_DETAILS_ERROR", new Error(exception.getMessage()));
         });
     }
 
     @ReactMethod
-    public void lookUpPlacesByIDs(ReadableArray placeIDs, final Promise promise) {
-        List<Object> placeIDsObjects = placeIDs.toArrayList();
-        List<String> placeIDsStrings = new ArrayList<>(placeIDsObjects.size());
-        for (Object item : placeIDsObjects) {
-            placeIDsStrings.add(Objects.toString(item, null));
+    public void getCurrentPlace(ReadableArray fields, final Promise promise) {
+        if (ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission.ACCESS_WIFI_STATE)
+            != PackageManager.PERMISSION_GRANTED
+        || ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {        
+            promise.reject("E_CURRENT_PLACE_ERROR", new Error("Both ACCESS_WIFI_STATE & ACCESS_FINE_LOCATION permissions are required"));
+            return;
         }
 
-        Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeIDsStrings.toArray(new String[placeIDsStrings.size()]))
-                .setResultCallback(new ResultCallback<PlaceBuffer>() {
-                    @Override
-                    public void onResult(PlaceBuffer places) {
-                        if (places.getStatus().isSuccess()) {
-                            if (places.getCount() == 0) {
-                                WritableMap emptyResult = Arguments.createMap();
-                                places.release();
-                                promise.resolve(emptyResult);
-                                return;
-                            }
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), true);
 
-                            WritableArray resultList = processLookupByIDsPlaces(places);
-
-                            // Release the PlaceBuffer to prevent a memory leak
-                            places.release();
-
-                            promise.resolve(resultList);
-                        } else {
-                            places.release();
-                            promise.reject("E_PLACE_DETAILS_ERROR",
-                                    new Error("Error making place lookup API call: " + places.getStatus().toString()));
-                            return;
-                        }
-                    }
-                });
+        if (checkPermission(ACCESS_FINE_LOCATION)) {
+            findCurrentPlaceWithPermissions(selectedFields, promise);
+        }
     }
 
-    @ReactMethod
-    public void getCurrentPlace(final Promise promise) {
-        Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null)
-            .setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
-                @Override
-                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
-                    final Status status = likelyPlaces.getStatus();
+    /**
+   * Fetches a list of {@link PlaceLikelihood} instances that represent the Places the user is
+   * most
+   * likely to be at currently.
+   */
+    @RequiresPermission(allOf = {ACCESS_FINE_LOCATION, ACCESS_WIFI_STATE})
+    private void findCurrentPlaceWithPermissions(List<Place.Field> selectedFields, final Promise promise) {
 
-                    if (status.isSuccess()) {
-                        if (likelyPlaces.getCount() == 0) {
-                            WritableArray emptyResult = Arguments.createArray();
-                            likelyPlaces.release();
-                            promise.resolve(emptyResult);
-                            return;
-                        }
+        FindCurrentPlaceRequest currentPlaceRequest =
+            FindCurrentPlaceRequest.newInstance(selectedFields);
+        Task<FindCurrentPlaceResponse> currentPlaceTask =
+            placesClient.findCurrentPlace(currentPlaceRequest);
 
-                        WritableArray likelyPlacesList = Arguments.createArray();
-
-                        for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                            WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace());
-                            map.putDouble("likelihood", placeLikelihood.getLikelihood());
-
-                            likelyPlacesList.pushMap(map);
-                        }
-
-                        // Release the buffer now that all data has been copied.
-                        likelyPlaces.release();
-                        promise.resolve(likelyPlacesList);
-                    } else {
-                        Log.i(TAG, "Error making places detection api call: " + status.getStatusMessage());
-                        likelyPlaces.release();
-                        promise.reject("E_PLACE_DETECTION_API_ERROR",
-                                new Error("Error making places detection api call: " + status.getStatusMessage()));
-                        return;
-                    }
+        currentPlaceTask.addOnSuccessListener(
+            (response) -> {
+                if (response.getPlaceLikelihoods().size() == 0) {
+                    WritableArray emptyResult = Arguments.createArray();
+                    promise.resolve(emptyResult);
+                    return;
                 }
+
+                WritableArray likelyPlacesList = Arguments.createArray();
+
+                for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
+
+                    WritableMap map = propertiesMapForPlace(placeLikelihood.getPlace(), selectedFields);
+                    map.putDouble("likelihood", placeLikelihood.getLikelihood());
+
+                    likelyPlacesList.pushMap(map);
+                }
+
+                promise.resolve(likelyPlacesList);
+            });
+
+        currentPlaceTask.addOnFailureListener(
+            (exception) -> {
+                promise.reject("E_CURRENT_PLACE_ERROR", new Error(exception.getMessage()));
             });
     }
 
-    private WritableArray processLookupByIDsPlaces(final PlaceBuffer places) {
-        WritableArray resultList = new WritableNativeArray();
-
-        for (Place place : places) {
-            resultList.pushMap(propertiesMapForPlace(place));
-        }
-
-        return resultList;
-    }
-
-    private WritableMap propertiesMapForPlace(Place place) {
+    private WritableMap propertiesMapForPlace(Place place, List<Place.Field> selectedFields) {
         // Display attributions if required.
-        CharSequence attributions = place.getAttributions();
+        // CharSequence attributions = place.getAttributions();
 
         WritableMap map = Arguments.createMap();
-        map.putDouble("latitude", place.getLatLng().latitude);
-        map.putDouble("longitude", place.getLatLng().longitude);
-        map.putString("name", place.getName().toString());
 
-        if (!TextUtils.isEmpty(place.getAddress())) {
-            map.putString("address", place.getAddress().toString());
+        if (selectedFields.contains(Place.Field.LAT_LNG)) {
+            WritableMap locationMap = Arguments.createMap();
+            locationMap.putDouble("latitude", place.getLatLng().latitude);
+            locationMap.putDouble("longitude", place.getLatLng().longitude);
+
+            map.putMap("location", locationMap);
         }
 
-        if (!TextUtils.isEmpty(place.getPhoneNumber())) {
-            map.putString("phoneNumber", place.getPhoneNumber().toString());
+        if (selectedFields.contains(Place.Field.NAME)) {
+            map.putString("name", place.getName());
         }
 
-        if (null != place.getWebsiteUri()) {
-            map.putString("website", place.getWebsiteUri().toString());
-        }
-
-        map.putString("placeID", place.getId());
-
-        if (!TextUtils.isEmpty(attributions)) {
-            map.putString("attributions", attributions.toString());
-        }
-
-        if (place.getPlaceTypes() != null) {
-            List<String> types = new ArrayList<>();
-            for (Integer placeType : place.getPlaceTypes()) {
-                types.add(findPlaceTypeLabelByPlaceTypeId(placeType));
+        if (selectedFields.contains(Place.Field.ADDRESS)) {
+            if (!TextUtils.isEmpty(place.getAddress())) {
+                map.putString("address", place.getAddress());
+            } else {
+                map.putString("address", "");
             }
-            map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
         }
 
-        if (place.getViewport() != null) {
-            map.putDouble("north", place.getViewport().northeast.latitude);
-            map.putDouble("east", place.getViewport().northeast.longitude);
-            map.putDouble("south", place.getViewport().southwest.latitude);
-            map.putDouble("west", place.getViewport().southwest.longitude);
+        if (selectedFields.contains(Place.Field.PHONE_NUMBER)) {
+            if (!TextUtils.isEmpty(place.getPhoneNumber())) {
+                map.putString("phoneNumber", place.getPhoneNumber());
+            } else {
+                map.putString("phoneNumber", "");
+            }
         }
 
-        if (place.getPriceLevel() >= 0) {
-            map.putInt("priceLevel", place.getPriceLevel());
+        if (selectedFields.contains(Place.Field.WEBSITE_URI)) {
+            if (null != place.getWebsiteUri()) {
+                map.putString("website", place.getWebsiteUri().toString());
+            } else {
+                map.putString("website", "");
+            }
         }
 
-        if (place.getRating() >= 0) {
-            map.putDouble("rating", place.getRating());
+        if (selectedFields.contains(Place.Field.ID)) {
+            map.putString("placeID", place.getId());
+        }
+
+        if (place.getAttributions() != null) {
+            List<String> attributions = new ArrayList<>(place.getAttributions());
+            map.putArray("attributions", Arguments.fromArray(attributions.toArray(new String[0])));
+        } else {
+            WritableArray emptyResult = Arguments.createArray();
+            map.putArray("attributions", emptyResult);
+        }
+
+        if (selectedFields.contains(Place.Field.TYPES)) {
+            if (place.getTypes() != null) {
+                List<String> types = new ArrayList<>();
+                for (Place.Type placeType : place.getTypes()) {
+                    types.add(RNGooglePlacesPlaceTypeMapper.getTypeSlug(placeType));
+                }
+                map.putArray("types", Arguments.fromArray(types.toArray(new String[0])));
+            } else {
+                WritableArray emptyResult = Arguments.createArray();
+                map.putArray("types", emptyResult);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.VIEWPORT)) {
+            if (place.getViewport() != null) {
+                WritableMap viewportMap = Arguments.createMap();
+                viewportMap.putDouble("latitudeNE", place.getViewport().northeast.latitude);
+                viewportMap.putDouble("longitudeNE", place.getViewport().northeast.longitude);
+                viewportMap.putDouble("latitudeSW", place.getViewport().southwest.latitude);
+                viewportMap.putDouble("longitudeSW", place.getViewport().southwest.longitude);
+
+                map.putMap("viewport", viewportMap);
+            } else {
+                WritableMap emptyResult = Arguments.createMap();
+                map.putMap("viewport", emptyResult);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.PRICE_LEVEL)) {
+            if (place.getPriceLevel() != null) {
+                map.putInt("priceLevel", place.getPriceLevel());
+            } else {
+                map.putInt("priceLevel", 0);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.RATING)) {
+            if (place.getRating() != null) {
+                map.putDouble("rating", place.getRating());
+            } else {
+                map.putDouble("rating", 0);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.OPENING_HOURS)) {
+            if (place.getOpeningHours() != null) {
+                List<String> openingHours = new ArrayList<>(place.getOpeningHours().getWeekdayText());
+                map.putArray("openingHours", Arguments.fromArray(openingHours.toArray(new String[0])));                
+            } else {
+                WritableArray emptyResult = Arguments.createArray();
+                map.putArray("openingHours", emptyResult);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.PLUS_CODE)) {
+            if (place.getPlusCode() != null) {
+                WritableMap plusCodeMap = Arguments.createMap();
+                plusCodeMap.putString("compoundCode", place.getPlusCode().getCompoundCode());
+                plusCodeMap.putString("globalCode", place.getPlusCode().getGlobalCode());
+                map.putMap("plusCode", plusCodeMap);
+            } else {
+                WritableMap emptyResult = Arguments.createMap();
+                map.putMap("plusCode", emptyResult);
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.USER_RATINGS_TOTAL)) {
+            if (place.getUserRatingsTotal() != null) {
+                map.putInt("userRatingsTotal", place.getUserRatingsTotal());
+            } else {
+                map.putInt("userRatingsTotal", 0);
+            }
         }
 
         return map;
     }
 
-    private AutocompleteFilter getFilterType(String type, String country) {
-        AutocompleteFilter mappedFilter;
+    @Nullable
+    private TypeFilter getFilterType(String type) {
+        TypeFilter mappedFilter;
 
         switch (type) {
         case "geocode":
-            mappedFilter = new AutocompleteFilter.Builder().setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
-                    .setCountry(country).build();
+            mappedFilter = TypeFilter.GEOCODE;
             break;
         case "address":
-            mappedFilter = new AutocompleteFilter.Builder().setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                    .setCountry(country).build();
+            mappedFilter = TypeFilter.ADDRESS;
             break;
         case "establishment":
-            mappedFilter = new AutocompleteFilter.Builder().setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-                    .setCountry(country).build();
+            mappedFilter = TypeFilter.ESTABLISHMENT;
             break;
         case "regions":
-            mappedFilter = new AutocompleteFilter.Builder().setTypeFilter(AutocompleteFilter.TYPE_FILTER_REGIONS)
-                    .setCountry(country).build();
+            mappedFilter = TypeFilter.REGIONS;
             break;
         case "cities":
-            mappedFilter = new AutocompleteFilter.Builder().setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
-                    .setCountry(country).build();
+            mappedFilter = TypeFilter.CITIES;
             break;
         default:
-            mappedFilter = new AutocompleteFilter.Builder().setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
-                    .setCountry(country).build();
+            mappedFilter = null;
             break;
         }
 
         return mappedFilter;
     }
+
+    private List<Place.Field> getPlaceFields(ArrayList<Object> placeFields, boolean isCurrentOrFetchPlace) {
+        List<Place.Field> selectedFields = new ArrayList<>();
+
+        if (placeFields.size() == 0 && !isCurrentOrFetchPlace) {
+            return Arrays.asList(Place.Field.values());
+        }
+
+        if (placeFields.size() == 0 && isCurrentOrFetchPlace) {
+            List<Place.Field> allPlaceFields = new ArrayList<>(Arrays.asList(Place.Field.values()));
+            allPlaceFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI));
+
+            return allPlaceFields;
+        }
+
+        for (Object placeField : placeFields) {
+            if (RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField.toString()) != null) {
+                selectedFields.add(RNGooglePlacesPlaceFieldEnum.findByFieldKey(placeField.toString()).getField());            
+            }
+        }
+
+        if (placeFields.size() != 0 && isCurrentOrFetchPlace) {
+            selectedFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI));
+        }
+
+        return selectedFields;
+    }
+
+    private boolean checkPermission(String permission) {
+        Activity currentActivity = getCurrentActivity();
+        
+        boolean hasPermission =
+            ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
+        if (!hasPermission && currentActivity != null) {
+            ActivityCompat.requestPermissions(currentActivity, new String[]{permission}, 0);
+        }
+        return hasPermission;
+    }
+
 
     private void rejectPromise(String code, Error err) {
         if (this.pendingPromise != null) {
@@ -501,68 +569,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
     }
 
-    private LatLngBounds getLatLngBounds(LatLng center, double radius) {
-        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
-        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
-        return new LatLngBounds(southwest, northeast);
-    }
-
     private String findPlaceTypeLabelByPlaceTypeId(Integer id) {
         return RNGooglePlacesPlaceTypeEnum.findByTypeId(id).getLabel();
     }
 
-    // check before any use of Google API Client
-    private boolean isClientDisconnected() {
-        if (!mGoogleApiClient.isConnecting() &&
-                !mGoogleApiClient.isConnected()) {
-            rejectPromise("E_GOOGLE_CLIENT_DISCONNECTED", new Error("GoogleApiClient is not connected. Will try connect again"));
-            // this will trigger again resolution on connection failure when
-            // autoClientResolution is true and if has resolution
-            mGoogleApiClient.connect();
-            return true;
-        }
-
-        return false;
-    }
-
     @Override
     public void onNewIntent(Intent intent) {
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "GoogleApiClient Connected");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // Refer to Google Play documentation for what errors can be logged
-        boolean hasResolution = result.hasResolution();
-
-        Log.i(TAG, "GoogleApiClient: connection failed with error: " + result.getErrorMessage() +
-                " (" + result.getErrorCode() + ")" +
-                ", has resolution: " +
-                (hasResolution ? "YES" : "NO"));
-
-        if (hasResolution) {
-            Activity activity = getCurrentActivity();
-            if (activity != null) {
-                try {
-                    result.startResolutionForResult(activity, PLACES_RESOLUTION_CODE);
-                } catch (IntentSender.SendIntentException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // activity sometimes not attached to react context on app start,
-                // client connection will be checked before making request
-                Log.i(TAG, "GoogleApiClient: can't resolve, activity == null");
-            }
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        // Attempts to reconnect if a disconnect occurs
-        Log.i(TAG, "GoogleApiClient Connection Suspended");
     }
 }

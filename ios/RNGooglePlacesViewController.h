@@ -10,11 +10,11 @@
 - (instancetype) init;
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
-                       bounds: (GMSCoordinateBounds *)bounds
+                  placeFields: (GMSPlaceField)selectedFields
+                       bounds: (GMSCoordinateBounds *)autocompleteBounds
+                   boundsMode: (GMSAutocompleteBoundsMode)autocompleteBoundsMode
                      resolver: (RCTPromiseResolveBlock)resolve
                      rejecter: (RCTPromiseRejectBlock)reject;
-- (void)openPlacePickerModal: (GMSCoordinateBounds *)bounds
-					resolver: (RCTPromiseResolveBlock)resolve
-                  	rejecter: (RCTPromiseRejectBlock)reject;
+                     
 
 @end

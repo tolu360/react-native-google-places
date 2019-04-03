@@ -4,31 +4,83 @@
 
 + (instancetype)dictionaryWithGMSPlace:(GMSPlace*)place
 {
-    NSMutableDictionary *placeData =[[NSMutableDictionary alloc] init];
-    placeData[@"name"] = place.name;
-    placeData[@"address"] = place.formattedAddress;
+    NSMutableDictionary *placeData = [[NSMutableDictionary alloc] init];
+    
+    if (place.name) {
+        placeData[@"name"] = place.name;
+    }
+
+    if (place.formattedAddress) {
+        placeData[@"address"] = place.formattedAddress;
+    }
+
     placeData[@"attributions"] = place.attributions.string;
-    placeData[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
-    placeData[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
-    placeData[@"phoneNumber"] = place.phoneNumber;
-    placeData[@"website"] = place.website.absoluteString;
-    placeData[@"placeID"] = place.placeID;
-    placeData[@"types"] = place.types;
-    placeData[@"priceLevel"] = [NSNumber numberWithInteger:place.priceLevel];
-    placeData[@"rating"] = [NSNumber numberWithDouble:place.rating];
+
+    if (place.coordinate.latitude) {
+        NSMutableDictionary *locationMap = [[NSMutableDictionary alloc] init];
+        locationMap[@"latitude"] = [NSNumber numberWithDouble:place.coordinate.latitude];
+        locationMap[@"longitude"] = [NSNumber numberWithDouble:place.coordinate.longitude];
+
+        placeData[@"location"] = locationMap;
+    }
+
+    if (place.phoneNumber) {
+        placeData[@"phoneNumber"] = place.phoneNumber;
+    }
+
+    if (place.website) {
+        placeData[@"website"] = place.website.absoluteString;
+    }
+
+    if (place.placeID) {
+        placeData[@"placeID"] = place.placeID;
+    }
+
+    if (place.types) {
+        placeData[@"types"] = place.types;
+    }
+
+    if (place.priceLevel) {
+        placeData[@"priceLevel"] = [NSNumber numberWithInteger:place.priceLevel];
+    }
+
+    if (place.rating) {
+        placeData[@"rating"] = [NSNumber numberWithDouble:place.rating];
+    }
     
     if (place.viewport) {
-        placeData[@"north"] = [NSNumber numberWithDouble:place.viewport.northEast.latitude];
-        placeData[@"east"] = [NSNumber numberWithDouble:place.viewport.northEast.longitude];
-        placeData[@"south"] = [NSNumber numberWithDouble:place.viewport.southWest.latitude];
-        placeData[@"west"] = [NSNumber numberWithDouble:place.viewport.southWest.longitude];
+        NSMutableDictionary *viewportMap = [[NSMutableDictionary alloc] init];
+        viewportMap[@"latitudeNE"] = [NSNumber numberWithDouble:place.viewport.northEast.latitude];
+        viewportMap[@"longitudeNE"] = [NSNumber numberWithDouble:place.viewport.northEast.longitude];
+        viewportMap[@"latitudeSW"] = [NSNumber numberWithDouble:place.viewport.southWest.latitude];
+        viewportMap[@"longitudeSW"] = [NSNumber numberWithDouble:place.viewport.southWest.longitude];
+
+        placeData[@"viewport"] = viewportMap;
+    }
+
+    if (place.plusCode) {
+        NSMutableDictionary *plusCodeMap = [[NSMutableDictionary alloc] init];
+        plusCodeMap[@"globalCode"] = place.plusCode.globalCode;
+        plusCodeMap[@"compoundCode"] = place.plusCode.compoundCode;
+
+        placeData[@"placeCode"] = plusCodeMap;
     }
     
-    NSMutableDictionary *addressComponents =[[NSMutableDictionary alloc] init];
-    for( int i=0;i<place.addressComponents.count;i++) {
-        addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+    if (place.addressComponents) {
+        NSMutableDictionary *addressComponents = [[NSMutableDictionary alloc] init];
+        for( int i=0;i<place.addressComponents.count;i++) {
+            addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+        }
+        placeData[@"addressComponents"] = addressComponents;
     }
-    placeData[@"addressComponents"] = addressComponents;
+
+    if (place.openingHours) {
+        placeData[@"openingHours"] = place.openingHours.weekdayText;
+    }
+
+    if (place.userRatingsTotal) {
+        placeData[@"userRatingsTotal"] = @(place.userRatingsTotal);
+    }
     
     return placeData;
 }
