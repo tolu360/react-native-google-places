@@ -67,10 +67,16 @@
     }
     
     if (place.addressComponents) {
-        NSMutableDictionary *addressComponents = [[NSMutableDictionary alloc] init];
+        NSMutableArray *addressComponents = [[NSMutableArray alloc] init];
         for( int i=0;i<place.addressComponents.count;i++) {
-            addressComponents[place.addressComponents[i].type] = place.addressComponents[i].name;
+            NSMutableDictionary *addressComponent = [[NSMutableDictionary alloc] init];
+            addressComponent[@"types"] = place.addressComponents[i].types;
+            addressComponent[@"name"] = place.addressComponents[i].name;
+            addressComponent[@"shortName"] = place.addressComponents[i].shortName;
+            
+            [addressComponents addObject:addressComponent];
         }
+        
         placeData[@"addressComponents"] = addressComponents;
     }
 
