@@ -3,7 +3,7 @@
   "description": "iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services for React Native Apps",
   "main": "index.js",
   "author": "Tolu Olowu (Arttitude 360) <tolu@arttitude360.com>",
-  "version": "3.0.0-beta.9",
+  "version": "3.0.0-beta.11",
   "scripts": {},
   "repository": {
     "type": "git",
