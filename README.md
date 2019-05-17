@@ -56,7 +56,7 @@ react-native link react-native-google-places
 ##### Install CocoaPods Dependencies
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
 - If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project.
-- Add `pod 'GooglePlaces'`, `pod 'GooglePlacePicker'` and `pod 'GoogleMaps'` to your Podfile. Otherwise just edit your Podfile to include:
+- Add `pod 'GooglePlaces'`, `pod 'GooglePlacePicker'` and `pod 'GoogleMaps'` to your Podfile. Ensure you pull in version 3.1.0 or higher for both the `GooglePlaces` and `GoogleMaps` libraries. Otherwise just edit your Podfile to include:
 
 ```ruby
 source 'https://github.com/CocoaPods/Specs.git'
@@ -68,6 +68,8 @@ target 'YOUR_APP_TARGET_NAME' do
 
 end
 ```
+- Run `pod install` or `pod update` from the `ios directory` to get started.
+
 - In your `AppDelegate.m` file, import the Google Places library by adding 
 ```objectivec
     @import GooglePlaces; 
@@ -269,6 +271,20 @@ To customize autocomplete results as listed for [Android](https://developers.goo
         longitude: 3.3211348, 
         latitude: 6.5818185 
     },
+    addressComponents: [ 
+      { shortName: 'Lagos',
+        name: 'Lagos',
+        types: [ 'locality', 'political' ] 
+      },
+      { shortName: 'LA',
+        name: 'Lagos',
+        types: [ 'administrative_area_level_1', 'political' ] 
+      },
+      { shortName: 'NG',
+        name: 'Nigeria',
+        types: [ 'country', 'political' ] 
+      } 
+    ],
     userRatingsTotal: 939,
     plusCode: { 
         globalCode: '6FR5H8JC+PF',
