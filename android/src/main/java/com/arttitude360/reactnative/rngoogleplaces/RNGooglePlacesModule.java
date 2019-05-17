@@ -33,6 +33,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AddressComponent;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.LocationBias;
 import com.google.android.libraries.places.api.model.LocationRestriction;
@@ -380,6 +381,28 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
                 map.putString("address", place.getAddress());
             } else {
                 map.putString("address", "");
+            }
+        }
+
+        if (selectedFields.contains(Place.Field.ADDRESS_COMPONENTS)) {
+            if (place.getAddressComponents() != null) {
+                List<AddressComponent> items = place.getAddressComponents().asList();
+                WritableNativeArray addressComponents = new WritableNativeArray();
+
+                for (AddressComponent item : items) {
+                    WritableMap addressComponentMap = Arguments.createMap();
+                    addressComponentMap.putArray("types", Arguments.fromList(item.getTypes()));
+                    addressComponentMap.putString("name", item.getName());
+                    addressComponentMap.putString("shortName", item.getShortName());
+
+                    addressComponents.pushMap(addressComponentMap);
+                }
+
+                map.putArray("addressComponents", addressComponents);
+            }
+            else {
+                WritableArray emptyResult = Arguments.createArray();
+                map.putArray("addressComponents", emptyResult);
             }
         }
 
