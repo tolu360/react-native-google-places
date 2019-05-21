@@ -24,6 +24,26 @@ declare module "react-native-google-places" {
   }
 
   /**
+   * Current place, with additional likelihood property.
+   * 
+   * Corresponds roughly to
+   * [GMSPlaceLikelihood](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place_likelihood.html#a370caf145921ced6374bd39212561d90)
+   * and [com.google.android.libraries.places.api.net.PlaceLikelihood](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/PlaceLikelihood),
+   * though the likelihood has been flattened into the Place object.
+   */
+  export interface CurrentPlace extends GMSTypes.Place {
+    /**
+     * Returns a value from 0.0 to 1.0 indicating the confidence that the user
+     * is at this place.
+     * 
+     * The larger the value the more confident we are of the place returned. For
+     * example, a likelihood of 0.75 means that the user is at least 75% likely
+     * to be at this place.
+     */
+    likelihood: number;
+  }
+
+  /**
    * Internal mappings to Google Maps Services types.
    */
   export namespace GMSTypes {
@@ -530,7 +550,9 @@ declare module "react-native-google-places" {
 
     public getCurrentPlace<K extends keyof GMSTypes.Place>(
       placeFields: K[]
-    ): Promise<Pick<GMSTypes.Place, (typeof placeFields)[number]>>;
+    ): Promise<
+      Pick<CurrentPlace, (typeof placeFields)[number] | "likelihood">[]
+    >;
   }
 
   class RNGooglePlaces {
@@ -599,10 +621,13 @@ declare module "react-native-google-places" {
      * the appropriate permissions as stated post-install steps above before
      * making this request.
      * 
+     * The sum of the likelihoods in a given result set is always less than or
+     * equal to 1.0. 
+     * 
      * Note: To prevent yourself from incurring huge usage bill, you should
-     * select the result fields you need in your application.
+     * select only the result fields you need in your application.
      */
-    public getCurrentPlace(): Promise<GMSTypes.Place>;
+    public getCurrentPlace(): Promise<CurrentPlace[]>;
 
     /**
      * This method returns to you the place where the device is currently
@@ -613,10 +638,15 @@ declare module "react-native-google-places" {
      * probability that the place is the best match. Ensure you have required
      * the appropriate permissions as stated post-install steps above before
      * making this request.
+     * 
+     * The sum of the likelihoods in a given result set is always less than or
+     * equal to 1.0. 
      */
     public getCurrentPlace<K extends keyof GMSTypes.Place>(
       placeFields: K[]
-    ): Promise<Pick<GMSTypes.Place, (typeof placeFields)[number]>>;
+    ): Promise<
+      Pick<CurrentPlace, (typeof placeFields)[number] | "likelihood">[]
+    >;
   }
 
   const _: RNGooglePlaces;
