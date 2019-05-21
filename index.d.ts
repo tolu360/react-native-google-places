@@ -196,98 +196,96 @@ declare module "react-native-google-places" {
      * [Place Details](https://developers.google.com/places/android-sdk/place-details)
      * resulting from a call to `fetchPlace()`).
      */
-    export enum PlaceType {
-      Accounting = "accounting",
-      Airport = "airport",
-      AmusementPark = "amusement_park",
-      Aquarium = "aquarium",
-      ArtGallery = "art_gallery",
-      Atm = "atm",
-      Bakery = "bakery",
-      Bank = "bank",
-      Bar = "bar",
-      BeautySalon = "beauty_salon",
-      BicycleStore = "bicycle_store",
-      BookStore = "book_store",
-      BowlingAlley = "bowling_alley",
-      BusStation = "bus_station",
-      Cafe = "cafe",
-      Campground = "campground",
-      CarDealer = "car_dealer",
-      CarRental = "car_rental",
-      CarRepair = "car_repair",
-      CarWash = "car_wash",
-      Casino = "casino",
-      Cemetery = "cemetery",
-      Church = "church",
-      CityHall = "city_hall",
-      ClothingStore = "clothing_store",
-      ConvenienceStore = "convenience_store",
-      Courthouse = "courthouse",
-      Dentist = "dentist",
-      DepartmentStore = "department_store",
-      Doctor = "doctor",
-      Electrician = "electrician",
-      ElectronicsStore = "electronics_store",
-      Embassy = "embassy",
-      FireStation = "fire_station",
-      Florist = "florist",
-      FuneralHome = "funeral_home",
-      FurnitureStore = "furniture_store",
-      GasStation = "gas_station",
-      Gym = "gym",
-      HairCare = "hair_care",
-      HardwareStore = "hardware_store",
-      HinduTemple = "hindu_temple",
-      HomeGoodsStore = "home_goods_store",
-      Hospital = "hospital",
-      InsuranceAgency = "insurance_agency",
-      JewelryStore = "jewelry_store",
-      Laundry = "laundry",
-      Lawyer = "lawyer",
-      Library = "library",
-      LiquorStore = "liquor_store",
-      LocalGovernmentOffice = "local_government_office",
-      Locksmith = "locksmith",
-      Lodging = "lodging",
-      MealDelivery = "meal_delivery",
-      MealTakeaway = "meal_takeaway",
-      Mosque = "mosque",
-      MovieRental = "movie_rental",
-      MovieTheater = "movie_theater",
-      MovingCompany = "moving_company",
-      Museum = "museum",
-      NightClub = "night_club",
-      Painter = "painter",
-      Park = "park",
-      Parking = "parking",
-      PetStore = "pet_store",
-      Pharmacy = "pharmacy",
-      Physiotherapist = "physiotherapist",
-      Plumber = "plumber",
-      Police = "police",
-      PostOffice = "post_office",
-      RealEstateAgency = "real_estate_agency",
-      Restaurant = "restaurant",
-      RoofingContractor = "roofing_contractor",
-      RvPark = "rv_park",
-      School = "school",
-      ShoeStore = "shoe_store",
-      ShoppingMall = "shopping_mall",
-      Spa = "spa",
-      Stadium = "stadium",
-      Storage = "storage",
-      Store = "store",
-      SubwayStation = "subway_station",
-      Supermarket = "supermarket",
-      Synagogue = "synagogue",
-      TaxiStand = "taxi_stand",
-      TrainStation = "train_station",
-      TransitStation = "transit_station",
-      TravelAgency = "travel_agency",
-      VeterinaryCare = "veterinary_care",
-      Zoo = "zoo",
-    }
+    export type PlaceType = "accounting"
+      | "airport"
+      | "amusement_park"
+      | "aquarium"
+      | "art_gallery"
+      | "atm"
+      | "bakery"
+      | "bank"
+      | "bar"
+      | "beauty_salon"
+      | "bicycle_store"
+      | "book_store"
+      | "bowling_alley"
+      | "bus_station"
+      | "cafe"
+      | "campground"
+      | "car_dealer"
+      | "car_rental"
+      | "car_repair"
+      | "car_wash"
+      | "casino"
+      | "cemetery"
+      | "church"
+      | "city_hall"
+      | "clothing_store"
+      | "convenience_store"
+      | "courthouse"
+      | "dentist"
+      | "department_store"
+      | "doctor"
+      | "electrician"
+      | "electronics_store"
+      | "embassy"
+      | "fire_station"
+      | "florist"
+      | "funeral_home"
+      | "furniture_store"
+      | "gas_station"
+      | "gym"
+      | "hair_care"
+      | "hardware_store"
+      | "hindu_temple"
+      | "home_goods_store"
+      | "hospital"
+      | "insurance_agency"
+      | "jewelry_store"
+      | "laundry"
+      | "lawyer"
+      | "library"
+      | "liquor_store"
+      | "local_government_office"
+      | "locksmith"
+      | "lodging"
+      | "meal_delivery"
+      | "meal_takeaway"
+      | "mosque"
+      | "movie_rental"
+      | "movie_theater"
+      | "moving_company"
+      | "museum"
+      | "night_club"
+      | "painter"
+      | "park"
+      | "parking"
+      | "pet_store"
+      | "pharmacy"
+      | "physiotherapist"
+      | "plumber"
+      | "police"
+      | "post_office"
+      | "real_estate_agency"
+      | "restaurant"
+      | "roofing_contractor"
+      | "rv_park"
+      | "school"
+      | "shoe_store"
+      | "shopping_mall"
+      | "spa"
+      | "stadium"
+      | "storage"
+      | "store"
+      | "subway_station"
+      | "supermarket"
+      | "synagogue"
+      | "taxi_stand"
+      | "train_station"
+      | "transit_station"
+      | "travel_agency"
+      | "veterinary_care"
+      | "zoo";  
 
     /**
      * Place Type, corresponding to the
@@ -304,46 +302,44 @@ declare module "react-native-google-places" {
      * Note: The types below are not supported in the type filter of a place
      * search.
      */
-    export enum ReadOnlyPlaceType {
-      AdministrativeAreaLevel1 = "administrative_area_level_1",
-      AdministrativeAreaLevel2 = "administrative_area_level_2",
-      AdministrativeAreaLevel3 = "administrative_area_level_3",
-      AdministrativeAreaLevel4 = "administrative_area_level_4",
-      AdministrativeAreaLevel5 = "administrative_area_level_5",
-      ColloquialArea = "colloquial_area",
-      Country = "country",
-      Establishment = "establishment",
-      Finance = "finance",
-      Floor = "floor",
-      Food = "food",
-      GeneralContractor = "general_contractor",
-      Geocode = "geocode",
-      Health = "health",
-      Intersection = "intersection",
-      Locality = "locality",
-      NaturalFeature = "natural_feature",
-      Neighborhood = "neighborhood",
-      PlaceOfWorship = "place_of_worship",
-      Political = "political",
-      PointOfInterest = "point_of_interest",
-      PostBox = "post_box",
-      PostalCode = "postal_code",
-      PostalCodePrefix = "postal_code_prefix",
-      PostalCodeSuffix = "postal_code_suffix",
-      PostalTown = "postal_town",
-      Premise = "premise",
-      Room = "room",
-      Route = "route",
-      StreetAddress = "street_address",
-      StreetNumber = "street_number",
-      Sublocality = "sublocality",
-      SublocalityLevel4 = "sublocality_level_4",
-      SublocalityLevel5 = "sublocality_level_5",
-      SublocalityLevel3 = "sublocality_level_3",
-      SublocalityLevel2 = "sublocality_level_2",
-      SublocalityLevel1 = "sublocality_level_1",
-      Subpremise = "subpremise", 
-    }
+    export type ReadOnlyPlaceType = "administrative_area_level_1"
+      | "administrative_area_level_2"
+      | "administrative_area_level_3"
+      | "administrative_area_level_4"
+      | "administrative_area_level_5"
+      | "colloquial_area"
+      | "country"
+      | "establishment"
+      | "finance"
+      | "floor"
+      | "food"
+      | "general_contractor"
+      | "geocode"
+      | "health"
+      | "intersection"
+      | "locality"
+      | "natural_feature"
+      | "neighborhood"
+      | "place_of_worship"
+      | "political"
+      | "point_of_interest"
+      | "post_box"
+      | "postal_code"
+      | "postal_code_prefix"
+      | "postal_code_suffix"
+      | "postal_town"
+      | "premise"
+      | "room"
+      | "route"
+      | "street_address"
+      | "street_number"
+      | "sublocality"
+      | "sublocality_level_4"
+      | "sublocality_level_5"
+      | "sublocality_level_3"
+      | "sublocality_level_2"
+      | "sublocality_level_1"
+      | "subpremise";
 
     /**
      * All the different kinds of place types that the Places API can return.
@@ -360,50 +356,46 @@ declare module "react-native-google-places" {
      * nothing is specified, all types are returned. In general only a single
      * type is allowed. The exception is that you can safely mix the `geocode`
      * and `establishment` types, but note that this will have the same effect
-     * as specifying no types. 
+     * as specifying no types.
+     * 
+     * ## `geocode`
+     * 
+     * Instructs the Place Autocomplete service to return only geocoding
+     * results, rather than business results. Generally, you use this request
+     * to disambiguate results where the location specified may be
+     * indeterminate.
+     * 
+     * ## `address`
+     * 
+     * Instructs the Place Autocomplete service to return only geocoding
+     * results with a precise address. Generally, you use this request when
+     * you know the user will be looking for a fully specified address.
+     * 
+     * ## `establishment`
+     * 
+     * Instructs the Place Autocomplete service to return only business
+     * results.
+     * 
+     * ## `regions`
+     * 
+     * Instructs the Places service to return any result matching the
+     * following types:
+     * 
+     * - `locality` (PlaceType.Locality)
+     * - `sublocality` (PlaceType.SubLocality)
+     * - `postal_code` (PlaceType.PostalCode)
+     * - `country` (PlaceType.Country)
+     * - `administrative_area_level_1` (PlaceType.AdministrativeAreaLevel1)
+     * - `administrative_area_level_2` (PlaceType.AdministrativeAreaLevel2)
+     * 
+     * ## `cities`
+     * 
+     * Instructs the Places service to return results that match `locality`
+     * (PlaceType.Locality) or `administrative_area_level_3`
+     * (PlaceType.AdministrativeAreaLevel3).
      */
-    export enum AutocompleteType {
-      /**
-       * Instructs the Place Autocomplete service to return only geocoding
-       * results, rather than business results. Generally, you use this request
-       * to disambiguate results where the location specified may be
-       * indeterminate.
-       */
-      Geocode = "geocode",
-
-      /**
-       * Instructs the Place Autocomplete service to return only geocoding
-       * results with a precise address. Generally, you use this request when
-       * you know the user will be looking for a fully specified address.
-       */
-      Address = "address",
-
-      /**
-       * Instructs the Place Autocomplete service to return only business
-       * results.
-       */
-      Establishment = "establishment",
-
-      /**
-       * Instructs the Places service to return any result matching the
-       * following types:
-       * 
-       * - `locality` (PlaceType.Locality)
-       * - `sublocality` (PlaceType.SubLocality)
-       * - `postal_code` (PlaceType.PostalCode)
-       * - `country` (PlaceType.Country)
-       * - `administrative_area_level_1` (PlaceType.AdministrativeAreaLevel1)
-       * - `administrative_area_level_2` (PlaceType.AdministrativeAreaLevel2)
-       */
-      Regions = "regions",
-
-      /**
-       * Instructs the Places service to return results that match `locality`
-       * (PlaceType.Locality) or `administrative_area_level_3`
-       * (PlaceType.AdministrativeAreaLevel3).
-       */
-      Cities = "cities",
-    }
+    export type AutocompleteType = "geocode" | "address" | "establishment"
+      | "regions" | "cities";
 
     /**
      * Internal mapping to [AddressComponent](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_address_component)
