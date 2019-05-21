@@ -130,7 +130,7 @@ declare module "react-native-google-places" {
       /**
        * The types of this place. 
        */
-      types: PlaceType[];
+      types: ReturnPlaceType[];
 
       /**
        * Website for this place.
