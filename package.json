@@ -13,6 +13,7 @@
   "bugs": {
     "url": "https://github.com/tolu360/react-native-google-places/issues"
   },
+  "types": "index.d.ts",
   "homepage": "https://github.com/tolu360/react-native-google-places#readme",
   "keywords": [
     "react",
