@@ -32,7 +32,6 @@ yarn add react-native-google-places
 react-native link react-native-google-places
 ```
 
-
 #### Google Places API Set-Up
 1. Sign up for [Google Places & Google Maps APIs for Android in Google API Console](https://cloud.google.com/maps-platform/#get-started) to grab your Android API key (not browser key).
 2. Read further API setup guides at [https://developers.google.com/places/android-sdk/signup](https://developers.google.com/places/android-sdk/signup).
@@ -41,19 +40,17 @@ react-native link react-native-google-places
 5. [Enable billing](https://console.cloud.google.com/project/_/billing/enable) for your projects - **please do not file any issues on this repo without first checking you have, indeed, enabled billing on your account**.
 6. With both keys in place, you can proceed.
 
-#### Post-install Steps
+#### Post-Install Steps (iOS)
 
-##### iOS (requires CocoaPods)
+##### 1a) Auto Linking With Cocoapods (this requires an existing Podfile)
+- If you were already using CocoaPods (you already had a Podfile in your ios directory) then running `react-native link react-native-google-places` in the previous step should have added the necessary entry into your Podfile.
+- Now run `pod install` (from the `ios` directory) to complete the installation which will link `react-native-google-places` and the necessary Google dependencies.
+- Skip to step 2.
 
-##### Auto Linking With Your Project (iOS & Android)
-- This was done automatically for you when you ran `react-native link react-native-google-places`. Or you can run the command now if you have not already.
-
-##### Manual Linking With Your Project (iOS)
+##### 1b) Manual Linking & Using CocoaPods for Google Dependencies
 - In XCode, in the project navigator, right click `Libraries ➜ Add Files to [your project's name]`.
 - Go to `node_modules` ➜ `react-native-google-places` and add `RNGooglePlaces.xcodeproj`.
 - In XCode, in the project navigator, select your project. Add `libRNGooglePlaces.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`.
-
-##### Install CocoaPods Dependencies
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
 - If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project.
 - Add `pod 'GooglePlaces'`, `pod 'GooglePlacePicker'` and `pod 'GoogleMaps'` to your Podfile. Ensure you pull in version 3.1.0 or higher for both the `GooglePlaces` and `GoogleMaps` libraries. Otherwise just edit your Podfile to include:
@@ -68,8 +65,9 @@ target 'YOUR_APP_TARGET_NAME' do
 
 end
 ```
-- Run `pod install` or `pod update` from the `ios directory` to get started.
+- Run `pod install` or `pod update` (from the `ios` directory) to get started.
 
+##### 2) Configuration
 - In your `AppDelegate.m` file, import the Google Places library by adding 
 ```objectivec
     @import GooglePlaces; 
@@ -94,7 +92,10 @@ on top of the file.
 - By now, you should be all set to install the packages from your Podfile. Run `pod install` from your `ios` directory.
 - Close Xcode, and then open (double-click) your project's .xcworkspace file to launch Xcode. From this time onwards, you must use the `.xcworkspace` file to open the project. Or just use the `react-native run-ios` command as usual to run your app in the simulator.
 
-##### Android
+#### Post-Install Steps (Android)
+
+##### Auto Linking With Your Project
+- This was done automatically for you when you ran `react-native link react-native-google-places`. Or you can run the command now if you have not already.
 - In your `AndroidManifest.xml` file, request the following permissions:
 
 ```xml
