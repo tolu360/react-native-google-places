@@ -46,14 +46,8 @@ dependencies {
     def supportLibVersion = safeExtGet('supportLibVersion', DEFAULT_SUPPORT_LIB_VERSION)
 
     compileOnly "com.facebook.react:react-native:+"
-<<<<<<< HEAD
-    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
-    implementation "com.google.code.findbugs:jsr305:3.0.2"
-    implementation "com.google.android.libraries.places:places:1.0.0"
-=======
     implementation "com.google.android.libraries.places:places:1.1.0"
     implementation "com.android.support:appcompat-v7:${supportLibVersion}"
     implementation "com.android.support:support-v4:${supportLibVersion}"
     implementation "com.google.code.findbugs:jsr305:3.0.2"
->>>>>>> 2cc5f2f1991d9442aedf619ae6d499320381e489
 }
