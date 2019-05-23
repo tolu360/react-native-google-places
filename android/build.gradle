@@ -3,6 +3,7 @@ apply plugin: 'com.android.library'
 def DEFAULT_COMPILE_SDK_VERSION             = 28
 def DEFAULT_TARGET_SDK_VERSION              = 28
 def DEFAULT_SUPPORT_LIB_VERSION             = "28.0.0"
+def DEFAULT_MIN_SDK_VERSION                 = 21
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -14,6 +15,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
+        minSdkVersion safeExtGet('minSdkVersion', DEFAULT_MIN_SDK_VERSION)
         targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
         resValue "string", "places_api_key", (System.env.RNGP_ANDROID_API_KEY ? "$System.env.RNGP_ANDROID_API_KEY" : (rootProject.findProperty("RNGP_ANDROID_API_KEY") ?: "INSERT_KEY_HERE"))
     }
@@ -44,7 +46,14 @@ dependencies {
     def supportLibVersion = safeExtGet('supportLibVersion', DEFAULT_SUPPORT_LIB_VERSION)
 
     compileOnly "com.facebook.react:react-native:+"
+<<<<<<< HEAD
     implementation "com.android.support:appcompat-v7:${supportLibVersion}"
     implementation "com.google.code.findbugs:jsr305:3.0.2"
     implementation "com.google.android.libraries.places:places:1.0.0"
+=======
+    implementation "com.google.android.libraries.places:places:1.1.0"
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
+>>>>>>> 2cc5f2f1991d9442aedf619ae6d499320381e489
 }

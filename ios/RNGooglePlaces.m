@@ -239,8 +239,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     if ([fields count] == 0 && currentOrFetch) {
         GMSPlaceField placeFields = 0;
         for (NSString *fieldLabel in fieldsMapping) {
-            if ([fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldAddressComponents &&
-                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldOpeningHours &&
+            if ([fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldOpeningHours &&
                 [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldPhoneNumber &&
                 [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldWebsite) {
                 placeFields |= [fieldsMapping[fieldLabel] integerValue];
@@ -252,8 +251,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     if ([fields count] != 0 && currentOrFetch) {
         GMSPlaceField placeFields = 0;
         for (NSString *fieldLabel in fields) {
-            if ([fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldAddressComponents &&
-                [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldOpeningHours &&
+            if ([fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldOpeningHours &&
                 [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldPhoneNumber &&
                 [fieldsMapping[fieldLabel] integerValue] != GMSPlaceFieldWebsite) {
                 placeFields |= [fieldsMapping[fieldLabel] integerValue];

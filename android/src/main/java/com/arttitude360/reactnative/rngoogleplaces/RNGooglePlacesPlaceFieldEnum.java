@@ -22,7 +22,8 @@ public enum RNGooglePlacesPlaceFieldEnum {
     TYPES(11, "types", Place.Field.TYPES),
     USER_RATINGS_TOTAL(12, "userRatingsTotal", Place.Field.USER_RATINGS_TOTAL),
     VIEWPORT(13, "viewport", Place.Field.VIEWPORT),
-    WEBSITE_URI(14, "website", Place.Field.WEBSITE_URI);
+    WEBSITE_URI(14, "website", Place.Field.WEBSITE_URI),
+    ADDRESS_COMPONENTS(15, "addressComponents", Place.Field.ADDRESS_COMPONENTS);
 
     private final String key;
     private final Place.Field field;
@@ -60,7 +61,8 @@ public enum RNGooglePlacesPlaceFieldEnum {
             case "userRatingsTotal" : fieldId = 12; break;
             case "viewport" : fieldId = 13; break;
             case "website" : fieldId = 14; break;
-            default: fieldId = 15; break;
+            case "addressComponents" : fieldId = 15; break;
+            default: fieldId = 16; break;
         }
 
         RNGooglePlacesPlaceFieldEnum fieldEnum = Indexer.index.get(fieldId);
