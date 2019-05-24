@@ -548,7 +548,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         if (placeFields.size() == 0 && isCurrentOrFetchPlace) {
             List<Place.Field> allPlaceFields = new ArrayList<>(Arrays.asList(Place.Field.values()));
-            allPlaceFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI));
+            allPlaceFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI, Place.Field.ADDRESS_COMPONENTS)));
 
             return allPlaceFields;
         }
@@ -560,7 +560,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         }
 
         if (placeFields.size() != 0 && isCurrentOrFetchPlace) {
-            selectedFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI));
+            selectedFields.removeAll(Arrays.asList(Place.Field.OPENING_HOURS, Place.Field.PHONE_NUMBER, Place.Field.WEBSITE_URI, Place.Field.ADDRESS_COMPONENTS)));
         }
 
         return selectedFields;
