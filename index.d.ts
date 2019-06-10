@@ -156,7 +156,7 @@ declare module "react-native-google-places" {
        * Address components. If you need the full address, consider using
        * `address` instead.
        */
-      addressComponents: AddressComponent;
+      addressComponents: Array<AddressComponent>;
     }
 
     /**
