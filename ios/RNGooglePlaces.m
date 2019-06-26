@@ -133,7 +133,7 @@ RCT_EXPORT_METHOD(lookUpPlaceByID: (NSString*)placeID
                  resolver: (RCTPromiseResolveBlock)resolve
                  rejecter: (RCTPromiseRejectBlock)reject)
 {
-    GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:true];
+    GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:false];
 
     [[GMSPlacesClient sharedClient] fetchPlaceFromPlaceID:placeID placeFields:selectedFields sessionToken:nil
                                          callback:^(GMSPlace * _Nullable place, NSError * _Nullable error) {
