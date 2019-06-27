@@ -455,9 +455,8 @@ OR
 
 **PLACE FIELDS**
 - To prevent yourself from incurring huge usage bill, you can select the result fields you need in your application. Pass an *(optional)* `placeFields` as the second param to `lookUpPlaceByID`.
-- **placeFields** is an **`Array`** of `String` such as `placeID`, `location`, `name`, `address`, `types`, `openingHours`, `plusCode`, `rating`, `userRatingsTotal`, `viewport`.
+- **placeFields** is an **`Array`** of `String` such as `placeID`, `location`, `name`, `address`, `types`, `openingHours`, `plusCode`, `rating`, `userRatingsTotal`, `viewport`, `addressComponents`, `website`, `phoneNumber`, and `phoneNumber`.
 - Defaults to an empty array which returns every field possible for the particular place.
-- Place note that requesting for `website`, `phoneNumber`, `phoneNumber` and `addressComponents` are not supported when calling `lookUpPlaceByID`.
 
 #### Example Response from Calling lookUpPlaceByID()
 

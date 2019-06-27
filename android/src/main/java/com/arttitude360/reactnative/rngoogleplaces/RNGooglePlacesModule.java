@@ -287,7 +287,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             return;
         }
         
-        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), true);
+        List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), false);
 
         FetchPlaceRequest request = FetchPlaceRequest.builder(placeID, selectedFields).build();
 
