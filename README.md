@@ -504,7 +504,7 @@ You would have to do a bit more work to properly secure and move your API key ou
 source 'https://rubygems.org'
 
 gem 'cocoapods'
-gem 'cocoapods-keys
+gem 'cocoapods-keys'
 ```
 
 - Install the [cocoapods-keys](https://github.com/orta/cocoapods-keys) CocoaPod plugin by running the following on your terminal from your `/ios` directory:
@@ -531,7 +531,7 @@ end
 - Consult the [usage](https://github.com/orta/cocoapods-keys#usage) and [alternative usage](https://github.com/orta/cocoapods-keys#alternative-usage) sections of the `cocoapods-keys` repo to learn how to add your API key to keychain on the Mac.
 - Set up your key with `cocoapods-keys` with either of the instructions from the line above.
 - Run `pod install` again from your `/ios` directory.
-- Replace the string versions of your key in your `AppDelegate.m` file. You can review a sample usgae in the [Sample App](https://github.com/tolu360/RNGPDemos)
+- Replace the string versions of your key in your `AppDelegate.m` file. You can review a sample usage in the [Sample App](https://github.com/tolu360/RNGPDemos)
 - You may skip these steps and continue to have your API key directly in `AppDelegate.m`, things would work just as fine.
 
 
