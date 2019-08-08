@@ -9,14 +9,12 @@ def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
-
 android {
     compileSdkVersion safeExtGet('compileSdkVersion', DEFAULT_COMPILE_SDK_VERSION)
 
     defaultConfig {
         minSdkVersion safeExtGet('minSdkVersion', DEFAULT_MIN_SDK_VERSION)
         targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
-        resValue "string", "places_api_key", (System.env.RNGP_ANDROID_API_KEY ? "$System.env.RNGP_ANDROID_API_KEY" : (rootProject.findProperty("RNGP_ANDROID_API_KEY") ?: "INSERT_KEY_HERE"))
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -48,7 +46,13 @@ dependencies {
     implementation "com.google.android.libraries.places:places:1.1.0"
     implementation "com.google.code.findbugs:jsr305:3.0.2"
 
-    if (rootProject.findProperty("android.useAndroidX")) {
+    Properties prop = new Properties();
+    InputStream input = null;
+
+    input = new FileInputStream("gradle.properties");
+    prop.load(input);
+    
+    if (prop.getProperty("android.useAndroidX")) {
         implementation "androidx.appcompat:appcompat:1.0.2"
         implementation "androidx.legacy:legacy-support-v4:1.0.0"
     } else {
