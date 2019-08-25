@@ -31,5 +31,11 @@
     "react": ">=15.4.0 || ^16.0.0-alpha",
     "react-native": ">=0.40.0"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "rnpm": {
+    "commands": {
+      "prelink": "node_modules/react-native-google-places/scripts/pre-link.sh",
+      "postlink": "node_modules/react-native-google-places/scripts/post-link.sh"
+    }
+  }
 }
