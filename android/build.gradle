@@ -42,21 +42,9 @@ android {
 dependencies {
     def supportLibVersion = safeExtGet('supportLibVersion', DEFAULT_SUPPORT_LIB_VERSION)
 
-    compileOnly "com.facebook.react:react-native:+"
+    implementation "com.facebook.react:react-native:+"
     implementation "com.google.android.libraries.places:places:1.1.0"
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:support-v4:${supportLibVersion}"
     implementation "com.google.code.findbugs:jsr305:3.0.2"
-
-    Properties prop = new Properties();
-    InputStream input = null;
-
-    input = new FileInputStream("gradle.properties");
-    prop.load(input);
-    
-    if (prop.getProperty("android.useAndroidX")) {
-        implementation "androidx.appcompat:appcompat:1.0.2"
-        implementation "androidx.legacy:legacy-support-v4:1.0.0"
-    } else {
-        implementation "com.android.support:appcompat-v7:${supportLibVersion}"
-        implementation "com.android.support:support-v4:${supportLibVersion}"
-    }
 }
