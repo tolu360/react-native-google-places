@@ -121,18 +121,18 @@ on top of the file.
 
 ##### Auto Linking With Your Project
 - This was done automatically for you when you ran `react-native link react-native-google-places`. Or you can run the command now if you have not already.
-- In your `AndroidManifest.xml` file, request the following permissions:
+- In your `AndroidManifest.xml` file, request the following permissions and add your API key:
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-```
 
-- In your `/android/gradle.properties` file, add your API key, **read about a better way to secure this below**
-
-```groovy
-RNGP_ANDROID_API_KEY=Insert_API_KEY_here
+<application>
+	...
+	<meta-data android:name="com.arttitude360.reactnative.rngoogleplaces.API_KEY" android:value="Insert_API_KEY_here"/>
+	...
+</application>
 ```
 
 ##### Manual Linking With Your Project (Android)
