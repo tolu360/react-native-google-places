@@ -1,18 +1,17 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
 import android.app.Activity;
-import android.content.pm.ApplicationInfo;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresPermission;
-import androidx.core.content.ContextCompat;
-import 	androidx.core.app.ActivityCompat;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
+import android.support.v4.content.ContextCompat;
+import 	android.support.v4.app.ActivityCompat;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
@@ -73,31 +72,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static String REACT_CLASS = "RNGooglePlaces";
-    // usage:
-    // String user = getMetadata(this, “user);
-
-    public static String getMetadata(Context context, String name) {
-        String value = null;
-
-        try {
-            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
-            context.getPackageName(), PackageManager.GET_META_DATA);
-            if (appInfo.metaData != null) {
-                value = appInfo.metaData.getString(name);
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            // if we can’t find it in the manifest, just return null
-        } catch (Exception e) {
-            // i don't know what I'm doing...
-            // silly, don't bubble exception to another contexts.
-        }
-        return value;
-    }
 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        String apiKey = findApiKey(reactContext.getApplicationContext(),"com.arttitude360.reactnative.rngoogleplaces.API_KEY");
+        String apiKey = reactContext.getApplicationContext().getString(R.string.places_api_key);
 
         // Setup Places Client
         if (!Places.isInitialized() && !apiKey.equals("")) {
@@ -108,11 +87,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
-    }
-
-    private String findApiKey(Context context, String fieldName) {
-        String apiKey = getMetadata(context, fieldName);
-        return apiKey;
     }
 
     @Override
