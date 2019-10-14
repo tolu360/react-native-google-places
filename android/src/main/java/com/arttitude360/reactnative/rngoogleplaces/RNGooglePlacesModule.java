@@ -8,10 +8,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
-import android.support.v4.content.ContextCompat;
-import 	android.support.v4.app.ActivityCompat;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
+import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
