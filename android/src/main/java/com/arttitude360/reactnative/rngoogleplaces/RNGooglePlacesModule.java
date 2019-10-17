@@ -76,15 +76,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     public RNGooglePlacesModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        String apiKey = reactContext.getApplicationContext().getString(R.string.places_api_key);
-
-        // Setup Places Client
-        if (!Places.isInitialized() && !apiKey.equals("")) {
-            Places.initialize(reactContext.getApplicationContext(), apiKey);
-        }
-
-        placesClient = Places.createClient(reactContext.getApplicationContext());
-
         this.reactContext = reactContext;
         this.reactContext.addActivityEventListener(this);
     }
@@ -120,6 +111,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     /**
      * Exposed React's methods
      */
+
+    @ReactMethod
+    public void init(String apiKey) {
+        // Setup Places Client
+        if (!Places.isInitialized() && !apiKey.equals("")) {
+            Places.initialize(this.reactContext.getApplicationContext(), apiKey);
+        }
+
+        placesClient = Places.createClient(this.reactContext.getApplicationContext());
+    }
 
     @ReactMethod
     public void openAutocompleteModal(ReadableMap options, ReadableArray fields, final Promise promise) {

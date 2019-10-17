@@ -10,6 +10,9 @@
 
 #import <GooglePlaces/GooglePlaces.h>
 
+@import GooglePlaces;
+@import GoogleMaps;
+
 @interface RNGooglePlaces() <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
@@ -50,6 +53,12 @@ RCT_EXPORT_MODULE()
 - (void)dealloc
 {
     self.locationManager = nil;
+}
+
+RCT_EXPORT_METHOD(init: (NSString *) apiKey)
+{
+    [GMSPlacesClient provideAPIKey:apiKey];
+    [GMSServices provideAPIKey:apiKey];
 }
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
