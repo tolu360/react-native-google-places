@@ -199,6 +199,15 @@ If you do **not** have *project-wide properties* defined or want to use a differ
 import RNGooglePlaces from 'react-native-google-places';
 ```
 
+#### Init library with API key
+```javascript
+import RNGooglePlaces from 'react-native-google-places';
+
+RNGooglePlaces.init("PLACE_YOUR_API_KEY_HERE"); 
+// don't place you api key directly
+// for example use react-native-config
+```
+
 #### Open Autocomplete Modal (e.g as Callback to an onPress event)
 
 
