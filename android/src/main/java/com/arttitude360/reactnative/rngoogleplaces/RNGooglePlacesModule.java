@@ -69,6 +69,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     private List<Place.Field> lastSelectedFields;
     public static final String TAG = "RNGooglePlaces";
     private PlacesClient placesClient;
+    private AutocompleteSessionToken sessionToken;
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static String REACT_CLASS = "RNGooglePlaces";
@@ -120,6 +121,11 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     /**
      * Exposed React's methods
      */
+
+    @ReactMethod
+    public void beginNewAutocompleteSession() {
+        sessionToken = AutocompleteSessionToken.newInstance();
+    }
 
     @ReactMethod
     public void openAutocompleteModal(ReadableMap options, ReadableArray fields, final Promise promise) {
@@ -197,7 +203,6 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         String type = options.getString("type");
         String country = options.getString("country");
         country = country.isEmpty() ? null : country;
-        boolean useSessionToken = options.getBoolean("useSessionToken");
 
         ReadableMap locationBias = options.getMap("locationBias");
         double biasToLatitudeSW = locationBias.getDouble("latitudeSW");
@@ -233,8 +238,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             
         requestBuilder.setTypeFilter(getFilterType(type));
 
-        if (useSessionToken) {
-            requestBuilder.setSessionToken(AutocompleteSessionToken.newInstance());
+        if (sessionToken != null) {
+            requestBuilder.setSessionToken(sessionToken);
         }
             
         Task<FindAutocompletePredictionsResponse> task =
@@ -289,7 +294,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         
         List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), false);
 
-        FetchPlaceRequest request = FetchPlaceRequest.builder(placeID, selectedFields).build();
+        FetchPlaceRequest.Builder builder = FetchPlaceRequest.builder(placeID, selectedFields);
+
+        if (sessionToken != null) {
+            builder.setSessionToken(sessionToken);
+        }
+
+        FetchPlaceRequest request = builder.build();
 
         placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
             Place place = response.getPlace();
@@ -298,7 +309,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             promise.resolve(map);
         }).addOnFailureListener((exception) -> {
             promise.reject("E_PLACE_DETAILS_ERROR", new Error(exception.getMessage()));
-        });
+        }).addOnCompleteListener((exception) -> beginNewAutocompleteSession());
     }
 
     @ReactMethod
