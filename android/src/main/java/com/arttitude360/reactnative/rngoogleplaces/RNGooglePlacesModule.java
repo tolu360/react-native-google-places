@@ -123,8 +123,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
      */
 
     @ReactMethod
-    public void beginNewAutocompleteSession() {
+    public void beginAutocompleteSession() {
         sessionToken = AutocompleteSessionToken.newInstance();
+    }
+
+    @ReactMethod
+    public void cancelAutocompleteSession() {
+        sessionToken = null;
     }
 
     @ReactMethod
@@ -309,7 +314,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             promise.resolve(map);
         }).addOnFailureListener((exception) -> {
             promise.reject("E_PLACE_DETAILS_ERROR", new Error(exception.getMessage()));
-        }).addOnCompleteListener((exception) -> beginNewAutocompleteSession());
+        });
     }
 
     @ReactMethod
