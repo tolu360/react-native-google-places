@@ -96,8 +96,8 @@ end
 ##### 2) Configuration on iOS
 - In your `AppDelegate.m` file, import the Google Places library by adding 
 ```objectivec
-    @import GooglePlaces; 
-    @import GoogleMaps;
+@import GooglePlaces; 
+@import GoogleMaps;
 ```
 on top of the file.
 - Within the `didFinishLaunchingWithOptions` method, instantiate the library as follows - **read about a better way to secure this below**:
@@ -111,9 +111,9 @@ on top of the file.
 
 ```plist
 <key>NSLocationWhenInUseUsageDescription</key>
-	<string>RNGPDemos needs your location to show you places</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>RNGPDemos needs your location to show you places</string>
+<string>RNGPDemos needs your location to show you places</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>RNGPDemos needs your location to show you places</string>
 ```
 
 
@@ -125,7 +125,6 @@ on top of the file.
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 ```
 
@@ -224,9 +223,9 @@ class GPlacesDemo extends Component {
   openSearchModal() {
     RNGooglePlaces.openAutocompleteModal()
     .then((place) => {
-		console.log(place);
-		// place represents user's selection from the
-		// suggestions and it is a simplified Google Place object.
+      console.log(place);
+      // place represents user's selection from the
+      // suggestions and it is a simplified Google Place object.
     })
     .catch(error => console.log(error.message));  // error is a Javascript Error object
   }
@@ -250,22 +249,21 @@ class GPlacesDemo extends Component {
 To customize autocomplete results as listed for [Android](https://developers.google.com/places/android-sdk/autocomplete) and [iOS](https://developers.google.com/places/ios-sdk/autocomplete) in the official docs, you can pass an `options` object as a parameter to the `openAutocompleteModal()` method as follows:
 
 ```javascript
-    RNGooglePlaces.openAutocompleteModal({
-            initialQuery: 'vestar', 
-            locationRestriction: {
-                latitudeSW: 6.3670553, 
-                longitudeSW: 2.7062895, 
-                latitudeNE: 6.6967964, 
-                longitudeNE: 4.351055
-            },
-            country: 'NG',
-            type: 'establishment'
-        }, ['placeID', 'location', 'name', 'address', 'types', 'openingHours', 'plusCode', 'rating', 'userRatingsTotal', 'viewport']
-    )
-    .then((place) => {
-        console.log(place);
-    })
-    .catch(error => console.log(error.message));
+RNGooglePlaces.openAutocompleteModal({
+  initialQuery: 'vestar', 
+  locationRestriction: {
+    latitudeSW: 6.3670553, 
+    longitudeSW: 2.7062895, 
+    latitudeNE: 6.6967964, 
+    longitudeNE: 4.351055
+  },
+  country: 'NG',
+  type: 'establishment'
+}, [
+  'placeID', 'location', 'name', 'address', 'types', 'openingHours', 'plusCode', 'rating', 'userRatingsTotal', 'viewport'
+])
+.then((place) => console.log(place))
+.catch(error => console.log(error.message));
 ```
 **OPTIONS**
 - **`type`** _(String)_ - The type of results to return. Can only be one of (`geocode`, `address`, `establishment`, `regions`, and `cities`). *(optional)*
@@ -285,61 +283,54 @@ To customize autocomplete results as listed for [Android](https://developers.goo
 
 #### Example Response from the Autocomplete Modal
 ```javascript
-{   priceLevel: 0,
-    viewport: {   
-        longitudeSW: 3.320172219708498,
-        latitudeSW: 6.572546249999999,
-        longitudeNE: 3.322870180291502,
-        latitudeNE: 6.584909250000001 
-    },
-    address: 'Lagos, Nigeria',
-    location: {   
-        longitude: 3.3211348, 
-        latitude: 6.5818185 
-    },
-    addressComponents: [ 
-      { shortName: 'Lagos',
-        name: 'Lagos',
-        types: [ 'locality', 'political' ] 
-      },
-      { shortName: 'LA',
-        name: 'Lagos',
-        types: [ 'administrative_area_level_1', 'political' ] 
-      },
-      { shortName: 'NG',
-        name: 'Nigeria',
-        types: [ 'country', 'political' ] 
-      } 
-    ],
-    userRatingsTotal: 939,
-    plusCode: { 
-        globalCode: '6FR5H8JC+PF',
-        compoundCode: 'H8JC+PF Lagos, Nigeria' 
-    },
-    rating: 3.2,
-    types: [ 'airport', 'point_of_interest', 'establishment' ],
-    attributions: [],
-    placeID: 'ChIJhRTXUeeROxARmk_Rp3PtIvI',
-    name: 'Murtala Muhammed International Airport' 
+{
+  priceLevel: 0,
+  viewport: {   
+    longitudeSW: 3.320172219708498,
+    latitudeSW: 6.572546249999999,
+    longitudeNE: 3.322870180291502,
+    latitudeNE: 6.584909250000001 
+  },
+  address: 'Lagos, Nigeria',
+  location: {   
+    longitude: 3.3211348, 
+    latitude: 6.5818185 
+  },
+  addressComponents: [ 
+    { shortName: 'Lagos', name: 'Lagos', types: [ 'locality', 'political' ] },
+    { shortName: 'LA', name: 'Lagos', types: [ 'administrative_area_level_1', 'political' ] },
+    { shortName: 'NG', name: 'Nigeria', types: [ 'country', 'political' ] } 
+  ],
+  userRatingsTotal: 939,
+  plusCode: { 
+    globalCode: '6FR5H8JC+PF',
+    compoundCode: 'H8JC+PF Lagos, Nigeria' 
+  },
+  rating: 3.2,
+  types: [ 'airport', 'point_of_interest', 'establishment' ],
+  attributions: [],
+  placeID: 'ChIJhRTXUeeROxARmk_Rp3PtIvI',
+  name: 'Murtala Muhammed International Airport' 
 }
 ```
+
 - Note: The keys available from the response from the resolved `Promise` from calling `RNGooglePlaces.openAutocompleteModal()` are dependent on the selected place - as `phoneNumber, website, north, south, east, west, priceLevel, rating` are not set on all `Google Place` objects.
 
 ### Get Current Place
 This method returns to you the place where the device is currently located. That is, the place at the device's currently-reported location. For each place, the result includes an indication of the likelihood that the place is the right one. A higher value for `likelihood` means a greater probability that the place is the best match. Ensure you have required the appropriate permissions, as stated post-install steps above, before making this request.
 
 ```javascript
-  RNGooglePlaces.getCurrentPlace()
-    .then((results) => console.log(results))
-    .catch((error) => console.log(error.message));
+RNGooglePlaces.getCurrentPlace()
+.then((results) => console.log(results))
+.catch((error) => console.log(error.message));
 ```
 
 OR
 
 ```javascript
-  RNGooglePlaces.getCurrentPlace(['placeID', 'location', 'name', 'address'])
-    .then((results) => console.log(results))
-    .catch((error) => console.log(error.message));
+RNGooglePlaces.getCurrentPlace(['placeID', 'location', 'name', 'address'])
+.then((results) => console.log(results))
+.catch((error) => console.log(error.message));
 ```
 **PLACE FIELDS**
 - To prevent yourself from incurring huge usage bill, you can select the result fields you need in your application. Pass an *(optional)* `placeFields` as the only param to `getCurrentPlace`.
@@ -350,7 +341,8 @@ OR
 #### Example Response from Calling getCurrentPlace()
 
 ```javascript
-[{ name: 'Facebook HQ',
+[{ 
+  name: 'Facebook HQ',
   website: 'https://www.facebook.com/',
   longitude: -122.14835169999999,
   address: '1 Hacker Way, Menlo Park, CA 94025, USA',
@@ -388,8 +380,8 @@ RNGooglePlaces.beginAutocompleteSession();
 
 // You might call this several times (as the user is typing his query)
 RNGooglePlaces.getAutocompletePredictions('facebook')
-  .then((results) => this.setState({ predictions: results }))
-  .catch((error) => console.log(error.message));
+.then((results) => this.setState({ predictions: results }))
+.catch((error) => console.log(error.message));
 
 // Lookup a place by its ID
 RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ');
@@ -456,19 +448,19 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
 #### Example Response from Calling getAutocompletePredictions()
 
 ```javascript
-[ { primaryText: 'Facebook HQ',
-    placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
-    secondaryText: 'Hacker Way, Menlo Park, CA, United States',
-    fullText: 'Facebook HQ, Hacker Way, Menlo Park, CA, United States' },
-    types: [ 'street_address', 'geocode' ],
-  { primaryText: 'Facebook Way',
-    placeID: 'EitGYWNlYm9vayBXYXksIE1lbmxvIFBhcmssIENBLCBVbml0ZWQgU3RhdGVz',
-    secondaryText: 'Menlo Park, CA, United States',
-    fullText: 'Facebook Way, Menlo Park, CA, United States' },
-    types: [ 'street_address', 'geocode' ],
-
-    ...
-]
+[{ 
+  primaryText: 'Facebook HQ',
+  placeID: 'ChIJZa6ezJa8j4AR1p1nTSaRtuQ',
+  secondaryText: 'Hacker Way, Menlo Park, CA, United States',
+  fullText: 'Facebook HQ, Hacker Way, Menlo Park, CA, United States',
+  types: [ 'street_address', 'geocode' ]
+}, { 
+  primaryText: 'Facebook Way',
+  placeID: 'EitGYWNlYm9vayBXYXksIE1lbmxvIFBhcmssIENBLCBVbml0ZWQgU3RhdGVz',
+  secondaryText: 'Menlo Park, CA, United States',
+  fullText: 'Facebook Way, Menlo Park, CA, United States',
+  types: [ 'street_address', 'geocode' ]
+}]
 ```
 
 #### Look-Up Place By ID
@@ -495,7 +487,8 @@ RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ', ['placeID', 'locat
 #### Example Response from Calling lookUpPlaceByID()
 
 ```javascript
-{ name: 'Facebook HQ',
+{ 
+  name: 'Facebook HQ',
   website: 'https://www.facebook.com/',
   longitude: -122.14835169999999,
   address: '1 Hacker Way, Menlo Park, CA 94025, USA',
