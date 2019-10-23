@@ -50,8 +50,12 @@ class RNGooglePlaces {
 		return RNGooglePlacesNative.getCurrentPlace([...RNGooglePlaces.placeFieldsDefaults, ...placeFields])
 	}
 
-	beginNewAutocompleteSession() {
-        return RNGooglePlacesNative.beginNewAutocompleteSession();
+	beginAutocompleteSession() {
+        return RNGooglePlacesNative.beginAutocompleteSession();
+	}
+	
+	cancelAutocompleteSession() {
+        return RNGooglePlacesNative.cancelAutocompleteSession();
     }
 }
 

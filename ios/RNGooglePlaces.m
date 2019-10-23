@@ -53,10 +53,18 @@ RCT_EXPORT_MODULE()
     self.locationManager = nil;
 }
 
-- (void)beginNewAutocompleteSession
+RCT_EXTERN_METHOD(beginAutocompleteSession);
+- (void)beginAutocompleteSession
 {
-    self.sessionToken = [[GMSAutocompleteSessionToken alloc] init];
+    self.sessionToken = [GMSAutocompleteSessionToken new];
 }
+
+RCT_EXTERN_METHOD(cancelAutocompleteSession);
+- (void)cancelAutocompleteSession
+{
+    self.sessionToken = nil;
+}
+
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
                   withFields: (NSArray *)fields
@@ -85,8 +93,6 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
     }
 }
-
-RCT_EXTERN_METHOD(beginNewAutocompleteSession);
 
 RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                   filterOptions: (NSDictionary *)options
@@ -143,8 +149,6 @@ RCT_EXPORT_METHOD(lookUpPlaceByID: (NSString*)placeID
     
     [[GMSPlacesClient sharedClient] fetchPlaceFromPlaceID:placeID placeFields:selectedFields sessionToken:self.sessionToken
                                                  callback:^(GMSPlace * _Nullable place, NSError * _Nullable error) {
-                                                     [self beginNewAutocompleteSession];
-
                                                      if (error != nil) {
                                                          reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
                                                          return;
