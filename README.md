@@ -370,43 +370,77 @@ The sum of the likelihoods in a given result set is always less than or equal to
 ### Using Your Own Custom UI/Views
 If you have specific branding needs or you would rather build out your own custom search input and suggestions list (think `Uber`), you may profit from calling the API methods below which would get you autocomplete predictions programmatically using the underlying `iOS and Android SDKs`.
 
+#### Session Tokens (and why you should care)
+
+Recommended read: 
+* [Places API - Session Tokens](https://developers.google.com/places/web-service/session-tokens)
+* [Places API - Usage and Billing](https://developers.google.com/places/web-service/usage-and-billing)
+
+Calling the following methods (`getAutocompletePredictions` and `lookUpPlaceByID`) without a session token can result in unwanted expensive bills from Google. This happens because the Places APIs are billed by SKU. Usage is tracked for each Product SKU, and an API may have more than one Product SKU (more on the **Usage and Billing** link above).
+
+This module exposes a function named `beginAutocompleteSession` that once invoked will generate a **Session Token** on the module instance. This Session Token will be reused for each subsequent `getAutocompletePredictions` and `lookUpPlaceByID` calls. As of October 2019, Session Tokens **MUST** be renewed upon calling `lookUpPlaceByID`, as this API call marks the "end" of a session for billing purposes. **FORGETTING TO GENERATE A NEW SESSION TOKEN AFTER CALLING `lookupPlaceById` CAN INCREASE YOUR BILL**. 
+
+Example of how an Autocomplete Session would look like:
+
+```javascript
+// Generate session token
+RNGooglePlaces.beginAutocompleteSession();
+
+// You might call this several times (as the user is typing his query)
+RNGooglePlaces.getAutocompletePredictions('facebook')
+  .then((results) => this.setState({ predictions: results }))
+  .catch((error) => console.log(error.message));
+
+// Lookup a place by its ID
+RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ');
+
+// Generate new session token in case your user cancels his selection and wants to continue searching
+RNGooglePlaces.beginAutocompleteSession();
+```
+
+In case you want to make Places API calls without using a session token, a function named `cancelAutocompleteSession` is also exposed. Invoking it will erase an existing Session Token.
+
+```javascript
+RNGooglePlaces.cancelAutocompleteSession();
+```
+
 #### Get Autocomplete Predictions
 
 ```javascript
-  RNGooglePlaces.getAutocompletePredictions('facebook')
-    .then((results) => this.setState({ predictions: results }))
-    .catch((error) => console.log(error.message));
+RNGooglePlaces.getAutocompletePredictions('facebook')
+.then((results) => this.setState({ predictions: results }))
+.catch((error) => console.log(error.message));
 ```
 
 ##### **Optional Parameters**
 To filter autocomplete results as listed for [Android](https://developers.google.com/places/android-api/autocomplete#restrict_autocomplete_results) and [iOS](https://developers.google.com/places/ios-api/autocomplete#call_gmsplacesclient) in the official docs, you can pass an `options` object as a second parameter to the `getAutocompletePredictions()` method as follows:
 
 ```javascript
-  RNGooglePlaces.getAutocompletePredictions('Lagos', {
-	  type: 'cities',
-	  country: 'NG'
-  })
-    .then((place) => {
-    console.log(place);
-    })
-    .catch(error => console.log(error.message));
+RNGooglePlaces.getAutocompletePredictions('Lagos', {
+  type: 'cities',
+  country: 'NG'
+})
+.then((place) => {
+  console.log(place);
+})
+.catch(error => console.log(error.message));
 ```
 OR
 
 ```javascript
 RNGooglePlaces.getAutocompletePredictions('pizza', {
-	    type: 'establishments',
-	    locationBias: {
-            latitudeSW: 6.3670553, 
-            longitudeSW: 2.7062895, 
-            latitudeNE: 6.6967964, 
-            longitudeNE: 4.351055
-        }
-    })
-    .then((place) => {
-    console.log(place);
-    })
-    .catch(error => console.log(error.message));
+  type: 'establishments',
+  locationBias: {
+    latitudeSW: 6.3670553, 
+    longitudeSW: 2.7062895, 
+    latitudeNE: 6.6967964, 
+    longitudeNE: 4.351055
+  }
+})
+.then((place) => {
+  console.log(place);
+})
+.catch(error => console.log(error.message));
 ```
 
 
@@ -440,16 +474,16 @@ RNGooglePlaces.getAutocompletePredictions('pizza', {
 #### Look-Up Place By ID
 
 ```javascript
-  RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ')
-    .then((results) => console.log(results))
-    .catch((error) => console.log(error.message));
+RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ')
+.then((results) => console.log(results))
+.catch((error) => console.log(error.message));
 ```
 OR
 
 ```javascript
-  RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ', ['placeID', 'location', 'name', 'address'])
-    .then((results) => console.log(results))
-    .catch((error) => console.log(error.message));
+RNGooglePlaces.lookUpPlaceByID('ChIJZa6ezJa8j4AR1p1nTSaRtuQ', ['placeID', 'location', 'name', 'address'])
+.then((results) => console.log(results))
+.catch((error) => console.log(error.message));
 ```
 
 
