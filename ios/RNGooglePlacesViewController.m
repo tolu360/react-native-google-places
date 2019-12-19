@@ -39,7 +39,20 @@
     viewController.autocompleteBounds = autocompleteBounds;
     viewController.autocompleteBoundsMode = autocompleteBoundsMode;
     viewController.placeFields = selectedFields;
-	viewController.delegate = self;
+    viewController.delegate = self;
+    if (@available(iOS 13.0, *)) {
+       if(UIScreen.mainScreen.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark ){
+          viewController.primaryTextColor = UIColor.whiteColor;
+          viewController.secondaryTextColor = UIColor.lightGrayColor;
+          viewController.tableCellSeparatorColor = UIColor.lightGrayColor;
+          viewController.tableCellBackgroundColor = UIColor.darkGrayColor;
+       } else {
+          viewController.primaryTextColor = UIColor.blackColor;
+          viewController.secondaryTextColor = UIColor.lightGrayColor;
+          viewController.tableCellSeparatorColor = UIColor.lightGrayColor;
+          viewController.tableCellBackgroundColor = UIColor.whiteColor;
+       }
+    }
     UIViewController *topController = [self getTopController];
 	[topController presentViewController:viewController animated:YES completion:nil];
 }
