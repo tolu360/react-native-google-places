@@ -35,6 +35,21 @@
     _reject = reject;
     
     GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
+    ///////////// Updates for the UI fix for Dark Mode /////////////////////////////
+    if (@available(iOS 13.0, *)) {
+        if(UIScreen.mainScreen.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark ){
+            viewController.primaryTextColor = UIColor.whiteColor;
+            viewController.secondaryTextColor = UIColor.lightGrayColor;
+            viewController.tableCellSeparatorColor = UIColor.lightGrayColor;
+            viewController.tableCellBackgroundColor = UIColor.darkGrayColor;
+        } else {
+            viewController.primaryTextColor = UIColor.blackColor;
+            viewController.secondaryTextColor = UIColor.lightGrayColor;
+            viewController.tableCellSeparatorColor = UIColor.lightGrayColor;
+            viewController.tableCellBackgroundColor = UIColor.whiteColor;
+        }
+    }
+    /////////////////////////////////////////////////////////////////////////////
     viewController.autocompleteFilter = autocompleteFilter;
     viewController.autocompleteBounds = autocompleteBounds;
     viewController.autocompleteBoundsMode = autocompleteBoundsMode;
