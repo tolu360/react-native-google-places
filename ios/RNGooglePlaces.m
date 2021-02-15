@@ -13,6 +13,7 @@
 @interface RNGooglePlaces() <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
+@property GMSAutocompleteSessionToken *sessionToken;
 
 @end
 
@@ -49,6 +50,46 @@ RCT_EXPORT_MODULE()
     self.locationManager = nil;
 }
 
+RCT_EXTERN_METHOD(beginAutocompleteSession);
+- (void)beginAutocompleteSession
+{
+    self.sessionToken = [GMSAutocompleteSessionToken new];
+}
+
+RCT_EXTERN_METHOD(cancelAutocompleteSession);
+- (void)cancelAutocompleteSession
+{
+    self.sessionToken = nil;
+}
+
+RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
+                    withFields: (NSArray *)fields
+                    resolver: (RCTPromiseResolveBlock)resolve
+                    rejecter: (RCTPromiseRejectBlock)reject)
+{
+
+    @try {
+        RNGooglePlacesViewController* acController = [[RNGooglePlacesViewController alloc] init];
+
+        GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:false];
+
+        GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
+        autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
+        autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
+        
+        NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
+        NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
+        
+        
+        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+
+        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds boundsMode: self.boundsMode resolver: resolve rejecter: reject];
+    }
+    @catch (NSException * e) {
+        reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
+    }
+}
+
 RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                   filterOptions: (NSDictionary *)options
                   resolver: (RCTPromiseResolveBlock)resolve
@@ -64,11 +105,12 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
 
     [self getBounds:locationBias andRestrictOptions:locationRestriction filter:autocompleteFilter];
 
-    GMSAutocompleteSessionToken *token = [[GMSAutocompleteSessionToken alloc] init];
-
+    
+    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+    
     [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
                                                filter:autocompleteFilter
-                                               sessionToken:token
+                                               sessionToken:self.sessionToken
                                              callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
                                                  if (error != nil) {
                                                      reject(@"E_AUTOCOMPLETE_ERROR", [error description], nil);
