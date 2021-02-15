@@ -69,6 +69,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     private List<Place.Field> lastSelectedFields;
     public static final String TAG = "RNGooglePlaces";
     private PlacesClient placesClient;
+    private AutocompleteSessionToken sessionToken;
 
     public static int AUTOCOMPLETE_REQUEST_CODE = 360;
     public static String REACT_CLASS = "RNGooglePlaces";
@@ -120,6 +121,16 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
     /**
      * Exposed React's methods
      */
+
+    @ReactMethod
+    public void beginAutocompleteSession() {
+        sessionToken = AutocompleteSessionToken.newInstance();
+    }
+
+    @ReactMethod
+    public void cancelAutocompleteSession() {
+        sessionToken = null;
+    }
 
     @ReactMethod
     public void openAutocompleteModal(ReadableMap options, ReadableArray fields, final Promise promise) {
@@ -233,8 +244,8 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
             
         requestBuilder.setTypeFilter(getFilterType(type));
 
-        if (useSessionToken) {
-            requestBuilder.setSessionToken(AutocompleteSessionToken.newInstance());
+        if (sessionToken != null) {
+            requestBuilder.setSessionToken(sessionToken);
         }
             
         Task<FindAutocompletePredictionsResponse> task =
