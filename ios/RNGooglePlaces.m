@@ -14,6 +14,7 @@
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property GMSAutocompleteBoundsMode boundsMode;
+@property GMSAutocompleteSessionToken *sessionToken;
 
 @end
 
@@ -50,6 +51,18 @@ RCT_EXPORT_MODULE()
 - (void)dealloc
 {
     self.locationManager = nil;
+}
+
+RCT_EXTERN_METHOD(beginAutocompleteSession);
+- (void)beginAutocompleteSession
+{
+    self.sessionToken = [GMSAutocompleteSessionToken new];
+}
+
+RCT_EXTERN_METHOD(cancelAutocompleteSession);
+- (void)cancelAutocompleteSession
+{
+    self.sessionToken = nil;
 }
 
 RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
@@ -95,13 +108,11 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     
     GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
     
-    GMSAutocompleteSessionToken *token = [[GMSAutocompleteSessionToken alloc] init];
-    
     [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
                                                bounds:autocompleteBounds
                                                boundsMode:self.boundsMode
                                                filter:autocompleteFilter
-                                               sessionToken:token
+                                               sessionToken:self.sessionToken
                                              callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
                                                  if (error != nil) {
                                                      reject(@"E_AUTOCOMPLETE_ERROR", [error description], nil);
