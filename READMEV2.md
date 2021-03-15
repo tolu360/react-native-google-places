@@ -1,4 +1,4 @@
-# react-native-google-places
+# react-native-google-places-api
 iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services for React Native Apps
 
 ### **Notice: The Google Play Services version of the Places SDK for Android (in Google Play Services 16.0.0) is deprecated as of January 29, 2019, and will be turned off on July 29, 2019. A new version of the Places SDK for Android is now available.**
@@ -15,24 +15,22 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places@2.5.2)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places-api@1.0.0)
 
 ### I recommend you migrate your applications to the version 3.0.1 (or above) of this package - Heads up! There are tons of breaking changes in the new release. **[Visit the updated README to get started](/README.md)**
 
-## Sample App
-- A new [sample app](https://github.com/tolu360/TestRNGP) is available to help with sample usage and debugging issues.
 
 ## Install
 
 ```
-npm i react-native-google-places --save
-react-native link react-native-google-places
+npm i react-native-google-places-api --save
+react-native link react-native-google-places-api
 ```
 OR
 
 ```
-yarn add react-native-google-places
-react-native link react-native-google-places
+yarn add react-native-google-places-api
+react-native link react-native-google-places-api
 ```
 
 
@@ -48,11 +46,11 @@ react-native link react-native-google-places
 ##### iOS (requires CocoaPods)
 
 ##### Auto Linking With Your Project (iOS & Android)
-- This was done automatically for you when you ran `react-native link react-native-google-places`. Or you can run the command now if you have not already.
+- This was done automatically for you when you ran `react-native link react-native-google-places-api`. Or you can run the command now if you have not already.
 
 ##### Manual Linking With Your Project (iOS)
 - In XCode, in the project navigator, right click `Libraries ➜ Add Files to [your project's name]`.
-- Go to `node_modules` ➜ `react-native-google-places` and add `RNGooglePlaces.xcodeproj`.
+- Go to `node_modules` ➜ `react-native-google-places-api` and add `RNGooglePlaces.xcodeproj`.
 - In XCode, in the project navigator, select your project. Add `libRNGooglePlaces.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`.
 
 ##### Install CocoaPods Dependencies
@@ -96,19 +94,19 @@ end
 </application>
 ```
 ##### Manual Linking With Your Project (Android)
-- The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
+- The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places-api`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
 ```groovy
-include ':react-native-google-places'
-project(':react-native-google-places').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places/android')
+include ':react-native-google-places-api'
+project(':react-native-google-places-api').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places-api/android')
 ```
 - Add the following in your `android/app/build.grade` file:
 
 ```groovy
 dependencies {
     ...
-    compile project(':react-native-google-places')
+    compile project(':react-native-google-places-api')
 }
 ```
 
@@ -177,7 +175,7 @@ If you do **not** have *project-wide properties* defined or want to use a differ
   ...
   dependencies {
       ...
-      compile(project(':react-native-google-places')){
+      compile(project(':react-native-google-places-api')){
           exclude group: 'com.google.android.gms', module: 'play-services-base'
           exclude group: 'com.google.android.gms', module: 'play-services-places'
           exclude group: 'com.google.android.gms', module: 'play-services-location'
@@ -196,7 +194,7 @@ If you do **not** have *project-wide properties* defined or want to use a differ
 #### Import library
 
 ```javascript
-import RNGooglePlaces from 'react-native-google-places';
+import RNGooglePlaces from 'react-native-google-places-api';
 ```
 
 #### Open Autocomplete Modal (e.g as Callback to an onPress event)
@@ -486,7 +484,7 @@ You have to link dependencies and re-run the build:
    ...
    dependencies {
        ...
-       compile(project(':react-native-google-places')){
+       compile(project(':react-native-google-places-api')){
            exclude group: 'com.google.android.gms', module: 'play-services-base'
            exclude group: 'com.google.android.gms', module: 'play-services-places'
            exclude group: 'com.google.android.gms', module: 'play-services-location'

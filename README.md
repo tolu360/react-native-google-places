@@ -1,4 +1,4 @@
-# react-native-google-places
+# react-native-google-places-api
 iOS/Android Google Places Widgets (Autocomplete Modal) and API Services for React Native Apps
 
 ### **Notice: The Google Play Services version of the Places SDK for Android (in Google Play Services 16.0.0) is deprecated as of January 29, 2019, and will be turned off on July 29, 2019. A new version of the Places SDK for Android is now available. I suggest you read the documentations again and update your app to use v3.0.1 (or above) of this package**
@@ -13,21 +13,19 @@ iOS/Android Google Places Widgets (Autocomplete Modal) and API Services for Reac
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v3+ (e.g. react-native-google-places@3.1.0)
+- for RN >= 0.40.0, use v3+ (e.g. react-native-google-places-api@1.0.0)
 - If you are still using the v2 of this library, you really should not, then **[Version 2 Documentations](/READMEV2.md)**
 
-## Sample App
-- A new [Sample App](https://github.com/tolu360/RNGPDemos) is available to help with sample usage and debugging issues.
 
 ## Install
 
 ```
-npm i react-native-google-places --save
+npm i react-native-google-places-api --save
 ```
 OR
 
 ```
-yarn add react-native-google-places
+yarn add react-native-google-places-api
 ```
 
 #### Google Places API Set-Up
@@ -43,7 +41,7 @@ yarn add react-native-google-places
 ##### 1) Auto Linking & Cocoapods Integration
 - If you do not have CocoaPods already installed on your machine, run `gem install cocoapods` to set it up the first time. (Hint: Go grab a cup of coffee!)
 - If you are not using Cocoapods in your project already, run `cd ios && pod init` at the root directory of your project. This would create a `Podfile` in your `ios` directory.
-- Run `react-native link react-native-google-places` at the root directory of your project and ensure you edit your Podfile to look like the sample below (remove all the targets you are not building for, such as Tests and tvOS):
+- Run `react-native link react-native-google-places-api` at the root directory of your project and ensure you edit your Podfile to look like the sample below (remove all the targets you are not building for, such as Tests and tvOS):
 
 ```ruby
 # platform :ios, '9.0'
@@ -71,13 +69,13 @@ target '_YOUR_PROJECT_TARGET_' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
   # This should already be auto-added for you, if not add the line below
-  pod 'react-native-google-places', :path => '../node_modules/react-native-google-places'
+  pod 'react-native-google-places-api', :path => '../node_modules/react-native-google-places-api'
 
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
-    if target.name == 'react-native-google-places'
+    if target.name == 'react-native-google-places-api'
       target.build_configurations.each do |config|
         config.build_settings['CLANG_ENABLE_MODULES'] = 'No'
       end
@@ -120,7 +118,7 @@ on top of the file.
 #### Post-Install Steps (Android)
 
 ##### Auto Linking With Your Project
-- This was done automatically for you when you ran `react-native link react-native-google-places`. Or you can run the command now if you have not already.
+- This was done automatically for you when you ran `react-native link react-native-google-places-api`. Or you can run the command now if you have not already.
 - In your `AndroidManifest.xml` file, request the following permissions:
 
 ```xml
@@ -136,19 +134,19 @@ RNGP_ANDROID_API_KEY=Insert_API_KEY_here
 ```
 
 ##### Manual Linking With Your Project (Android)
-- The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places`. Otherwise, do the following or just ensure they are in place;
+- The following additional setup steps are optional as they should have been taken care of, for you when you ran `react-native link react-native-google-places-api`. Otherwise, do the following or just ensure they are in place;
 - Add the following in your `android/settings.gradle` file:
 
 ```groovy
-include ':react-native-google-places'
-project(':react-native-google-places').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places/android')
+include ':react-native-google-places-api'
+project(':react-native-google-places-api').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-google-places-api/android')
 ```
 - Add the following in your `android/app/build.grade` file:
 
 ```groovy
 dependencies {
     ...
-    compile project(':react-native-google-places')
+    compile project(':react-native-google-places-api')
 }
 ```
 
@@ -213,7 +211,7 @@ android {
 #### Import library
 
 ```javascript
-import RNGooglePlaces from 'react-native-google-places';
+import RNGooglePlaces from 'react-native-google-places-api';
 ```
 
 #### Open Autocomplete Modal (e.g as Callback to an onPress event)
@@ -531,7 +529,7 @@ end
 - Consult the [usage](https://github.com/orta/cocoapods-keys#usage) and [alternative usage](https://github.com/orta/cocoapods-keys#alternative-usage) sections of the `cocoapods-keys` repo to learn how to add your API key to keychain on the Mac.
 - Set up your key with `cocoapods-keys` with either of the instructions from the line above.
 - Run `pod install` again from your `/ios` directory.
-- Replace the string versions of your key in your `AppDelegate.m` file. You can review a sample usage in the [Sample App](https://github.com/tolu360/RNGPDemos)
+- Replace the string versions of your key in your `AppDelegate.m` file.
 - You may skip these steps and continue to have your API key directly in `AppDelegate.m`, things would work just as fine.
 
 
