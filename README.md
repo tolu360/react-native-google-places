@@ -3,6 +3,8 @@ iOS/Android Google Places Widgets (Autocomplete Modal) and API Services for Reac
 
 ### **Notice: The Google Play Services version of the Places SDK for Android (in Google Play Services 16.0.0) is deprecated as of January 29, 2019, and will be turned off on July 29, 2019. A new version of the Places SDK for Android is now available. I suggest you read the documentations again and update your app to use v3.0.1 (or above) of this package**
 
+### Also support dark mode for iOS 13 and above **
+
 ## Shots
 
 <img width=200 title="Modal Open - iOS" src="./shots/modal-open-ios.png">
@@ -13,7 +15,7 @@ iOS/Android Google Places Widgets (Autocomplete Modal) and API Services for Reac
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v3+ (e.g. react-native-google-places-api@1.0.0)
+- for RN >= 0.40.0, use v3+ (e.g. react-native-google-places-api@1.0.2)
 - If you are still using the v2 of this library, you really should not, then **[Version 2 Documentations](/READMEV2.md)**
 
 

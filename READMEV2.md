@@ -5,6 +5,8 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 
 ### I recommend you migrate your applications to the version 3.0.1 (or above) of this package - Heads up! There are tons of breaking changes in the new release. **[Visit the updated README to get started](/README.md)**
 
+### Also support dark mode for iOS 13 and above **
+
 ## Shots
 
 <img width=200 title="Modal Open - iOS" src="./shots/modal-open-ios.png">
@@ -15,7 +17,7 @@ iOS/Android Google Places Widgets (Autocomplete, Place Picker) and API Services 
 <img width=200 title="Place Picker Open - iOS" src="./shots/picker-ios.png">
 
 ## Versioning:
-- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places-api@1.0.0)
+- for RN >= 0.40.0, use v2+ (e.g. react-native-google-places-api@1.0.2)
 
 ### I recommend you migrate your applications to the version 3.0.1 (or above) of this package - Heads up! There are tons of breaking changes in the new release. **[Visit the updated README to get started](/README.md)**
 
