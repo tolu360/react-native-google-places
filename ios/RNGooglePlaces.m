@@ -13,7 +13,8 @@
 @interface RNGooglePlaces() <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
-@property GMSAutocompleteBoundsMode boundsMode;
+/// TODO: 5.1.0 Update
+// @property GMSAutocompleteBoundsMode boundsMode;
 
 @end
 
@@ -41,7 +42,8 @@ RCT_EXPORT_MODULE()
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
 
-        self.boundsMode = kGMSAutocompleteBoundsModeBias;
+        /// TODO: 5.1.0 Update
+        /// self.boundsMode = kGMSAutocompleteBoundsModeBias;
     }
 
     return self;
@@ -65,13 +67,12 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
     NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
 
-    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+    /// TODO: 5.1.0 Update
+    /// GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
 
     GMSAutocompleteSessionToken *token = [[GMSAutocompleteSessionToken alloc] init];
 
     [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
-                                               bounds:autocompleteBounds
-                                               boundsMode:self.boundsMode
                                                filter:autocompleteFilter
                                                sessionToken:token
                                              callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
@@ -245,6 +246,8 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     return GMSPlaceFieldAll;
 }
 
+/// TODO: 5.1.0 Update
+/*
 - (GMSCoordinateBounds *) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions
 {
     double biasLatitudeSW = [[RCTConvert NSNumber:biasOptions[@"latitudeSW"]] doubleValue];
@@ -279,7 +282,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
 
     return nil;
 }
-
+*/
 
 @end
 
