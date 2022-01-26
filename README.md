@@ -2,6 +2,7 @@
 
 - This package was updated to use 5.1.0 (Places for iOS SDK)
 - This won't be regularly updated
+- This was also tested using RN 0.63.4
 
 # react-native-google-places-api
 iOS/Android Google Places Widgets (Autocomplete Modal) and API Services for React Native Apps
