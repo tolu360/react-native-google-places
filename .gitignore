@@ -55,7 +55,7 @@ project.xcworkspace
 
 # Android/IJ
 #
-react-native-google-places-api.iml
+react-native-google-places-native.iml
 .idea
 .gradle
 .vscode
