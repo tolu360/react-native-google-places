@@ -48,12 +48,12 @@
         placeData[@"rating"] = [NSNumber numberWithDouble:place.rating];
     }
     
-    if (place.viewport) {
+    if (place.viewportInfo) {
         NSMutableDictionary *viewportMap = [[NSMutableDictionary alloc] init];
-        viewportMap[@"latitudeNE"] = [NSNumber numberWithDouble:place.viewport.northEast.latitude];
-        viewportMap[@"longitudeNE"] = [NSNumber numberWithDouble:place.viewport.northEast.longitude];
-        viewportMap[@"latitudeSW"] = [NSNumber numberWithDouble:place.viewport.southWest.latitude];
-        viewportMap[@"longitudeSW"] = [NSNumber numberWithDouble:place.viewport.southWest.longitude];
+        viewportMap[@"latitudeNE"] = [NSNumber numberWithDouble:place.viewportInfo.northEast.latitude];
+        viewportMap[@"longitudeNE"] = [NSNumber numberWithDouble:place.viewportInfo.northEast.longitude];
+        viewportMap[@"latitudeSW"] = [NSNumber numberWithDouble:place.viewportInfo.southWest.latitude];
+        viewportMap[@"longitudeSW"] = [NSNumber numberWithDouble:place.viewportInfo.southWest.longitude];
 
         placeData[@"viewport"] = viewportMap;
     }
