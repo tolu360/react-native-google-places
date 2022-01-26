@@ -1,5 +1,5 @@
 {
-  "name": "@marqroldan/react-native-google-places-api",
+  "name": "react-native-google-places-native",
   "description": "iOS/Android Google Places Widgets (Autocomplete Modals) and API Services for React Native Apps",
   "main": "index.js",
   "author": "Marq Roldan <hcmlroldan@gmail.com>",
@@ -7,14 +7,14 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marqroldan/react-native-google-places-api.git"
+    "url": "git+https://github.com/marqroldan/react-native-google-places-native.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/marqroldan/react-native-google-places-api/issues"
+    "url": "https://github.com/marqroldan/react-native-google-places-native/issues"
   },
   "types": "index.d.ts",
-  "homepage": "https://github.com/marqroldan/react-native-google-places-api/blob/master/README.md",
+  "homepage": "https://github.com/marqroldan/react-native-google-places-native/blob/master/README.md",
   "keywords": [
     "react",
     "react-native",
