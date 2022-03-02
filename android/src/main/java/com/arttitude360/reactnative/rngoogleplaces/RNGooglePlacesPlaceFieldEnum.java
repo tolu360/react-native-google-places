@@ -1,7 +1,7 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
 import android.util.SparseArray;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.google.android.libraries.places.api.model.Place;
 
