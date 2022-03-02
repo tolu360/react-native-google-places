@@ -148,7 +148,9 @@ project(':react-native-google-places').projectDir = new File(rootProject.project
 ```groovy
 dependencies {
     ...
-    compile project(':react-native-google-places')
+    implementation "androidx.annotation:annotation:1.1.0"
+    implementation project(':react-native-google-places')
+    
 }
 ```
 
