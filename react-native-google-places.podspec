@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.homepage       = 'https://github.com/marqroldan/react-native-google-places-native'
   s.source         = { :git => 'https://github.com/marqroldan/react-native-google-places-native.git', :tag => s.version }
 
-  s.platform       = :ios, '11.0'
+  s.platform       = :ios, '12.0'
 
   s.preserve_paths = 'README.md', 'package.json', 'index.js'
   s.source_files   = 'ios/*.{h,m}'
@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
   s.compiler_flags = '-DHAVE_GOOGLE_MAPS=1', '-fno-modules'
 
   s.dependency 'React'
-  s.dependency 'GooglePlaces', '~> 5.1.0'
-  s.dependency 'GoogleMaps', '~> 5.1.0'
+  s.dependency 'GooglePlaces', '~> 6.1.0'
+  s.dependency 'GoogleMaps', '~> 6.1.0'
 end
