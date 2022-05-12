@@ -3,7 +3,7 @@
   "description": "iOS/Android Google Places Widgets (Autocomplete Modals) and API Services for React Native Apps",
   "main": "index.js",
   "author": "Marq Roldan <hcmlroldan@gmail.com>",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {},
   "repository": {
     "type": "git",
