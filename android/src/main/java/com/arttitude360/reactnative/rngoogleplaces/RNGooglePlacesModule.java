@@ -313,7 +313,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
 
         List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), true);
 
-        if (checkPermission(ACCESS_FINE_LOCATION)) {
+        if (checkPermission(ACCESS_FINE_LOCATION) && checkPermission(ACCESS_WIFI_STATE)) {
             findCurrentPlaceWithPermissions(selectedFields, promise);
         }
     }
