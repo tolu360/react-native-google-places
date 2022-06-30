@@ -45,7 +45,7 @@ dependencies {
     def supportLibVersion = safeExtGet('supportLibVersion', DEFAULT_SUPPORT_LIB_VERSION)
 
     implementation "com.facebook.react:react-native:+"
-    implementation 'com.google.android.libraries.places:places:1.1.0'{
+    implementation('com.google.android.libraries.places:places:1.1.0') {
         exclude group: 'com.android.volley'
     }
     implementation 'com.android.volley:volley:1.2.0'
