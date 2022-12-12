@@ -146,7 +146,7 @@ RCT_EXPORT_METHOD(lookUpPlaceByID: (NSString*)placeID
 {
     GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:false];
 
-    [[GMSPlacesClient sharedClient] fetchPlaceFromPlaceID:placeID placeFields:selectedFields sessionToken:nil
+    [[GMSPlacesClient sharedClient] fetchPlaceFromPlaceID:placeID placeFields:selectedFields sessionToken:self.sessionToken
                                          callback:^(GMSPlace * _Nullable place, NSError * _Nullable error) {
                                              if (error != nil) {
                                                  reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
