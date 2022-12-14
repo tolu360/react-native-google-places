@@ -300,7 +300,13 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         
         List<Place.Field> selectedFields = getPlaceFields(fields.toArrayList(), false);
 
-        FetchPlaceRequest request = FetchPlaceRequest.builder(placeID, selectedFields).build();
+        FetchPlaceRequest.Builder requestBuilder = FetchPlaceRequest.builder(placeID, selectedFields);
+
+        if (sessionToken != null) {
+            requestBuilder.setSessionToken(sessionToken);
+        }
+
+        FetchPlaceRequest request = requestBuilder.build();
 
         placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
             Place place = response.getPlace();
