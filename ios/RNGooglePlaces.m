@@ -8,6 +8,7 @@
 #import <React/RCTLog.h>
 #import <React/RCTConvert.h>
 
+#import <GoogleMapsBase/GoogleMapsBase.h>
 #import <GooglePlaces/GooglePlaces.h>
 
 @interface RNGooglePlaces() <CLLocationManagerDelegate>
@@ -81,9 +82,9 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
         NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
         
         
-        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction filter:autocompleteFilter];
 
-        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds boundsMode: self.boundsMode resolver: resolve rejecter: reject];
+        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds resolver: resolve rejecter: reject];
     }
     @catch (NSException * e) {
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
@@ -103,10 +104,7 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
     NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
 
-    [self getBounds:locationBias andRestrictOptions:locationRestriction filter:autocompleteFilter];
-
-    
-    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction filter:autocompleteFilter];
     
     [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
                                                filter:autocompleteFilter

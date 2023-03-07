@@ -1,6 +1,7 @@
 #import "RNGooglePlacesViewController.h"
 #import "NSMutableDictionary+GMSPlace.h"
 
+#import <GoogleMapsBase/GoogleMapsBase.h>
 #import <GooglePlaces/GooglePlaces.h>
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
@@ -22,6 +23,23 @@
 	_instance = self;
 
 	return self;
+}
+
+- (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
+                    placeFields: (GMSPlaceField)selectedFields
+                    bounds: (GMSCoordinateBounds *)autocompleteBounds
+                     resolver: (RCTPromiseResolveBlock)resolve
+                     rejecter: (RCTPromiseRejectBlock)reject;
+{
+    _resolve = resolve;
+    _reject = reject;
+
+    GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
+    viewController.autocompleteFilter = autocompleteFilter;
+    viewController.placeFields = selectedFields;
+    viewController.delegate = self;
+    UIViewController *topController = [self getTopController];
+    [topController presentViewController:viewController animated:YES completion:nil];
 }
 
 // Handle the user's selection.

@@ -8,8 +8,8 @@ Pod::Spec.new do |s|
   s.description    = package['description']
   s.license        = package['license']
   s.author         = package['author']
-  s.homepage       = 'https://github.com/marqroldan/react-native-google-places-native'
-  s.source         = { :git => 'https://github.com/marqroldan/react-native-google-places-native.git', :tag => s.version }
+  s.homepage       = 'https://github.com/tolu360/react-native-google-places'
+  s.source         = { :git => 'https://github.com/tolu360/react-native-google-places.git', :tag => s.version }
 
   s.platform       = :ios, '12.0'
 

@@ -4,12 +4,13 @@
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
 
+#import <GoogleMapsBase/GoogleMapsBase.h>
 #import <GooglePlaces/GooglePlaces.h>
 
 @interface RNGooglePlaces : NSObject <RCTBridgeModule>
 
 - (GMSPlacesAutocompleteTypeFilter) getFilterType:(NSString *)type;
 - (GMSPlaceField) getSelectedFields:(NSArray *)fields isCurrentOrFetchPlace:(Boolean)currentOrFetch;
-- (void) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions filter: (GMSAutocompleteFilter *)autocompleteFilter;
+- (GMSCoordinateBounds *) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions filter: (GMSAutocompleteFilter *)autocompleteFilter;
 
 @end
