@@ -1,6 +1,7 @@
 #import "RNGooglePlacesViewController.h"
 #import "NSMutableDictionary+GMSPlace.h"
 
+#import <GoogleMapsBase/GoogleMapsBase.h>
 #import <GooglePlaces/GooglePlaces.h>
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
@@ -16,7 +17,7 @@
 	RCTPromiseRejectBlock _reject;
 }
 
-- (instancetype)init 
+- (instancetype)init
 {
 	self = [super init];
 	_instance = self;
@@ -26,38 +27,35 @@
 
 - (void)openAutocompleteModal: (GMSAutocompleteFilter *)autocompleteFilter
                     placeFields: (GMSPlaceField)selectedFields
-                       bounds: (GMSCoordinateBounds *)autocompleteBounds
-                       boundsMode: (GMSAutocompleteBoundsMode)autocompleteBoundsMode
+                    bounds: (GMSCoordinateBounds *)autocompleteBounds
                      resolver: (RCTPromiseResolveBlock)resolve
                      rejecter: (RCTPromiseRejectBlock)reject;
 {
     _resolve = resolve;
     _reject = reject;
-    
+
     GMSAutocompleteViewController *viewController = [[GMSAutocompleteViewController alloc] init];
     viewController.autocompleteFilter = autocompleteFilter;
-    viewController.autocompleteBounds = autocompleteBounds;
-    viewController.autocompleteBoundsMode = autocompleteBoundsMode;
     viewController.placeFields = selectedFields;
-	viewController.delegate = self;
+    viewController.delegate = self;
     UIViewController *topController = [self getTopController];
-	[topController presentViewController:viewController animated:YES completion:nil];
+    [topController presentViewController:viewController animated:YES completion:nil];
 }
 
 // Handle the user's selection.
 - (void)viewController:(GMSAutocompleteViewController *)viewController
-	didAutocompleteWithPlace:(GMSPlace *)place 
+	didAutocompleteWithPlace:(GMSPlace *)place
 {
     UIViewController *topController = [self getTopController];
     [topController dismissViewControllerAnimated:YES completion:nil];
-	
+
 	if (_resolve) {
         _resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
     }
 }
 
 - (void)viewController:(GMSAutocompleteViewController *)viewController
-	didFailAutocompleteWithError:(NSError *)error 
+	didFailAutocompleteWithError:(NSError *)error
 {
     UIViewController *topController = [self getTopController];
     [topController dismissViewControllerAnimated:YES completion:nil];
@@ -69,7 +67,7 @@
 }
 
 // User canceled the operation.
-- (void)wasCancelled:(GMSAutocompleteViewController *)viewController 
+- (void)wasCancelled:(GMSAutocompleteViewController *)viewController
 {
     UIViewController *topController = [self getTopController];
     [topController dismissViewControllerAnimated:YES completion:nil];
@@ -78,12 +76,12 @@
 }
 
 // Turn the network activity indicator on and off again.
-- (void)didRequestAutocompletePredictions:(GMSAutocompleteViewController *)viewController 
+- (void)didRequestAutocompletePredictions:(GMSAutocompleteViewController *)viewController
 {
   	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
 }
 
-- (void)didUpdateAutocompletePredictions:(GMSAutocompleteViewController *)viewController 
+- (void)didUpdateAutocompletePredictions:(GMSAutocompleteViewController *)viewController
 {
   	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }

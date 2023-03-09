@@ -8,12 +8,12 @@
 #import <React/RCTLog.h>
 #import <React/RCTConvert.h>
 
+#import <GoogleMapsBase/GoogleMapsBase.h>
 #import <GooglePlaces/GooglePlaces.h>
 
 @interface RNGooglePlaces() <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
-@property GMSAutocompleteBoundsMode boundsMode;
 @property GMSAutocompleteSessionToken *sessionToken;
 
 @end
@@ -41,10 +41,8 @@ RCT_EXPORT_MODULE()
         _instance = self;
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
-        
-        self.boundsMode = kGMSAutocompleteBoundsModeBias;
     }
-    
+
     return self;
 }
 
@@ -84,9 +82,9 @@ RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
         NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
         
         
-        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction filter:autocompleteFilter];
 
-        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds boundsMode: self.boundsMode resolver: resolve rejecter: reject];
+        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds resolver: resolve rejecter: reject];
     }
     @catch (NSException * e) {
         reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
@@ -102,15 +100,13 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
     GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
     autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
     autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
-    
+
     NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
     NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
-    
-    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+
+    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction filter:autocompleteFilter];
     
     [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
-                                               bounds:autocompleteBounds
-                                               boundsMode:self.boundsMode
                                                filter:autocompleteFilter
                                                sessionToken:self.sessionToken
                                              callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
@@ -122,20 +118,20 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                                                  if (results != nil) {
                                                     for (GMSAutocompletePrediction* result in results) {
                                                         NSMutableDictionary *placeData = [[NSMutableDictionary alloc] init];
-                                                        
+
                                                         placeData[@"fullText"] = result.attributedFullText.string;
                                                         placeData[@"primaryText"] = result.attributedPrimaryText.string;
                                                         placeData[@"secondaryText"] = result.attributedSecondaryText.string;
                                                         placeData[@"placeID"] = result.placeID;
                                                         placeData[@"types"] = result.types;
-                                                        
+
                                                         [autoCompleteSuggestionsList addObject:placeData];
                                                     }
-                                                    
+
                                                     resolve(autoCompleteSuggestionsList);
 
                                                  }
-                                                 
+
                                              }];
 }
 
@@ -152,7 +148,7 @@ RCT_EXPORT_METHOD(lookUpPlaceByID: (NSString*)placeID
                                                  reject(@"E_PLACE_DETAILS_ERROR", [error localizedDescription], nil);
                                                  return;
                                              }
-                                             
+
                                              if (place != nil) {
                                                  resolve([NSMutableDictionary dictionaryWithGMSPlace:place]);
                                              } else {
@@ -166,7 +162,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
                                     rejecter: (RCTPromiseRejectBlock)reject)
 {
     [self.locationManager requestAlwaysAuthorization];
-    
+
 
     GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:true];
 
@@ -200,7 +196,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
                                     @"callStackSymbols": exception.callStackSymbols,
                                     @"userInfo": exception.userInfo
                                     };
-    
+
     return [[NSError alloc] initWithDomain: @"RNGooglePlaces"
                                       code: 0
                                   userInfo: exceptionInfo];
@@ -242,7 +238,7 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
         @"addressComponents" : @(GMSPlaceFieldAddressComponents),
         @"photos" : @(GMSPlaceFieldPhotos),
     };
-    
+
     if ([fields count] == 0 && !currentOrFetch) {
         return GMSPlaceFieldAll;
     }
@@ -280,11 +276,12 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
         }
         return placeFields;
     }
-    
+
     return GMSPlaceFieldAll;
 }
 
-- (GMSCoordinateBounds *) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions
+
+- (void) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions filter: (GMSAutocompleteFilter *)autocompleteFilter
 {
     double biasLatitudeSW = [[RCTConvert NSNumber:biasOptions[@"latitudeSW"]] doubleValue];
     double biasLongitudeSW = [[RCTConvert NSNumber:biasOptions[@"longitudeSW"]] doubleValue];
@@ -299,26 +296,17 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     if (biasLatitudeSW != 0 && biasLongitudeSW != 0 && biasLatitudeNE != 0 && biasLongitudeNE != 0) {
         CLLocationCoordinate2D neBoundsCorner = CLLocationCoordinate2DMake(biasLatitudeNE, biasLongitudeNE);
         CLLocationCoordinate2D swBoundsCorner = CLLocationCoordinate2DMake(biasLatitudeSW, biasLongitudeSW);
-        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:neBoundsCorner
-                                                                        coordinate:swBoundsCorner];
 
-        return bounds;
-    }  
+        autocompleteFilter.locationBias = GMSPlaceRectangularLocationOption(neBoundsCorner, swBoundsCorner);
+    }
 
     if (restrictLatitudeSW != 0 && restrictLongitudeSW != 0 && restrictLatitudeNE != 0 && restrictLongitudeNE != 0) {
         CLLocationCoordinate2D neBoundsCorner = CLLocationCoordinate2DMake(restrictLatitudeNE, restrictLongitudeNE);
         CLLocationCoordinate2D swBoundsCorner = CLLocationCoordinate2DMake(restrictLatitudeSW, restrictLongitudeSW);
-        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:neBoundsCorner
-                                                                        coordinate:swBoundsCorner];
-        
-        self.boundsMode = kGMSAutocompleteBoundsModeRestrict;
-        
-        return bounds;
-    }
-    
-    return nil;
-}
 
+        autocompleteFilter.locationRestriction = GMSPlaceRectangularLocationOption(neBoundsCorner, swBoundsCorner);
+    }
+}
 
 @end
 
