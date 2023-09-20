@@ -49,6 +49,15 @@ class RNGooglePlaces {
 	getCurrentPlace(placeFields = []) {
 		return RNGooglePlacesNative.getCurrentPlace([...RNGooglePlaces.placeFieldsDefaults, ...placeFields])
 	}
+
+	beginAutocompleteSession = async () => {
+		await RNGooglePlacesNative.beginAutocompleteSession()
+	};
+
+
+	finishAutocompleteSession = async () => {
+		await RNGooglePlacesNative.finishAutocompleteSession()
+	};
 }
 
 export default new RNGooglePlaces()

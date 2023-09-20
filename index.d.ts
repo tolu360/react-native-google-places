@@ -2,7 +2,7 @@ declare module "react-native-google-places" {
   /**
    * 2D Coordinate bounds for view boxes etc, as defined by the bottom left and
    * top right corners.
-   * 
+   *
    * There isn't a direct correspondence between this type and native types.
    */
   export interface GeoCoordinateBounds {
@@ -14,7 +14,7 @@ declare module "react-native-google-places" {
 
   /**
    * Standard cross-platform coordinate type.
-   * 
+   *
    * Corresponds to [CLLocationCoordinate2D](https://developer.apple.com/documentation/corelocation/cllocationcoordinate2d)
    * and [LatLng](https://developers.google.com/android/reference/com/google/android/gms/maps/model/LatLng).
    */
@@ -25,7 +25,7 @@ declare module "react-native-google-places" {
 
   /**
    * Current place, with additional likelihood property.
-   * 
+   *
    * Corresponds roughly to
    * [GMSPlaceLikelihood](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place_likelihood.html#a370caf145921ced6374bd39212561d90)
    * and [com.google.android.libraries.places.api.net.PlaceLikelihood](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/PlaceLikelihood),
@@ -35,7 +35,7 @@ declare module "react-native-google-places" {
     /**
      * Returns a value from 0.0 to 1.0 indicating the confidence that the user
      * is at this place.
-     * 
+     *
      * The larger the value the more confident we are of the place returned. For
      * example, a likelihood of 0.75 means that the user is at least 75% likely
      * to be at this place.
@@ -50,9 +50,9 @@ declare module "react-native-google-places" {
     /**
      * Internal mapping to [GMSPlace](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place)
      * and [com.google.android.libraries.places.api.model.Place](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/Place).
-     * 
+     *
      * Represents a particular physical space.
-     * 
+     *
      * A Place encapsulates information about a physical location, including
      * its name, address, and any other information we might have about it.
      */
@@ -64,7 +64,7 @@ declare module "react-native-google-places" {
 
       /**
        * Place ID of this place.
-       * 
+       *
        * For more information: [Place IDs](https://developers.google.com/places/place-id)
        */
       placeID: string;
@@ -76,7 +76,7 @@ declare module "react-native-google-places" {
 
       /**
        * Location of the place.
-       * 
+       *
        * Corresponds to [coordinates](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place.html#a3dc43865df0de69b6b1203a15a745efc)
        * and [getLatLng](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/Place.html#getLatLng()).
        */
@@ -84,7 +84,7 @@ declare module "react-native-google-places" {
 
       /**
        * The Opening Hours information for this place.
-       * 
+       *
        * The mapping only contains the weekday text, i.e.
        * [GMSOpeningHours#weekdayTest](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_opening_hours.html#a6a4cd04495230795fcd04d814c71d107)
        * and [OpeningHours#getWeekdayTest](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/OpeningHours.html#getWeekdayText()).
@@ -100,7 +100,7 @@ declare module "react-native-google-places" {
 
       /**
        * Simple address of the Place.
-       * 
+       *
        * Corresponds to [formattedAddress](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place.html#a8926a762ae78bcd18c0ea126d270ef3d)
        * and [getAddress](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/Place.html#getAddress())
        */
@@ -108,37 +108,37 @@ declare module "react-native-google-places" {
 
       /**
        * Five-star rating for this place based on user reviews.
-       * 
+       *
        * Ratings range from 1.0 to 5.0. 0.0 means we have no rating for this
        * place (e.g. because not enough users have reviewed this place).
        */
       rating: number;
 
       /**
-       * Represents how many reviews make up this place's rating. 
+       * Represents how many reviews make up this place's rating.
        */
       userRatingsTotal: number;
 
       /**
        * Price level for this place, as integers from 0 to 4.
-       * 
+       *
        * e.g. A value of 4 means this place is "$$$$" (expensive). A value of 0
        * means free (such as a museum with free admission).
        */
       priceLevel: any;
 
       /**
-       * The types of this place. 
+       * The types of this place.
        */
       types: ReturnPlaceType[];
 
       /**
        * Website for this place.
-       * 
+       *
        * This is the URI of the website maintained by the Place, if available.
        * This link is always for a third-party website not affiliated with the
        * Places API.
-       * 
+       *
        * Corresponds to [website](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place.html#a7b9ee24d284ac279eed7f83a838354fe)
        * and [getWebsiteUri](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/Place.html#getWebsiteUri()).
        */
@@ -148,7 +148,7 @@ declare module "react-native-google-places" {
        * This returns a viewport of a size that is suitable for displaying this
        * place. For example, a Place object representing a store may have a
        * relatively small viewport, while a Place object representing a country
-       * may have a very large viewport. 
+       * may have a very large viewport.
        */
       viewport: GeoCoordinateBounds;
 
@@ -162,13 +162,13 @@ declare module "react-native-google-places" {
     /**
      * Internal mapping to [GMSPlusCode](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_place)
      * and [com.google.android.libraries.places.api.model.PlusCode](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/PlusCode).
-     * 
+     *
      * A class containing the Plus codes representation for a location.
-     * 
+     *
      * Plus Code, or Open Location Code (OLC), is a geocode system for
      * identifying any geographical area on Earth, even when a street address
-     * does not exist. 
-     * 
+     * does not exist.
+     *
      * See https://plus.codes/ for more details.
      */
     export interface PlusCode {
@@ -188,7 +188,7 @@ declare module "react-native-google-places" {
     /**
      * Place Type, corresponding to the
      * [return types table 1](https://developers.google.com/places/ios-sdk/supported_types).
-     * 
+     *
      * You can use the following values in the `types` filter for place
      * [searches](https://developers.google.com/places/web-service/search)
      * (Places API only). These types may also be returned anywhere a Place
@@ -285,20 +285,20 @@ declare module "react-native-google-places" {
       | "transit_station"
       | "travel_agency"
       | "veterinary_care"
-      | "zoo";  
+      | "zoo";
 
     /**
      * Place Type, corresponding to the
      * [return types table 2](https://developers.google.com/places/ios-sdk/supported_types).
-     * 
+     *
      * The following types may be returned anywhere a Place result is returned
      * (for example a [Find Place](https://developers.google.com/places/web-service/search#FindPlaceRequests)
      * request), in addition to the types in table 1 above. These types are also
      * used for address components.
-     * 
+     *
      * For more details on these types, refer to
      * [Address Types](https://developers.google.com/maps/documentation/geocoding/intro#Types).
-     * 
+     *
      * Note: The types below are not supported in the type filter of a place
      * search.
      */
@@ -349,7 +349,7 @@ declare module "react-native-google-places" {
     /**
      * Place Type, corresponding to the
      * [return types table 3](https://developers.google.com/places/ios-sdk/supported_types).
-     * 
+     *
      * You may restrict results from a Place Autocomplete request to be of a
      * certain type by passing a `types` parameter. The parameter specifies a
      * type or a type collection, as listed in the supported types below. If
@@ -357,39 +357,39 @@ declare module "react-native-google-places" {
      * type is allowed. The exception is that you can safely mix the `geocode`
      * and `establishment` types, but note that this will have the same effect
      * as specifying no types.
-     * 
+     *
      * ## `geocode`
-     * 
+     *
      * Instructs the Place Autocomplete service to return only geocoding
      * results, rather than business results. Generally, you use this request
      * to disambiguate results where the location specified may be
      * indeterminate.
-     * 
+     *
      * ## `address`
-     * 
+     *
      * Instructs the Place Autocomplete service to return only geocoding
      * results with a precise address. Generally, you use this request when
      * you know the user will be looking for a fully specified address.
-     * 
+     *
      * ## `establishment`
-     * 
+     *
      * Instructs the Place Autocomplete service to return only business
      * results.
-     * 
+     *
      * ## `regions`
-     * 
+     *
      * Instructs the Places service to return any result matching the
      * following types:
-     * 
+     *
      * - `locality` (PlaceType.Locality)
      * - `sublocality` (PlaceType.SubLocality)
      * - `postal_code` (PlaceType.PostalCode)
      * - `country` (PlaceType.Country)
      * - `administrative_area_level_1` (PlaceType.AdministrativeAreaLevel1)
      * - `administrative_area_level_2` (PlaceType.AdministrativeAreaLevel2)
-     * 
+     *
      * ## `cities`
-     * 
+     *
      * Instructs the Places service to return results that match `locality`
      * (PlaceType.Locality) or `administrative_area_level_3`
      * (PlaceType.AdministrativeAreaLevel3).
@@ -400,7 +400,7 @@ declare module "react-native-google-places" {
     /**
      * Internal mapping to [AddressComponent](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_address_component)
      * and [com.google.android.libraries.places.api.model.AddressComponent](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/AddressComponent).
-     * 
+     *
      * Represents a component of an address, e.g., street number, postcode,
      * city, etc.
      */
@@ -411,7 +411,7 @@ declare module "react-native-google-places" {
       types: ReturnPlaceType[];
 
       /**
-       * Name of the address component, e.g. "Sydney". 
+       * Name of the address component, e.g. "Sydney".
        */
       name: string;
 
@@ -424,10 +424,10 @@ declare module "react-native-google-places" {
     /**
      * Internal mapping to [GMSAutocompletePrediction](https://developers.google.com/places/ios-sdk/reference/https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_autocomplete_prediction)
      * and [com.google.android.libraries.places.api.model.AutocompletePrediction](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/api/model/AutocompletePrediction).
-     * 
+     *
      * Represents an autocomplete suggestion of a place, based on a particular
      * text query.
-     * 
+     *
      * An AutocompletePrediction includes the description of the suggested place
      * as well as basic details including place ID and types.
      */
@@ -435,16 +435,16 @@ declare module "react-native-google-places" {
       /**
        * The full text of a place. This is a combination of the primary text
        * and the secondary text.
-       * 
-       * Example: "Eiffel Tower, Avenue Anatole France, Paris, France" 
+       *
+       * Example: "Eiffel Tower, Avenue Anatole France, Paris, France"
        */
       fullText: string;
 
       /**
        * Returns the primary text of a place. This will usually be the name of
        * the place.
-       * 
-       * Example: "Eiffel Tower", "123 Pitt Street" 
+       *
+       * Example: "Eiffel Tower", "123 Pitt Street"
        */
       primaryText: string;
 
@@ -452,21 +452,21 @@ declare module "react-native-google-places" {
        * Returns the secondary text of a place. This provides extra context on
        * the place, and can be used as a second line when showing autocomplete
        * predictions.
-       * 
+       *
        * Example: "Avenue Anatole France, Paris, France", "Sydney, New South
-       * Wales" 
+       * Wales"
        */
       secondaryText: string;
 
       /**
        * Returns the place ID of the place being referred to by this prediction.
-       * 
+       *
        * For more information: [Place IDs](https://developers.google.com/places/place-id)
        */
       placeID: string;
 
       /**
-       * The types of this autocomplete result. 
+       * The types of this autocomplete result.
        */
       types?: ReturnPlaceType;
     }
@@ -474,7 +474,7 @@ declare module "react-native-google-places" {
 
   /**
    * Google Places options.
-   * 
+   *
    * This type roughly corresponds to
    * [GMSAutocompleteFilter](https://developers.google.com/places/ios-sdk/reference/interface_g_m_s_autocomplete_filter)
    * and [com.google.android.libraries.places.widget.Autocomplete](https://developers.google.com/places/android-sdk/reference/com/google/android/libraries/places/widget/Autocomplete).
@@ -496,7 +496,7 @@ declare module "react-native-google-places" {
     /**
      * If true, the autocomplete modal will
      * [open as an overlay rather than fullscreen](https://developers.google.com/places/images/acw_overlay.png).
-     * 
+     *
      * Note: This property is Android only.
      */
     useOverlay: boolean;
@@ -504,7 +504,7 @@ declare module "react-native-google-places" {
     /**
      * If present, the autocomplete modal would launch with results
      * pre-populated for the query passed.
-     * 
+     *
      * Note: This property is Android only.
      */
     initialQuery: string;
@@ -512,7 +512,7 @@ declare module "react-native-google-places" {
 
     /**
      * To bias autocomplete results to a specific geographic region.
-     * 
+     *
      * Note: On iOS, only one of locationBias or locationRestriction is
      * respected, when passing both, only the first passed option would be used.
      */
@@ -520,7 +520,7 @@ declare module "react-native-google-places" {
 
     /**
      * To restrict autocomplete results to a specific geographic region.
-     * 
+     *
      * Note: On iOS, only one of locationBias or locationRestriction is
      * respected, when passing both, only the first passed option would be used.
      */
@@ -597,7 +597,7 @@ declare module "react-native-google-places" {
     public lookUpPlaceByID(placeID: string): Promise<GMSTypes.Place>;
 
     /**
-     * For more information: [Place IDs](https://developers.google.com/places/place-id) 
+     * For more information: [Place IDs](https://developers.google.com/places/place-id)
      */
     public lookUpPlaceByID<K extends keyof GMSTypes.Place>(
       placeID: string, placeFields: K[]
@@ -606,16 +606,16 @@ declare module "react-native-google-places" {
     /**
      * This method returns to you the place where the device is currently
      * located (that is, the place at the device's currently-reported location).
-     * 
+     *
      * For each place, the result includes an indication of the likelihood that
      * the place is the right one. A higher value for likelihood means a greater
      * probability that the place is the best match. Ensure you have required
      * the appropriate permissions as stated post-install steps above before
      * making this request.
-     * 
+     *
      * The sum of the likelihoods in a given result set is always less than or
-     * equal to 1.0. 
-     * 
+     * equal to 1.0.
+     *
      * Note: To prevent yourself from incurring huge usage bill, you should
      * select only the result fields you need in your application.
      */
@@ -624,21 +624,26 @@ declare module "react-native-google-places" {
     /**
      * This method returns to you the place where the device is currently
      * located (that is, the place at the device's currently-reported location).
-     * 
+     *
      * For each place, the result includes an indication of the likelihood that
      * the place is the right one. A higher value for likelihood means a greater
      * probability that the place is the best match. Ensure you have required
      * the appropriate permissions as stated post-install steps above before
      * making this request.
-     * 
+     *
      * The sum of the likelihoods in a given result set is always less than or
-     * equal to 1.0. 
+     * equal to 1.0.
      */
     public getCurrentPlace<K extends keyof GMSTypes.Place>(
       placeFields: K[]
     ): Promise<
       Pick<CurrentPlace, (typeof placeFields)[number] | "likelihood">[]
     >;
+
+
+    public beginAutocompleteSession(): Promise<void>
+
+    public finishAutocompleteSession(): Promise<void>
   }
 
   const _: RNGooglePlaces;
