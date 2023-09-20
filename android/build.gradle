@@ -11,6 +11,7 @@ buildscript {
 }
 
 
+
 apply plugin: 'com.android.library'
 
 def DEFAULT_COMPILE_SDK_VERSION = 33
@@ -31,10 +32,12 @@ android {
         targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
         resValue "string", "places_api_key", (System.env.RNGP_ANDROID_API_KEY ? "$System.env.RNGP_ANDROID_API_KEY" : (rootProject.findProperty("RNGP_ANDROID_API_KEY") ?: "INSERT_KEY_HERE"))
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(11)
+        }
     }
+
 
     packagingOptions {
         exclude 'META-INF/LICENSE'
@@ -55,12 +58,24 @@ android {
 }
 
 repositories {
+    if(rootProject == project) {
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url("$rootDir/../node_modules/react-native/android")
+        }
+    }
     google()
     mavenCentral()
 }
 
 dependencies {
-//    implementation "com.facebook.react:react-native:+"
-    implementation "com.google.android.libraries.places:places:1.1.0"
-    implementation 'androidx.core:core:1.12.0'
+    if(rootProject == project) {
+        // fix problem of multiple version of kotlin stdlib8/stdlib7
+        def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : "1.8.22"
+        implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
+    }
+
+    implementation "com.facebook.react:react-native:+"
+    implementation "com.google.android.libraries.places:places:3.2.0"
+    implementation 'androidx.core:core:1.10.1'
 }

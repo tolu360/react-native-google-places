@@ -1,5 +1,6 @@
 package com.arttitude360.reactnative.rngoogleplaces;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.text.TextUtils;
@@ -22,7 +23,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.annotations.ReactProp;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -286,6 +286,7 @@ public class RNGooglePlacesModule extends ReactContextBaseJavaModule implements 
         });
     }
 
+    @SuppressLint("MissingPermission")
     @ReactMethod
     public void getCurrentPlace(ReadableArray fields, final Promise promise) {
         if (ContextCompat.checkSelfPermission(this.reactContext.getApplicationContext(), permission.ACCESS_WIFI_STATE)
