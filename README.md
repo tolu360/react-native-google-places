@@ -1,4 +1,14 @@
-# react-native-google-places
+# Just's fork of react-native-google-places
+
+## Why fork?
+
+- App project uses Jetifier, to swap Android Support to Androidx in this library. The fork contains required change to remove need to Jetifier.
+- In App project, we use [**another fork**](https://github.com/tolu360/react-native-google-places/pull/262) that introduced a session token, to avoid high bills for using Google Places API. This fork implements that change.
+
+
+# Original Readme
+
+
 iOS/Android Google Places Widgets (Autocomplete Modal) and API Services for React Native Apps
 
 ### **Notice: The Google Play Services version of the Places SDK for Android (in Google Play Services 16.0.0) is deprecated as of January 29, 2019, and will be turned off on July 29, 2019. A new version of the Places SDK for Android is now available. I suggest you read the documentations again and update your app to use v3.0.1 (or above) of this package**
