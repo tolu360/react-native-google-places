@@ -1,4 +1,4 @@
-declare module "react-native-google-places" {
+declare module "@just-insure/react-native-google-places" {
   /**
    * 2D Coordinate bounds for view boxes etc, as defined by the bottom left and
    * top right corners.

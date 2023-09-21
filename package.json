@@ -3,17 +3,24 @@
   "description": "iOS/Android Google Places Widgets (Autocomplete Modals) and API Services for React Native Apps",
   "main": "index.js",
   "author": "Tolu Olowu (Arttitude 360) <tolu@arttitude360.com>",
-  "version": "3.2.0",
-  "scripts": {},
+  "version": "3.3.0",
+  "types": "index.d.ts",
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "react-native-google-places.podspec",
+    "ios",
+    "android/src",
+    "android/build.gradle"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tolu360/react-native-google-places"
+    "url": "https://github.com/just-insure/react-native-google-places"
   },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tolu360/react-native-google-places/issues"
   },
-  "types": "index.d.ts",
   "homepage": "https://github.com/tolu360/react-native-google-places#readme",
   "keywords": [
     "react",
