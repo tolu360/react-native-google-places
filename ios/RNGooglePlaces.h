@@ -10,7 +10,6 @@
 
 - (GMSPlacesAutocompleteTypeFilter) getFilterType:(NSString *)type;
 - (GMSPlaceField) getSelectedFields:(NSArray *)fields isCurrentOrFetchPlace:(Boolean)currentOrFetch;
-- (GMSCoordinateBounds *) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions;
 
 @end
   

@@ -1,81 +1,105 @@
 buildscript {
-    repositories {
-        google()
-        mavenCentral()
+  // Buildscript is evaluated before everything else so we can't use getExtOrDefault
+  def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["GooglePlaces_kotlinVersion"]
+
+  repositories {
+    if(rootProject == project) {
+      maven {
+        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+        url("$rootDir/node_modules/react-native/android")
+      }
     }
-    dependencies {
-        if (rootProject == project) {
-            classpath 'com.android.tools.build:gradle:8.1.0'
-        }
+
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    if (rootProject == project) {
+      classpath 'com.android.tools.build:gradle:8.1.0'
     }
+    // noinspection DifferentKotlinGradleVersion
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
 }
 
-
-
-apply plugin: 'com.android.library'
-
-def DEFAULT_COMPILE_SDK_VERSION = 33
-def DEFAULT_TARGET_SDK_VERSION = 33
-def DEFAULT_MIN_SDK_VERSION = 24
-
-def safeExtGet(prop, fallback) {
-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
+
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["GooglePlaces_" + name]
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["GooglePlaces_" + name]).toInteger()
+}
+
+def supportsNamespace() {
+  def parsed = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')
+  def major = parsed[0].toInteger()
+  def minor = parsed[1].toInteger()
+
+  // Namespace support was added in 7.3.0
+  return (major == 7 && minor >= 3) || major >= 8
+}
 
 android {
-    namespace 'com.arttitude360.reactnative.rngoogleplaces'
-    compileSdkVersion safeExtGet('compileSdkVersion', DEFAULT_COMPILE_SDK_VERSION)
+  if (supportsNamespace()) {
+    namespace "com.googleplaces"
 
-    defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', DEFAULT_MIN_SDK_VERSION)
-        targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
-        resValue "string", "places_api_key", (System.env.RNGP_ANDROID_API_KEY ? "$System.env.RNGP_ANDROID_API_KEY" : (rootProject.findProperty("RNGP_ANDROID_API_KEY") ?: "INSERT_KEY_HERE"))
+    sourceSets {
+      main {
+        manifest.srcFile "src/main/AndroidManifestNew.xml"
+      }
     }
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(11)
-        }
-    }
+  }
 
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
-    packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/DEPENDENCIES.txt'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/notice.txt'
-        exclude 'META-INF/license.txt'
-        exclude 'META-INF/dependencies.txt'
-        exclude 'META-INF/LGPL2.1'
-    }
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    resValue "string", "places_api_key", (System.env.RNGP_ANDROID_API_KEY ? "$System.env.RNGP_ANDROID_API_KEY" : (rootProject.findProperty("RNGP_ANDROID_API_KEY") ?: "INSERT_KEY_HERE"))
+  }
 
-    lintOptions {
-        disable 'InvalidPackage'
+  buildTypes {
+    release {
+      minifyEnabled false
     }
+  }
+
+  lintOptions {
+    disable "GradleCompatible"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
 }
 
 repositories {
-    if(rootProject == project) {
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url("$rootDir/../node_modules/react-native/android")
-        }
-    }
-    google()
-    mavenCentral()
+  mavenCentral()
+  google()
 }
+
+def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : "1.8.22"
 
 dependencies {
-    if(rootProject == project) {
-        // fix problem of multiple version of kotlin stdlib8/stdlib7
-        def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : "1.8.22"
-        implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
-    }
+  if(rootProject == project) {
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
+  }
 
-    implementation "com.facebook.react:react-native:+"
-    implementation "com.google.android.libraries.places:places:3.2.0"
-    implementation 'androidx.core:core:1.10.1'
+  implementation "com.facebook.react:react-native:+"
+  implementation "com.google.android.libraries.places:places:3.2.0"
+  implementation 'androidx.core:core:1.10.1'
 }
+

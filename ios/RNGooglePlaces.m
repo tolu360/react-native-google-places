@@ -8,12 +8,12 @@
 #import <React/RCTLog.h>
 #import <React/RCTConvert.h>
 
+#import <GoogleMaps/GoogleMaps.h>
 #import <GooglePlaces/GooglePlaces.h>
 
 @interface RNGooglePlaces() <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
-@property GMSAutocompleteBoundsMode boundsMode;
 @property GMSAutocompleteSessionToken *sessionToken;
 
 @end
@@ -37,12 +37,13 @@ RCT_EXPORT_MODULE()
 
 - (instancetype)init
 {
+    NSString *placesApiKey = @"AIzaSyBzVFvs0eutiD8YIzZuJqc7KUg25wpwWbg";
+    [GMSPlacesClient provideAPIKey:placesApiKey];
+    [GMSServices provideAPIKey:placesApiKey];
     if (self = [super init]) {
         _instance = self;
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
-        
-        self.boundsMode = kGMSAutocompleteBoundsModeBias;
     }
     
     return self;
@@ -65,34 +66,6 @@ RCT_EXPORT_METHOD(finishAutocompleteSession: (RCTPromiseResolveBlock)resolve
     resolve(nil);
 }
 
-RCT_EXPORT_METHOD(openAutocompleteModal: (NSDictionary *)options
-                  withFields: (NSArray *)fields
-                  resolver: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
-{
-    
-    @try {
-        RNGooglePlacesViewController* acController = [[RNGooglePlacesViewController alloc] init];
-        
-        GMSPlaceField selectedFields = [self getSelectedFields:fields isCurrentOrFetchPlace:false];
-        
-        GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
-        autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
-        autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
-        
-        NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
-        NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
-        
-        
-        GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
-        
-        [acController openAutocompleteModal: autocompleteFilter placeFields: selectedFields bounds: autocompleteBounds boundsMode: self.boundsMode resolver: resolve rejecter: reject];
-    }
-    @catch (NSException * e) {
-        reject(@"E_OPEN_FAILED", @"Could not open modal", [self errorFromException:e]);
-    }
-}
-
 RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
                   filterOptions: (NSDictionary *)options
                   resolver: (RCTPromiseResolveBlock)resolve
@@ -100,43 +73,62 @@ RCT_EXPORT_METHOD(getAutocompletePredictions: (NSString *)query
 {
     NSMutableArray *autoCompleteSuggestionsList = [NSMutableArray array];
     GMSAutocompleteFilter *autocompleteFilter = [[GMSAutocompleteFilter alloc] init];
-    autocompleteFilter.type = [self getFilterType:[RCTConvert NSString:options[@"type"]]];
-    autocompleteFilter.country = [options[@"country"] length] == 0? nil : options[@"country"];
+    NSString *filterTypeString = [RCTConvert NSString:options[@"type"]];
+    NSArray *filterTypes = filterTypeString ? @[filterTypeString] : nil;
+    autocompleteFilter.types = filterTypes;
+  
+    NSString *filterCountryString = [RCTConvert NSString:options[@"country"]];
+    NSArray *filterCountries = filterCountryString ? @[filterCountryString] : nil;
+    autocompleteFilter.countries = filterCountries;
     
-    NSDictionary *locationBias = [RCTConvert NSDictionary:options[@"locationBias"]];
+    NSDictionary *locationBiasDict = [RCTConvert NSDictionary:options[@"locationBias"]];
+    if (locationBiasDict) {
+        CLLocationDegrees northEastLat = [locationBiasDict[@"latitudeNE"] doubleValue];
+        CLLocationDegrees northEastLng = [locationBiasDict[@"longitudeNE"] doubleValue];
+        CLLocationDegrees southWestLat = [locationBiasDict[@"longitudeSW"] doubleValue];
+        CLLocationDegrees southWestLng = [locationBiasDict[@"latitudeSW"] doubleValue];
+
+        CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northEastLat, northEastLng);
+        CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southWestLat, southWestLng);
+        autocompleteFilter.locationBias = GMSPlaceRectangularLocationOption(northEast, southWest);
+    }
+  
     NSDictionary *locationRestriction = [RCTConvert NSDictionary:options[@"locationRestriction"]];
+    if (locationRestriction) {
+      CLLocationDegrees northEastLat = [locationRestriction[@"latitudeNE"] doubleValue];
+      CLLocationDegrees northEastLng = [locationRestriction[@"longitudeNE"] doubleValue];
+      CLLocationDegrees southWestLat = [locationRestriction[@"longitudeSW"] doubleValue];
+      CLLocationDegrees southWestLng = [locationRestriction[@"latitudeSW"] doubleValue];
+
+      CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northEastLat, northEastLng);
+      CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southWestLat, southWestLng);
+      autocompleteFilter.locationRestriction = GMSPlaceRectangularLocationOption(northEast, southWest);
+    }
+  
+  [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query filter:autocompleteFilter sessionToken:self.sessionToken callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
+    if (error != nil) {
+      reject(@"E_AUTOCOMPLETE_ERROR", [error description], nil);
+      return;
+    }
     
-    GMSCoordinateBounds *autocompleteBounds = [self getBounds:locationBias andRestrictOptions:locationRestriction];
+    if (results != nil) {
+      for (GMSAutocompletePrediction* result in results) {
+        NSMutableDictionary *placeData = [[NSMutableDictionary alloc] init];
+        
+        placeData[@"fullText"] = result.attributedFullText.string;
+        placeData[@"primaryText"] = result.attributedPrimaryText.string;
+        placeData[@"secondaryText"] = result.attributedSecondaryText.string;
+        placeData[@"placeID"] = result.placeID;
+        placeData[@"types"] = result.types;
+        
+        [autoCompleteSuggestionsList addObject:placeData];
+      }
+      
+      resolve(autoCompleteSuggestionsList);
+      
+    }
     
-    [[GMSPlacesClient sharedClient] findAutocompletePredictionsFromQuery:query
-                                                                  bounds:autocompleteBounds
-                                                              boundsMode:self.boundsMode
-                                                                  filter:autocompleteFilter
-                                                            sessionToken:self.sessionToken
-                                                                callback:^(NSArray<GMSAutocompletePrediction *> * _Nullable results, NSError *error) {
-        if (error != nil) {
-            reject(@"E_AUTOCOMPLETE_ERROR", [error description], nil);
-            return;
-        }
-        
-        if (results != nil) {
-            for (GMSAutocompletePrediction* result in results) {
-                NSMutableDictionary *placeData = [[NSMutableDictionary alloc] init];
-                
-                placeData[@"fullText"] = result.attributedFullText.string;
-                placeData[@"primaryText"] = result.attributedPrimaryText.string;
-                placeData[@"secondaryText"] = result.attributedSecondaryText.string;
-                placeData[@"placeID"] = result.placeID;
-                placeData[@"types"] = result.types;
-                
-                [autoCompleteSuggestionsList addObject:placeData];
-            }
-            
-            resolve(autoCompleteSuggestionsList);
-            
-        }
-        
-    }];
+  }];
 }
 
 RCT_EXPORT_METHOD(lookUpPlaceByID: (NSString*)placeID
@@ -283,41 +275,4 @@ RCT_EXPORT_METHOD(getCurrentPlace: (NSArray *)fields
     
     return GMSPlaceFieldAll;
 }
-
-- (GMSCoordinateBounds *) getBounds: (NSDictionary *)biasOptions andRestrictOptions: (NSDictionary *)restrictOptions
-{
-    double biasLatitudeSW = [[RCTConvert NSNumber:biasOptions[@"latitudeSW"]] doubleValue];
-    double biasLongitudeSW = [[RCTConvert NSNumber:biasOptions[@"longitudeSW"]] doubleValue];
-    double biasLatitudeNE = [[RCTConvert NSNumber:biasOptions[@"latitudeNE"]] doubleValue];
-    double biasLongitudeNE = [[RCTConvert NSNumber:biasOptions[@"longitudeNE"]] doubleValue];
-    
-    double restrictLatitudeSW = [[RCTConvert NSNumber:restrictOptions[@"latitudeSW"]] doubleValue];
-    double restrictLongitudeSW = [[RCTConvert NSNumber:restrictOptions[@"longitudeSW"]] doubleValue];
-    double restrictLatitudeNE = [[RCTConvert NSNumber:restrictOptions[@"latitudeNE"]] doubleValue];
-    double restrictLongitudeNE = [[RCTConvert NSNumber:restrictOptions[@"longitudeNE"]] doubleValue];
-    
-    if (biasLatitudeSW != 0 && biasLongitudeSW != 0 && biasLatitudeNE != 0 && biasLongitudeNE != 0) {
-        CLLocationCoordinate2D neBoundsCorner = CLLocationCoordinate2DMake(biasLatitudeNE, biasLongitudeNE);
-        CLLocationCoordinate2D swBoundsCorner = CLLocationCoordinate2DMake(biasLatitudeSW, biasLongitudeSW);
-        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:neBoundsCorner
-                                                                           coordinate:swBoundsCorner];
-        
-        return bounds;
-    }
-    
-    if (restrictLatitudeSW != 0 && restrictLongitudeSW != 0 && restrictLatitudeNE != 0 && restrictLongitudeNE != 0) {
-        CLLocationCoordinate2D neBoundsCorner = CLLocationCoordinate2DMake(restrictLatitudeNE, restrictLongitudeNE);
-        CLLocationCoordinate2D swBoundsCorner = CLLocationCoordinate2DMake(restrictLatitudeSW, restrictLongitudeSW);
-        GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] initWithCoordinate:neBoundsCorner
-                                                                           coordinate:swBoundsCorner];
-        
-        self.boundsMode = kGMSAutocompleteBoundsModeRestrict;
-        
-        return bounds;
-    }
-    
-    return nil;
-}
-
-
 @end
