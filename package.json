@@ -1,7 +1,7 @@
 {
   "name": "@just-insure/react-native-google-places",
   "description": "iOS/Android Google Places Widgets (Autocomplete Modals) and API Services for React Native Apps",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",
