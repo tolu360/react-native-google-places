@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "@just-insure/react-native-google-places": ["./src/index"]
+      "@just-insure/react-native-google-places": ["./src/index", "./src/types.d.ts"],
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

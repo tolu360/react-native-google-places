@@ -66,3 +66,5 @@ class RNGooglePlaces {
 }
 
 export default new RNGooglePlaces();
+
+export type { GMSTypes, LatLng, GeoCoordinateBounds } from './types';
